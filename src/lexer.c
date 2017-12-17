@@ -11,6 +11,7 @@
 #include "token.h"
 
 
+#define UPPER(ch) (ch & ~(1 << 5))
 
 struct node *start_tk = NULL, *current_tk = NULL;
 int current_line = 1;
@@ -30,8 +31,6 @@ int get_string();
 int get_char();
 int get_identity();
 int get_escape_seq();
-int get_octal_num();
-int get_decimal_num();
 int get_hex_num();
 int next_char();
 
@@ -75,7 +74,7 @@ get_token()
   if (current_ch == EOF)
     return TK_EOF;
 
-  exit_with_info("Unknown ch: %x\n", current_ch);
+  exit_with_info("Unknown ch: %2X\n", current_ch);
 
   return 0;
 }
@@ -84,6 +83,41 @@ get_token()
 int
 get_integer()
 {
+  char ch = current_ch;
+
+  if (ch != '0')
+    return get_integer_sub(check_decimal);
+
+  ch = next_char();
+
+  if (check_octal(ch))
+    return get_integer_sub(check_octal);
+
+  assert_ch(UPPER(ch), 'X');
+
+  next_char();
+  return get_integer_sub(check_hex);
+}
+
+
+int
+get_integer_sub(int fn(char))
+{
+  char *buffer = cint_buff;
+  int cnt = 1;
+
+  *buffer++ = current_ch;
+
+  while (cnt++ < MAX_INT_LENGTH-1 && fn(next_char()))
+    *buffer++ = current_ch;
+
+  if (cnt == MAX_INT_LENGTH-1)
+    exit_with_info("[%d][LEXER]Number too long\n", current_line);
+
+  *buffer = '\0';
+
+  printf("int: %s\n", cint_buff);
+
   return 0;
 }
 
@@ -96,11 +130,15 @@ get_identity()
 
   *buffer++ = current_ch;
 
-  while (cnt++ < MAX_IDENT_LENGTH - 1 && check_identity(next_char()))
+  while (cnt++ < MAX_IDENT_LENGTH-1 && check_identity(next_char()))
     *buffer++ = current_ch;
 
-  if (cnt == MAX_IDENT_LENGTH - 1)
+  if (cnt == MAX_IDENT_LENGTH-1)
     exit_with_info("[%d][LEXER]Identity too long\n", current_line);
+
+  *buffer = '\0';
+
+  printf("identity: %s\n", cident_buff);
 
   return 0;
 }
@@ -113,13 +151,15 @@ get_string()
   int cnt = 0;
   char ch = next_char();
 
-  while (cnt++ < MAX_CSTR_LENGTH - 1 && ch != '"')
+  while (cnt++ < MAX_CSTR_LENGTH-1 && ch != '"')
     *buffer++ = get_char();
 
-  if (cnt == MAX_CSTR_LENGTH - 1)
+  if (cnt == MAX_CSTR_LENGTH-1)
     exit_with_info("[%d][LEXER]String too long\n", current_line);
 
   *buffer = '\0';
+
+  printf("string: %s\n", cstr_buff);
 
   return 0;
 }
@@ -130,6 +170,8 @@ get_character()
 {
   char ch = get_char();
   assert_ch(next_char(), '\'');
+
+  printf("character: %c(%2X)\n", ch, ch);
 
   return ch;
 }
@@ -178,28 +220,6 @@ get_escape_seq()
   default:
     return ch;
   }
-}
-
-
-int
-get_octal_num()
-{
-  char ch = next_char();
-  assert_not_eof(ch);
-  assert_octal(ch);
-
-  return ch - '0';
-}
-
-
-int
-get_decimal_num()
-{
-  char ch = next_char();
-  assert_not_eof(ch);
-  assert_decimal(ch);
-
-  return ch - '0';
 }
 
 
