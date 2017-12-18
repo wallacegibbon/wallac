@@ -61,8 +61,6 @@ get_token()
   while (check_space(current_ch))
     next_char();
 
-  printf("Current ch: %02X\n", current_ch);
-
   if (current_ch == EOF)
     return TK_EOF;
 
@@ -78,7 +76,7 @@ get_token()
   if (current_ch == '\'')
     return get_character();
 
-  exit_with_info("Unknown ch: %02X\n", current_ch);
+  exit_with_info("**Unknown char: %02X\n", current_ch);
 
   return 0;
 }
@@ -93,7 +91,6 @@ get_integer()
     return get_decimal();
 
   ch = next_char();
-
   if (check_octal(ch))
     return get_octal();
 
@@ -157,7 +154,7 @@ get_numstr(int chkfn(char))
   while (cnt++ < MAX_INT_LENGTH-1 && chkfn(next_char()))
     *buffer++ = current_ch;
 
-  if (cnt == MAX_INT_LENGTH-1)
+  if (cnt == MAX_INT_LENGTH)
     exit_with_info("[%d][LEXER]Number too long\n", current_line);
 
   *buffer = '\0';
@@ -236,7 +233,7 @@ get_identity()
   while (cnt++ < MAX_IDENT_LENGTH-1 && check_identity(next_char()))
     *buffer++ = current_ch;
 
-  if (cnt == MAX_IDENT_LENGTH-1)
+  if (cnt == MAX_IDENT_LENGTH)
     exit_with_info("[%d][LEXER]Identity too long\n", current_line);
 
   *buffer = '\0';
@@ -257,7 +254,7 @@ get_string()
   while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
     *buffer++ = ch;
 
-  if (cnt == MAX_CSTR_LENGTH-1)
+  if (cnt == MAX_CSTR_LENGTH)
     exit_with_info("[%d][LEXER]String too long\n", current_line);
 
   *buffer = '\0';
@@ -310,7 +307,6 @@ get_escape_seq()
 {
   char ch = next_char();
   assert_not_eof(ch);
-
   switch (ch)
   {
   case 'x':
