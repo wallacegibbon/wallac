@@ -6,12 +6,12 @@
 #include "assertch.h"
 #include "checkch.h"
 #include "misc.h"
-#include "limit.h"
+#include "limits.h"
 #include "vars.h"
 #include "token.h"
 
 
-#define UPPER(ch) (ch & ~(1 << 5))
+#define UPPER(ch) ((ch) & ~(1 << 5))
 
 struct node *start_tk = NULL, *current_tk = NULL;
 int current_line = 1;
@@ -26,11 +26,17 @@ char cident_buff[MAX_IDENT_LENGTH];
 int get_token();
 
 int get_integer();
+int get_octal();
+int get_decimal();
+int get_hex();
+int get_numstr(int chkfn(char));
+int get_numval(int base, int cnvfn(char));
 int get_character();
 int get_string();
-int get_char();
 int get_identity();
 int get_escape_seq();
+int get_octal_num();
+int get_decimal_num();
 int get_hex_num();
 int next_char();
 
@@ -57,7 +63,10 @@ get_token()
   while (check_space(current_ch))
     next_char();
 
-  printf("Current ch:%2X\n", current_ch);
+  printf("Current ch: %02X\n", current_ch);
+
+  if (current_ch == EOF)
+    return TK_EOF;
 
   if (check_identity_start(current_ch))
     return get_identity();
@@ -71,10 +80,7 @@ get_token()
   if (current_ch == '\'')
     return get_character();
 
-  if (current_ch == EOF)
-    return TK_EOF;
-
-  exit_with_info("Unknown ch: %2X\n", current_ch);
+  exit_with_info("Unknown ch: %02X\n", current_ch);
 
   return 0;
 }
@@ -86,29 +92,71 @@ get_integer()
   char ch = current_ch;
 
   if (ch != '0')
-    return get_integer_sub(check_decimal);
+    return get_decimal();
 
   ch = next_char();
 
   if (check_octal(ch))
-    return get_integer_sub(check_octal);
+    return get_octal();
 
   assert_ch(UPPER(ch), 'X');
-
   next_char();
-  return get_integer_sub(check_hex);
+
+  return get_hex();
 }
 
 
 int
-get_integer_sub(int fn(char))
+get_octal()
+{
+  long i = 0;
+  char *buffer = cint_buff;
+
+  get_numstr(check_octal);
+  i = get_numval(8, get_octal_num);
+
+  printf("int: %d(0o%o)\n", i, i);
+  return 0;
+}
+
+
+int
+get_decimal()
+{
+  long i = 0;
+  char *buffer = cint_buff;
+
+  get_numstr(check_decimal);
+  i = get_numval(10, get_decimal_num);
+
+  printf("int: %d\n", i);
+  return 0;
+}
+
+
+int
+get_hex()
+{
+  long i = 0;
+  char *buffer = cint_buff;
+
+  get_numstr(check_hex);
+  i = get_numval(16, get_hex_num);
+
+  printf("int: %d(0X%X)\n", i, i);
+  return 0;
+}
+
+
+int
+get_numstr(int chkfn(char))
 {
   char *buffer = cint_buff;
   int cnt = 1;
 
   *buffer++ = current_ch;
 
-  while (cnt++ < MAX_INT_LENGTH-1 && fn(next_char()))
+  while (cnt++ < MAX_INT_LENGTH-1 && chkfn(next_char()))
     *buffer++ = current_ch;
 
   if (cnt == MAX_INT_LENGTH-1)
@@ -116,9 +164,30 @@ get_integer_sub(int fn(char))
 
   *buffer = '\0';
 
-  printf("int: %s\n", cint_buff);
+  printf("int str: %s\n", cint_buff);
 
   return 0;
+}
+
+
+int
+get_numval(int base, int cnvfn(char))
+{
+  long i = 0, j, k;
+  char *buffer = cint_buff;
+  char *cmpstr =
+    base == 8 ? MAX_OCTAL_STRING :
+      base == 10 ? MAX_DECIMAL_STRING : MAX_HEX_STRING;
+
+  j = strlen(buffer);
+  k = strlen(cmpstr);
+  if (j > k || (j == k && strcmp(buffer, cmpstr) > 0))
+    return LONG_MAX;
+
+  while (*buffer)
+    i = i * base + cnvfn(*buffer++);
+
+  return i;
 }
 
 
@@ -149,10 +218,9 @@ get_string()
 {
   char *buffer = cstr_buff;
   int cnt = 0;
-  char ch = next_char();
 
-  while (cnt++ < MAX_CSTR_LENGTH-1 && ch != '"')
-    *buffer++ = get_char();
+  while (cnt++ < MAX_CSTR_LENGTH-1 && !check_string_end(next_char()))
+    *buffer++ = current_ch;
 
   if (cnt == MAX_CSTR_LENGTH-1)
     exit_with_info("[%d][LEXER]String too long\n", current_line);
@@ -161,24 +229,13 @@ get_string()
 
   printf("string: %s\n", cstr_buff);
 
+  next_char();
   return 0;
 }
 
 
 int
 get_character()
-{
-  char ch = get_char();
-  assert_ch(next_char(), '\'');
-
-  printf("character: %c(%2X)\n", ch, ch);
-
-  return ch;
-}
-
-
-int
-get_char()
 {
   char ch = next_char();
   assert_not_eof(ch);
@@ -187,6 +244,11 @@ get_char()
   if (ch == '\\')
     ch = get_escape_seq();
 
+  assert_ch(next_char(), '\'');
+
+  printf("character: %02X\n", ch);
+
+  next_char();
   return ch;
 }
 
@@ -220,6 +282,28 @@ get_escape_seq()
   default:
     return ch;
   }
+}
+
+
+int
+get_octal_num()
+{
+  char ch = next_char();
+  assert_not_eof(ch);
+  assert_octal(ch);
+  
+  return ch - '0';
+}
+
+
+int
+get_decimal_num()
+{
+  char ch = next_char();
+  assert_not_eof(ch);
+  assert_decimal(ch);
+  
+  return ch - '0';
 }
 
 

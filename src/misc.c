@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "vars.h"
 #include "misc.h"
-#include "limit.h"
+#include "limits.h"
 
 
 

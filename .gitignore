@@ -1,3 +1,6 @@
 output/
+*.elf
+*.o
+*.s
 *.swp
 *~

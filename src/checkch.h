@@ -3,6 +3,8 @@
 
 int check_identity(char ch);
 int check_identity_start(char ch);
+int check_string_end(char ch);
+
 int check_alpha(char ch);
 int check_a2f(char ch);
 

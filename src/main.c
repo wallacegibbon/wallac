@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "compile.h"
-#include "limit.h"
+#include "limits.h"
 #include "misc.h"
 
 

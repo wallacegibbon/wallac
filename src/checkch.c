@@ -19,6 +19,16 @@ check_identity_start(char ch)
 
 
 int
+check_string_end(char ch)
+{
+  assert_not_ch(ch, '\r');
+  assert_not_ch(ch, '\n');
+
+  return ch == '"';
+}
+
+
+int
 check_alpha(char ch)
 {
   assert_not_eof(ch);
