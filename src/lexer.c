@@ -34,6 +34,7 @@ int cnv_decimal(char ch);
 int cnv_hex(char ch);
 int get_character();
 int get_string();
+int get_strchar(char *ch);
 int get_identity();
 int get_escape_seq();
 int next_char();
