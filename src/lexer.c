@@ -31,13 +31,13 @@ int get_decimal();
 int get_hex();
 int get_numstr(int chkfn(char));
 int get_numval(int base, int cnvfn(char));
+int cnv_octal(char ch);
+int cnv_decimal(char ch);
+int cnv_hex(char ch);
 int get_character();
 int get_string();
 int get_identity();
 int get_escape_seq();
-int get_octal_num();
-int get_decimal_num();
-int get_hex_num();
 int next_char();
 
 
@@ -113,7 +113,7 @@ get_octal()
   char *buffer = cint_buff;
 
   get_numstr(check_octal);
-  i = get_numval(8, get_octal_num);
+  i = get_numval(8, cnv_octal);
 
   printf("int: %d(0o%o)\n", i, i);
   return 0;
@@ -127,7 +127,7 @@ get_decimal()
   char *buffer = cint_buff;
 
   get_numstr(check_decimal);
-  i = get_numval(10, get_decimal_num);
+  i = get_numval(10, cnv_decimal);
 
   printf("int: %d\n", i);
   return 0;
@@ -141,7 +141,7 @@ get_hex()
   char *buffer = cint_buff;
 
   get_numstr(check_hex);
-  i = get_numval(16, get_hex_num);
+  i = get_numval(16, cnv_hex);
 
   printf("int: %d(0X%X)\n", i, i);
   return 0;
@@ -188,6 +188,42 @@ get_numval(int base, int cnvfn(char))
     i = i * base + cnvfn(*buffer++);
 
   return i;
+}
+
+
+int
+cnv_octal(char ch)
+{
+  assert_not_eof(ch);
+  assert_octal(ch);
+
+  return ch - '0';
+}
+
+
+int
+cnv_decimal(char ch)
+{
+  assert_not_eof(ch);
+  assert_decimal(ch);
+
+  return ch - '0';
+}
+
+
+int
+cnv_hex(char ch)
+{
+  assert_not_eof(ch);
+  assert_hex(ch);
+
+  if (ch >= 'a' && ch <= 'f')
+    return ch - 'a' + 10;
+
+  if (ch >= 'A' && ch <= 'F')
+    return ch - 'A' + 10;
+
+  return ch - '0';
 }
 
 
@@ -262,7 +298,7 @@ get_escape_seq()
   switch (ch)
   {
   case 'x':
-    return get_hex_num() * 16 + get_hex_num();
+    return cnv_hex(next_char()) * 16 + cnv_hex(next_char());
   case 'a':
     return 7;
   case 'b':
@@ -282,45 +318,6 @@ get_escape_seq()
   default:
     return ch;
   }
-}
-
-
-int
-get_octal_num()
-{
-  char ch = next_char();
-  assert_not_eof(ch);
-  assert_octal(ch);
-  
-  return ch - '0';
-}
-
-
-int
-get_decimal_num()
-{
-  char ch = next_char();
-  assert_not_eof(ch);
-  assert_decimal(ch);
-  
-  return ch - '0';
-}
-
-
-int
-get_hex_num()
-{
-  char ch = next_char();
-  assert_not_eof(ch);
-  assert_hex(ch);
-  
-  if (ch >= 'a' && ch <= 'f')
-    return ch - 'a';
-
-  if (ch >= 'A' && ch <= 'F')
-    return ch - 'A';
-
-  return ch - '0';
 }
 
 
