@@ -17,9 +17,7 @@ struct node *start_tk = NULL, *current_tk = NULL;
 int current_line = 1;
 int current_ch = 0;
 
-char cstr_buff[MAX_CSTR_LENGTH];
-char cint_buff[MAX_INT_LENGTH];
-char cident_buff[MAX_IDENT_LENGTH];
+char buff_tmp[MAX_CSTR_LENGTH];
 
 
 
@@ -110,13 +108,13 @@ int
 get_octal()
 {
   long i = 0;
-  char *buffer = cint_buff;
+  char *buffer = buff_tmp;
 
   get_numstr(check_octal);
   i = get_numval(8, cnv_octal);
 
   printf("int: %d(0o%o)\n", i, i);
-  return 0;
+  return TK_CINT;
 }
 
 
@@ -124,13 +122,13 @@ int
 get_decimal()
 {
   long i = 0;
-  char *buffer = cint_buff;
+  char *buffer = buff_tmp;
 
   get_numstr(check_decimal);
   i = get_numval(10, cnv_decimal);
 
   printf("int: %d\n", i);
-  return 0;
+  return TK_CINT;
 }
 
 
@@ -138,20 +136,20 @@ int
 get_hex()
 {
   long i = 0;
-  char *buffer = cint_buff;
+  char *buffer = buff_tmp;
 
   get_numstr(check_hex);
   i = get_numval(16, cnv_hex);
 
   printf("int: %d(0X%X)\n", i, i);
-  return 0;
+  return TK_CINT;
 }
 
 
 int
 get_numstr(int chkfn(char))
 {
-  char *buffer = cint_buff;
+  char *buffer = buff_tmp;
   int cnt = 1;
 
   *buffer++ = current_ch;
@@ -164,7 +162,7 @@ get_numstr(int chkfn(char))
 
   *buffer = '\0';
 
-  printf("int str: %s\n", cint_buff);
+  printf("int str: %s\n", buff_tmp);
 
   return 0;
 }
@@ -174,7 +172,7 @@ int
 get_numval(int base, int cnvfn(char))
 {
   long i = 0, j, k;
-  char *buffer = cint_buff;
+  char *buffer = buff_tmp;
   char *cmpstr =
     base == 8 ? MAX_OCTAL_STRING :
       base == 10 ? MAX_DECIMAL_STRING : MAX_HEX_STRING;
@@ -230,7 +228,7 @@ cnv_hex(char ch)
 int
 get_identity()
 {
-  char *buffer = cident_buff;
+  char *buffer = buff_tmp;
   int cnt = 1;
 
   *buffer++ = current_ch;
@@ -243,30 +241,48 @@ get_identity()
 
   *buffer = '\0';
 
-  printf("identity: %s\n", cident_buff);
+  printf("identity: %s\n", buff_tmp);
 
-  return 0;
+  return TK_IDENT;
 }
 
 
 int
 get_string()
 {
-  char *buffer = cstr_buff;
+  char *buffer = buff_tmp;
   int cnt = 0;
+  char ch;
 
-  while (cnt++ < MAX_CSTR_LENGTH-1 && !check_string_end(next_char()))
-    *buffer++ = current_ch;
+  while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
+    *buffer++ = ch;
 
   if (cnt == MAX_CSTR_LENGTH-1)
     exit_with_info("[%d][LEXER]String too long\n", current_line);
 
   *buffer = '\0';
 
-  printf("string: %s\n", cstr_buff);
+  printf("string: %s\n", buff_tmp);
 
   next_char();
-  return 0;
+  return TK_CSTR;
+}
+
+
+int
+get_strchar(char *ch)
+{
+  char c = next_char();
+  assert_not_eof(c);
+  assert_not_ch(c, '\n');
+  if (c == '"')
+    return 0;
+
+  if (c == '\\')
+    c = get_escape_seq();
+
+  *ch = c;
+  return 1;
 }
 
 
@@ -285,7 +301,7 @@ get_character()
   printf("character: %02X\n", ch);
 
   next_char();
-  return ch;
+  return TK_CCHAR;
 }
 
 
