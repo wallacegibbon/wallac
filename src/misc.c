@@ -15,7 +15,7 @@ handle_outfile_argument(char **argv, char **end)
     exit_with_info("\"-o\" should follow output filename\n");
 
   if (!IS_VALID_FILENAME(*argv))
-    exit_with_info("output filename invalid\n");
+    exit_with_info("output filename invalid:\"%s\"\n", *argv);
 
   strcpy(filename_out, *argv);
   return walk_arguments(argv + 1, end);
@@ -26,7 +26,7 @@ int
 handle_infile_argument(char **argv, char **end)
 {
   if (!IS_VALID_FILENAME(*argv))
-    exit_with_info("input filename invalid\n");
+    exit_with_info("input filename invalid: \"%s\"\n", *argv);
 
   strcpy(filename, *argv);
   return walk_arguments(argv + 1, end);
