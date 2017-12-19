@@ -67,7 +67,11 @@ void
 init_outputname(char *outname, char *inname)
 {
   strcpy(outname, inname);
-  while (*outname++ != '.');
-  *outname = 's';
+  while (*outname != '.' && *outname != '\0')
+    outname++;
+
+  *outname++ = '.';
+  *outname++ = 's';
+  *outname = '\0';
 }
 

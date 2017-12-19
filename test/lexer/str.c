@@ -2,4 +2,6 @@
 "abcd\x65"
 "abc\n\a"
 "abcd\x667"
-
+"abcd\1456"
+"abcd\14a6"
+"abcd\1ab6"
