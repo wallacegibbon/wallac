@@ -9,11 +9,12 @@
 #include "limits.h"
 #include "vars.h"
 #include "token.h"
+#include "lexer.h"
 
 
 #define UPPER(ch) ((ch) & ~(1 << 5))
 
-struct node *start_tk = NULL, *current_tk = NULL;
+struct token *start_tk = NULL, *current_tk = NULL;
 int current_line = 1;
 int current_ch = 0;
 
@@ -21,38 +22,37 @@ char buff_tmp[MAX_CSTR_LENGTH];
 
 
 
-int get_token();
-
-int get_integer();
-int get_octal();
-int get_decimal();
-int get_hex();
-int get_numstr(int chkfn(char));
-int get_numval(int base, int cnvfn(char));
-int cnv_digit(char ch);
-int cnv_hexdigit(char ch);
-int get_character();
-int get_string();
-int get_strchar(char *ch);
-int get_identifier();
-int get_escape_seq();
-int get_hexnum();
-int next_char();
-
-
 int
 tokenize()
 {
-  start_tk = malloc(sizeof(struct node));
+  struct token *p;
+  start_tk = malloc(sizeof(struct token));
   if (!start_tk)
     exit_with_info("Failed alloc memory for start_tk\n");
 
+  start_tk->type = 0;
+  start_tk->l = NULL;
+  start_tk->r = NULL;
   current_tk = start_tk;
 
   next_char();
   while (get_token() != TK_EOF);
 
+  p = start_tk->r;
+
+  while (p)
+    print_token(slide_tk(&p));
+
   return 0;
+}
+
+
+struct token *
+slide_tk(struct token **p)
+{
+  struct token *t = *p;
+  *p = (*p)->r;
+  return t;
 }
 
 
@@ -77,7 +77,8 @@ get_token()
   if (current_ch == '\'')
     return get_character();
 
-  exit_with_info("**Unknown char: %02X\n", current_ch);
+  exit_with_info("[%d][LEXER]Unknown char: %02X\n",
+      current_line, current_ch);
 
   return 0;
 }
@@ -110,7 +111,9 @@ get_octal()
   get_numstr(check_octal);
   i = get_numval(8, cnv_digit);
 
-  printf("int: %d(0o%o)\n", i, i);
+  join_token(TK_CINT, (void *)i);
+
+  //printf("int: %d(0o%o)\n", i, i);
   return TK_CINT;
 }
 
@@ -123,7 +126,9 @@ get_decimal()
   get_numstr(check_decimal);
   i = get_numval(10, cnv_digit);
 
-  printf("int: %d\n", i);
+  join_token(TK_CINT, (void *)i);
+
+  //printf("int: %d\n", i);
   return TK_CINT;
 }
 
@@ -136,7 +141,9 @@ get_hex()
   get_numstr(check_hex);
   i = get_numval(16, cnv_hexdigit);
 
-  printf("int: %d(0X%X)\n", i, i);
+  join_token(TK_CINT, (void *)i);
+
+  //printf("int: %d(0X%X)\n", i, i);
   return TK_CINT;
 }
 
@@ -157,7 +164,7 @@ get_numstr(int chkfn(char))
 
   *buffer = '\0';
 
-  printf("int str: %s\n", buff_tmp);
+  //printf("int str: %s\n", buff_tmp);
 
   return 0;
 }
@@ -208,6 +215,7 @@ int
 get_identifier()
 {
   char *buffer = buff_tmp;
+  char *p;
   int cnt = 1;
 
   *buffer++ = current_ch;
@@ -220,7 +228,12 @@ get_identifier()
 
   *buffer = '\0';
 
-  printf("identifier: %s\n", buff_tmp);
+  p = malloc(strlen(buff_tmp) + 1);
+  strcpy(p, buff_tmp);
+
+  join_token(TK_IDENT, p);
+
+  //printf("identifier: %s\n", buff_tmp);
 
   return TK_IDENT;
 }
@@ -230,6 +243,7 @@ int
 get_string()
 {
   char *buffer = buff_tmp;
+  char *p;
   int cnt = 0;
   char ch;
 
@@ -241,7 +255,12 @@ get_string()
 
   *buffer = '\0';
 
-  printf("string: %s\n", buff_tmp);
+  p = malloc(strlen(buff_tmp) + 1);
+  strcpy(p, buff_tmp);
+
+  join_token(TK_CSTR, p);
+
+  //printf("string: %s\n", buff_tmp);
 
   next_char();
   return TK_CSTR;
@@ -277,7 +296,9 @@ get_character()
 
   assert_ch(next_char(), '\'');
 
-  printf("character: %02X\n", ch);
+  join_token(TK_CCHAR, (void *) ch);
+
+  //printf("character: %02X\n", ch);
 
   next_char();
   return TK_CCHAR;
@@ -336,6 +357,29 @@ next_char()
     current_line++;
 
   return current_ch;
+}
+
+
+void
+join_token(short type, void *p)
+{
+  struct token *t = new_token(type, p);
+  t->l = current_tk;
+  t->r = NULL;
+  current_tk->r = t;
+  current_tk = t;
+}
+
+
+void
+print_token(struct token *t)
+{
+  if (t->type == TK_CSTR)
+    printf("\"%s\"\n", t->value);
+  else if (t->type == TK_IDENT)
+    printf("<%s>\n", t->value);
+  else
+    printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
 }
 
 

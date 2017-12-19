@@ -2,7 +2,11 @@
 #define __TOKEN_H__
 
 
-struct node { struct node *l, *r; short type; void *value; };
+struct token { struct token *l, *r; short type; void *value; };
+
+
+struct token *
+new_token(short type, void *value);
 
 
 #define TK_ASTERISK 10101

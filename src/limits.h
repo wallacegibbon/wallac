@@ -10,7 +10,7 @@
 #define MAX_HEX_STRING "ffffffff"
 
 #define MAX_FILENAME_SIZE 60
-#define IS_VALID_FILENAME(f) (strlen(f) < MAX_FILENAME_SIZE-2)
+#define IS_VALID_FILENAME(f) (strlen(f) < MAX_FILENAME_SIZE-3)
 
 #define CHAR_BIT 8
 #define CHAR_MIN -127

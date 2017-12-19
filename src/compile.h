@@ -2,7 +2,8 @@
 #define __COMPILE_H__
 
 
-int compile();
+int
+compile();
 
 
 #endif
