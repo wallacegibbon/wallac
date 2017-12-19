@@ -1,8 +1,8 @@
 #ifndef __CHECHCH_H__
 #define __CHECHCH_H__
 
-int check_identity(char ch);
-int check_identity_start(char ch);
+int check_identifier(char ch);
+int check_identifier_start(char ch);
 int check_string_end(char ch);
 
 int check_alpha(char ch);

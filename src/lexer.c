@@ -34,7 +34,7 @@ int cnv_hexdigit(char ch);
 int get_character();
 int get_string();
 int get_strchar(char *ch);
-int get_identity();
+int get_identifier();
 int get_escape_seq();
 int get_hexnum();
 int next_char();
@@ -65,8 +65,8 @@ get_token()
   if (current_ch == EOF)
     return TK_EOF;
 
-  if (check_identity_start(current_ch))
-    return get_identity();
+  if (check_identifier_start(current_ch))
+    return get_identifier();
 
   if (check_decimal(current_ch))
     return get_integer();
@@ -208,22 +208,22 @@ cnv_digit(char ch)
 
 
 int
-get_identity()
+get_identifier()
 {
   char *buffer = buff_tmp;
   int cnt = 1;
 
   *buffer++ = current_ch;
 
-  while (cnt++ < MAX_IDENT_LENGTH-1 && check_identity(next_char()))
+  while (cnt++ < MAX_IDENT_LENGTH-1 && check_identifier(next_char()))
     *buffer++ = current_ch;
 
   if (cnt == MAX_IDENT_LENGTH)
-    exit_with_info("[%d][LEXER]Identity too long\n", current_line);
+    exit_with_info("[%d][LEXER]Identifier too long\n", current_line);
 
   *buffer = '\0';
 
-  printf("identity: %s\n", buff_tmp);
+  printf("identifier: %s\n", buff_tmp);
 
   return TK_IDENT;
 }

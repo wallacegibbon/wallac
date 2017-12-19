@@ -3,7 +3,7 @@
 
 
 int
-check_identity(char ch)
+check_identifier(char ch)
 {
   assert_not_eof(ch);
   return check_alpha(ch) || check_decimal(ch) || ch == '_';
@@ -11,7 +11,7 @@ check_identity(char ch)
 
 
 int
-check_identity_start(char ch)
+check_identifier_start(char ch)
 {
   assert_not_eof(ch);
   return check_alpha(ch) || ch == '_';
