@@ -106,7 +106,6 @@ int
 get_octal()
 {
   long i = 0;
-  char *buffer = buff_tmp;
 
   get_numstr(check_octal);
   i = get_numval(8, cnv_digit);
@@ -120,7 +119,6 @@ int
 get_decimal()
 {
   long i = 0;
-  char *buffer = buff_tmp;
 
   get_numstr(check_decimal);
   i = get_numval(10, cnv_digit);
@@ -134,7 +132,6 @@ int
 get_hex()
 {
   long i = 0;
-  char *buffer = buff_tmp;
 
   get_numstr(check_hex);
   i = get_numval(16, cnv_hexdigit);
