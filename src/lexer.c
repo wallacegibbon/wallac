@@ -29,14 +29,14 @@ int get_decimal();
 int get_hex();
 int get_numstr(int chkfn(char));
 int get_numval(int base, int cnvfn(char));
-int cnv_octal(char ch);
-int cnv_decimal(char ch);
-int cnv_hex(char ch);
+int cnv_digit(char ch);
+int cnv_hexdigit(char ch);
 int get_character();
 int get_string();
 int get_strchar(char *ch);
 int get_identity();
 int get_escape_seq();
+int get_hexnum();
 int next_char();
 
 
@@ -109,7 +109,7 @@ get_octal()
   char *buffer = buff_tmp;
 
   get_numstr(check_octal);
-  i = get_numval(8, cnv_octal);
+  i = get_numval(8, cnv_digit);
 
   printf("int: %d(0o%o)\n", i, i);
   return TK_CINT;
@@ -123,7 +123,7 @@ get_decimal()
   char *buffer = buff_tmp;
 
   get_numstr(check_decimal);
-  i = get_numval(10, cnv_decimal);
+  i = get_numval(10, cnv_digit);
 
   printf("int: %d\n", i);
   return TK_CINT;
@@ -137,7 +137,7 @@ get_hex()
   char *buffer = buff_tmp;
 
   get_numstr(check_hex);
-  i = get_numval(16, cnv_hex);
+  i = get_numval(16, cnv_hexdigit);
 
   printf("int: %d(0X%X)\n", i, i);
   return TK_CINT;
@@ -188,37 +188,21 @@ get_numval(int base, int cnvfn(char))
 
 
 int
-cnv_octal(char ch)
+cnv_hexdigit(char ch)
 {
-  assert_not_eof(ch);
-  assert_octal(ch);
-
-  return ch - '0';
-}
-
-
-int
-cnv_decimal(char ch)
-{
-  assert_not_eof(ch);
-  assert_decimal(ch);
-
-  return ch - '0';
-}
-
-
-int
-cnv_hex(char ch)
-{
-  assert_not_eof(ch);
-  assert_hex(ch);
-
   if (ch >= 'a' && ch <= 'f')
     return ch - 'a' + 10;
 
   if (ch >= 'A' && ch <= 'F')
     return ch - 'A' + 10;
 
+  return ch - '0';
+}
+
+
+int
+cnv_digit(char ch)
+{
   return ch - '0';
 }
 
@@ -311,7 +295,7 @@ get_escape_seq()
   switch (ch)
   {
   case 'x':
-    return cnv_hex(next_char()) * 16 + cnv_hex(next_char());
+    return get_hexnum() * 16 + get_hexnum();
   case 'a':
     return 7;
   case 'b':
@@ -331,6 +315,16 @@ get_escape_seq()
   default:
     return ch;
   }
+}
+
+
+int
+get_hexnum()
+{
+  char ch = next_char();
+  assert_not_eof(ch);
+  assert_hex(ch);
+  return cnv_hexdigit(ch);
 }
 
 

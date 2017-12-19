@@ -36,7 +36,7 @@ int
 assert_octal(char ch)
 {
   if (!check_decimal(ch))
-    exit_with_info("[%d][LEXER]Expect octal\n", current_line);
+    exit_with_info("[%d][LEXER]Expect octal char\n", current_line);
   return ch;
 }
 
@@ -45,7 +45,7 @@ int
 assert_decimal(char ch)
 {
   if (!check_decimal(ch))
-    exit_with_info("[%d][LEXER]Expect decimal\n", current_line);
+    exit_with_info("[%d][LEXER]Expect decimal char\n", current_line);
   return ch;
 }
 
@@ -54,7 +54,7 @@ int
 assert_hex(char ch)
 {
   if (!check_hex(ch))
-    exit_with_info("[%d][LEXER]Expect hex\n", current_line);
+    exit_with_info("[%d][LEXER]Expect hex char\n", current_line);
   return ch;
 }
 
