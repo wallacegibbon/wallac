@@ -1,4 +1,4 @@
-tmp/
+out/
 *.elf
 *.o
 *.s

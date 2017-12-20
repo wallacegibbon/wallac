@@ -1,4 +1,4 @@
-OUTDIR=./tmp
+OUTDIR=./out
 TARGET=wallac
 CC=gcc
 CFLAGS=-w

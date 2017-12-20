@@ -4,9 +4,6 @@
 
 #define UPPER(ch) ((ch) & ~(1 << 5))
 
-int
-walk_arguments(char **argv, char **end);
-
 void
 init_outputname(char *outname, char *inname);
 
