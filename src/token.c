@@ -69,10 +69,10 @@ void
 print_token(struct token *t)
 {
   printf("[%s]", token_type_str(t->type));
-  if (t->type == TK_CSTR || t->type == TK_IDENT)
-    printf("\"%s\"\n", t->value);
-  else
+  if (t->type != TK_CSTR && t->type != TK_IDENT)
     printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
+  else
+    printf("<%s>\n", t->value);
 }
 
 
@@ -159,6 +159,8 @@ token_type_str(short type)
     return "TK_IDENT";
   case TK_EOF:
     return "TK_EOF";
+  default:
+    return "TK_UNKNOWN";
   }
 }
 
