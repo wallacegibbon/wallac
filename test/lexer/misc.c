@@ -3,7 +3,7 @@ struct person { char *name; short age; int gender; long blah; };
 int test(int argc, char **argv, ...)
 {
   char c1 = 'c', c2 = '\x65';
-  char *s = "abcdefg\\hijklmn";
+  char *s = "abcdefg\\hijklmn", *t = "";
   int i = 123;
 
   printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);

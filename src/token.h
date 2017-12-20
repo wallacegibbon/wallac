@@ -5,20 +5,26 @@
 struct token { struct token *l, *r; short type; void *value; };
 
 
+void
+initialize_token_list();
+
 struct token *
 new_token(short type, void *value);
 
 void
 join_token(short type, void *p);
 
+void
+print_token_list();
+
 struct token *
 slide_tk(struct token **p);
 
 void
-print_token_list();
-
-void
 print_token(struct token *t);
+
+char *
+token_type_str(short type);
 
 
 #define TK_ASTERISK 10101

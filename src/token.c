@@ -20,17 +20,6 @@ initialize_token_list()
 }
 
 
-void
-join_token(short type, void *p)
-{
-  struct token *t = new_token(type, p);
-  t->l = current_tk;
-  t->r = NULL;
-  current_tk->r = t;
-  current_tk = t;
-}
-
-
 struct token *
 new_token(short type, void *value)
 {
@@ -46,6 +35,17 @@ new_token(short type, void *value)
 
 
 void
+join_token(short type, void *p)
+{
+  struct token *t = new_token(type, p);
+  t->l = current_tk;
+  t->r = NULL;
+  current_tk->r = t;
+  current_tk = t;
+}
+
+
+void
 print_token_list()
 {
   struct token *p;
@@ -56,152 +56,110 @@ print_token_list()
 }
 
 
-void
-print_token_type(short type)
-{
-  switch (type)
-  {
-  case TK_ASTERISK:
-    printf("[TK_ASTERISK]");
-    break;
-  case TK_DPLUS:
-    printf("[TK_DPLUS]");
-    break;
-  case TK_PLUS:
-    printf("[TK_PLUS]");
-    break;
-  case TK_DMINUS:
-    printf("[TK_DMINUS]");
-    break;
-  case TK_MINUS:
-    printf("[TK_MINUS]");
-    break;
-  case TK_POINTSTO:
-    printf("[TK_POINTSTO]");
-    break;
-  case TK_DIVIDE:
-    printf("[TK_DIVIDE]");
-    break;
-  case TK_MOD:
-    printf("[TK_MOD]");
-    break;
-  case TK_ASSIGN:
-    printf("[TK_ASSIGN]");
-    break;
-  case TK_EQ:
-    printf("[TK_EQ]");
-    break;
-  case TK_EXCLAMATION:
-    printf("[TK_EXCLAMATION]");
-    break;
-  case TK_NEQ:
-    printf("[TK_NEQ]");
-    break;
-  case TK_LT:
-    printf("[TK_LT]");
-    break;
-  case TK_LEQ:
-    printf("[TK_LEQ]");
-    break;
-  case TK_GT:
-    printf("[TK_GT]");
-    break;
-  case TK_GEQ:
-    printf("[TK_GEQ]");
-    break;
-  case TK_DOT:
-    printf("[TK_DOT]");
-    break;
-  case TK_ELLIPSIS:
-    printf("[TK_ELLIPSIS]");
-    break;
-  case TK_TILDE:
-    printf("[TK_TILDE]");
-    break;
-  case TK_CARET:
-    printf("[TK_CARET]");
-    break;
-  case TK_AND:
-    printf("[TK_AND]");
-    break;
-  case TK_OR:
-    printf("[TK_OR]");
-    break;
-  case TK_DAND:
-    printf("[TK_DAND]");
-    break;
-  case TK_DOR:
-    printf("[TK_DOR]");
-    break;
-  case TK_OPENPA:
-    printf("[TK_OPENPA]");
-    break;
-  case TK_CLOSEPA:
-    printf("[TK_CLOSEPA]");
-    break;
-  case TK_OPENBR:
-    printf("[TK_OPENBR]");
-    break;
-  case TK_CLOSEBR:
-    printf("[TK_CLOSEBR]");
-    break;
-  case TK_BEGIN:
-    printf("[TK_BEGIN]");
-    break;
-  case TK_END:
-    printf("[TK_END]");
-    break;
-  case TK_QUESTION:
-    printf("[TK_QUESTION]");
-    break;
-  case TK_COLON:
-    printf("[TK_COLON]");
-    break;
-  case TK_SEMICOLON:
-    printf("[TK_SEMICOLON]");
-    break;
-  case TK_COMMA:
-    printf("[TK_COMMA]");
-    break;
-  case TK_CINT:
-    printf("[TK_CINT]");
-    break;
-  case TK_CCHAR:
-    printf("[TK_CCHAR]");
-    break;
-  case TK_CSTR:
-    printf("[TK_CSTR]");
-    break;
-  case TK_IDENT:
-    printf("[TK_IDENT]");
-    break;
-  case TK_EOF:
-    printf("[TK_EOF]");
-    break;
-  }
-}
-
-
-void
-print_token(struct token *t)
-{
-  print_token_type(t->type);
-  //printf("[%d]", t->type);
-  if (t->type == TK_CSTR)
-    printf("\"%s\"\n", t->value);
-  else if (t->type == TK_IDENT)
-    printf("<%s>\n", t->value);
-  else
-    printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
-}
-
-
 struct token *
 slide_tk(struct token **p)
 {
   struct token *t = *p;
   *p = (*p)->r;
   return t;
+}
+
+
+void
+print_token(struct token *t)
+{
+  printf("[%s]", token_type_str(t->type));
+  if (t->type == TK_CSTR || t->type == TK_IDENT)
+    printf("\"%s\"\n", t->value);
+  else
+    printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
+}
+
+
+char *
+token_type_str(short type)
+{
+  switch (type)
+  {
+  case TK_ASTERISK:
+    return "TK_ASTERISK";
+  case TK_DPLUS:
+    return "TK_DPLUS";
+  case TK_PLUS:
+    return "TK_PLUS";
+  case TK_DMINUS:
+    return "TK_DMINUS";
+  case TK_MINUS:
+    return "TK_MINUS";
+  case TK_POINTSTO:
+    return "TK_POINTSTO";
+  case TK_DIVIDE:
+    return "TK_DIVIDE";
+  case TK_MOD:
+    return "TK_MOD";
+  case TK_ASSIGN:
+    return "TK_ASSIGN";
+  case TK_EQ:
+    return "TK_EQ";
+  case TK_EXCLAMATION:
+    return "TK_EXCLAMATION";
+  case TK_NEQ:
+    return "TK_NEQ";
+  case TK_LT:
+    return "TK_LT";
+  case TK_LEQ:
+    return "TK_LEQ";
+  case TK_GT:
+    return "TK_GT";
+  case TK_GEQ:
+    return "TK_GEQ";
+  case TK_DOT:
+    return "TK_DOT";
+  case TK_ELLIPSIS:
+    return "TK_ELLIPSIS";
+  case TK_TILDE:
+    return "TK_TILDE";
+  case TK_CARET:
+    return "TK_CARET";
+  case TK_AND:
+    return "TK_AND";
+  case TK_OR:
+    return "TK_OR";
+  case TK_DAND:
+    return "TK_DAND";
+  case TK_DOR:
+    return "TK_DOR";
+  case TK_OPENPA:
+    return "TK_OPENPA";
+  case TK_CLOSEPA:
+    return "TK_CLOSEPA";
+  case TK_OPENBR:
+    return "TK_OPENBR";
+  case TK_CLOSEBR:
+    return "TK_CLOSEBR";
+  case TK_BEGIN:
+    return "TK_BEGIN";
+  case TK_END:
+    return "TK_END";
+  case TK_QUESTION:
+    return "TK_QUESTION";
+  case TK_COLON:
+    return "TK_COLON";
+  case TK_SEMICOLON:
+    return "TK_SEMICOLON";
+  case TK_COMMA:
+    return "TK_COMMA";
+  case TK_CINT:
+    return "TK_CINT";
+  case TK_CCHAR:
+    return "TK_CCHAR";
+  case TK_CSTR:
+    return "TK_CSTR";
+  case TK_IDENT:
+    return "TK_IDENT";
+  case TK_EOF:
+    return "TK_EOF";
+  }
 }
 
 
