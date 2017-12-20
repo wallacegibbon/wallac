@@ -8,9 +8,20 @@ struct token { struct token *l, *r; short type; void *value; };
 struct token *
 new_token(short type, void *value);
 
+void
+join_token(short type, void *p);
+
+struct token *
+slide_tk(struct token **p);
+
+void
+print_token_list();
+
+void
+print_token(struct token *t);
+
 
 #define TK_ASTERISK 10101
-#define TK_AMPERSAND 10102
 
 #define TK_DPLUS 10201
 #define TK_PLUS 10202

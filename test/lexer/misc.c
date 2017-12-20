@@ -1,12 +1,12 @@
-struct person { char *name; int age; char gender };
+struct person { char *name; short age; int gender; long blah; };
 
 int test(int argc, char **argv, ...)
 {
-  float f1 = 3.1415926, f2 = .15;
-  int i = 123;
   char c1 = 'c', c2 = '\x65';
   char *s = "abcdefg\\hijklmn";
-  printf("\"f\" is %f, and \"i\" is %d\n", f, i);
+  int i = 123;
+
+  printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);
   //char *s = "abcdefghijklmn";
   /*
   char *s = "abcdefghijklmn

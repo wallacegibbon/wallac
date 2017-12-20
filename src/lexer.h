@@ -5,22 +5,19 @@
 #include "token.h"
 
 int
+next_char();
+
+int
 tokenize();
 
 int
 get_token();
 
-struct token *
-slide_tk(struct token **p);
-
-void
-join_token(short type, void *p);
-
-void
-print_token(struct token *t);
-
 int
 get_integer();
+
+int
+get_zero();
 
 int
 get_octal();
@@ -40,7 +37,7 @@ get_string();
 int
 get_identifier();
 
-int
+void
 get_numstr(int chkfn(char));
 
 int
@@ -62,7 +59,37 @@ int
 get_hexnum();
 
 int
-next_char();
+get_plus_dplus();
+
+int
+get_minus_dminus_pointsto();
+
+int
+get_dot_ellipsis();
+
+int
+get_and_dand();
+
+int
+get_or_dor();
+
+int
+get_assign_eq();
+
+int
+get_gt_geq();
+
+int
+get_lt_leq();
+
+int
+get_exclamation_neq();
+
+int
+get_single(short type);
+
+int
+get_divide_or_jump_comments();
 
 
 #endif

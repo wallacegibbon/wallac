@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
 
 #include "assertch.h"
@@ -12,47 +11,35 @@
 #include "lexer.h"
 
 
-#define UPPER(ch) ((ch) & ~(1 << 5))
-
-struct token *start_tk = NULL, *current_tk = NULL;
 int current_line = 1;
 int current_ch = 0;
 
 char buff_tmp[MAX_CSTR_LENGTH];
 
 
+int
+next_char()
+{
+  current_ch = fgetc(fp_in);
+  if (current_ch == EOF && ferror(fp_in))
+    exit_with_info("Failed reading input file, %d\n", errno);
+
+  if (current_ch == '\n')
+    current_line++;
+
+  return current_ch;
+}
+
 
 int
 tokenize()
 {
-  struct token *p;
-  start_tk = malloc(sizeof(struct token));
-  if (!start_tk)
-    exit_with_info("Failed alloc memory for start_tk\n");
-
-  start_tk->type = 0;
-  start_tk->l = NULL;
-  start_tk->r = NULL;
-  current_tk = start_tk;
+  initialize_token_list();
 
   next_char();
-  while (get_token() != TK_EOF);
-
-  p = start_tk->r;
-
-  while (p)
-    print_token(slide_tk(&p));
+  while (get_token());
 
   return 0;
-}
-
-
-struct token *
-slide_tk(struct token **p)
-{
-  struct token *t = *p;
-  *p = (*p)->r;
-  return t;
 }
 
 
@@ -63,7 +50,7 @@ get_token()
     next_char();
 
   if (current_ch == EOF)
-    return TK_EOF;
+    return 0;
 
   if (check_identifier_start(current_ch))
     return get_identifier();
@@ -77,10 +64,82 @@ get_token()
   if (current_ch == '\'')
     return get_character();
 
+  if (current_ch == '+')
+    return get_plus_dplus();
+
+  if (current_ch == '-')
+    return get_minus_dminus_pointsto();
+
+  if (current_ch == '.')
+    return get_dot_ellipsis();
+
+  if (current_ch == '&')
+    return get_and_dand();
+
+  if (current_ch == '|')
+    return get_or_dor();
+
+  if (current_ch == '=')
+    return get_assign_eq();
+
+  if (current_ch == '>')
+    return get_gt_geq();
+
+  if (current_ch == '<')
+    return get_lt_leq();
+
+  if (current_ch == '!')
+    return get_exclamation_neq();
+
+  if (current_ch == '/')
+    return get_divide_or_jump_comments();
+
+  if (current_ch == ';')
+    return get_single(TK_SEMICOLON);
+
+  if (current_ch == ':')
+    return get_single(TK_COLON);
+
+  if (current_ch == ',')
+    return get_single(TK_COMMA);
+
+  if (current_ch == '?')
+    return get_single(TK_QUESTION);
+
+  if (current_ch == '^')
+    return get_single(TK_CARET);
+
+  if (current_ch == '~')
+    return get_single(TK_TILDE);
+
+  if (current_ch == '*')
+    return get_single(TK_ASTERISK);
+
+  if (current_ch == '%')
+    return get_single(TK_MOD);
+
+  if (current_ch == '{')
+    return get_single(TK_BEGIN);
+
+  if (current_ch == '}')
+    return get_single(TK_END);
+
+  if (current_ch == '[')
+    return get_single(TK_OPENBR);
+
+  if (current_ch == ']')
+    return get_single(TK_CLOSEBR);
+
+  if (current_ch == '(')
+    return get_single(TK_OPENPA);
+
+  if (current_ch == ')')
+    return get_single(TK_CLOSEPA);
+
   exit_with_info("[%d][LEXER]Unknown char: %02X\n",
       current_line, current_ch);
 
-  return 0;
+  return 1;
 }
 
 
@@ -93,13 +152,25 @@ get_integer()
     return get_decimal();
 
   ch = next_char();
+
   if (check_octal(ch))
     return get_octal();
+
+  if (!check_decimal(ch))
+    return get_zero();
 
   assert_ch(UPPER(ch), 'X');
   next_char();
 
   return get_hex();
+}
+
+
+int
+get_zero()
+{
+  join_token(TK_CINT, (void *) 0);
+  return 1;
 }
 
 
@@ -112,9 +183,7 @@ get_octal()
   i = get_numval(8, cnv_digit);
 
   join_token(TK_CINT, (void *)i);
-
-  //printf("int: %d(0o%o)\n", i, i);
-  return TK_CINT;
+  return 1;
 }
 
 
@@ -127,9 +196,7 @@ get_decimal()
   i = get_numval(10, cnv_digit);
 
   join_token(TK_CINT, (void *)i);
-
-  //printf("int: %d\n", i);
-  return TK_CINT;
+  return 1;
 }
 
 
@@ -142,13 +209,11 @@ get_hex()
   i = get_numval(16, cnv_hexdigit);
 
   join_token(TK_CINT, (void *)i);
-
-  //printf("int: %d(0X%X)\n", i, i);
-  return TK_CINT;
+  return 1;
 }
 
 
-int
+void
 get_numstr(int chkfn(char))
 {
   char *buffer = buff_tmp;
@@ -163,10 +228,6 @@ get_numstr(int chkfn(char))
     exit_with_info("[%d][LEXER]Number too long\n", current_line);
 
   *buffer = '\0';
-
-  //printf("int str: %s\n", buff_tmp);
-
-  return 0;
 }
 
 
@@ -232,10 +293,7 @@ get_identifier()
   strcpy(p, buff_tmp);
 
   join_token(TK_IDENT, p);
-
-  //printf("identifier: %s\n", buff_tmp);
-
-  return TK_IDENT;
+  return 1;
 }
 
 
@@ -260,10 +318,8 @@ get_string()
 
   join_token(TK_CSTR, p);
 
-  //printf("string: %s\n", buff_tmp);
-
   next_char();
-  return TK_CSTR;
+  return 1;
 }
 
 
@@ -298,10 +354,8 @@ get_character()
 
   join_token(TK_CCHAR, (void *) ch);
 
-  //printf("character: %02X\n", ch);
-
   next_char();
-  return TK_CCHAR;
+  return 1;
 }
 
 
@@ -347,39 +401,164 @@ get_hexnum()
 
 
 int
-next_char()
+get_plus_dplus()
 {
-  current_ch = fgetc(fp_in);
-  if (current_ch == EOF && ferror(fp_in))
-    exit_with_info("Failed reading input file, %d\n", errno);
+  next_char();
+  if (current_ch == '+')
+    return get_single(TK_DPLUS);
 
-  if (current_ch == '\n')
-    current_line++;
-
-  return current_ch;
+  join_token(TK_PLUS, NULL);
+  return 1;
 }
 
 
-void
-join_token(short type, void *p)
+int
+get_minus_dminus_pointsto()
 {
-  struct token *t = new_token(type, p);
-  t->l = current_tk;
-  t->r = NULL;
-  current_tk->r = t;
-  current_tk = t;
+  next_char();
+  if (current_ch == '-')
+    return get_single(TK_DMINUS);
+
+  if (current_ch == '>')
+    return get_single(TK_POINTSTO);
+
+  join_token(TK_MINUS, NULL);
+  return 1;
 }
 
 
-void
-print_token(struct token *t)
+int
+get_ellipsis()
 {
-  if (t->type == TK_CSTR)
-    printf("\"%s\"\n", t->value);
-  else if (t->type == TK_IDENT)
-    printf("<%s>\n", t->value);
+  if (next_char() != '.')
+    exit_with_info("[%d][LEXER]Unsupported element \"..\"\n", current_line);
+
+  join_token(TK_ELLIPSIS, NULL);
+  next_char();
+  return 1;
+}
+
+
+int
+get_dot_ellipsis()
+{
+  if (next_char() == '.')
+    return get_ellipsis();
+
+  join_token(TK_DOT, NULL);
+  return 1;
+}
+
+
+int
+get_and_dand()
+{
+  if (next_char() == '&')
+    return get_single(TK_DAND);
+
+  join_token(TK_AND, NULL);
+  return 1;
+}
+
+
+int
+get_or_dor()
+{
+  if (next_char() == '|')
+    return get_single(TK_DOR);
+
+  join_token(TK_DOR, NULL);
+  return 1;
+}
+
+
+int
+get_assign_eq()
+{
+  if (next_char() == '=')
+    return get_single(TK_EQ);
+
+  join_token(TK_ASSIGN, NULL);
+  return 1;
+}
+
+
+int
+get_gt_geq()
+{
+  if (next_char() == '=')
+    return get_single(TK_GEQ);
+
+  join_token(TK_GT, NULL);
+  return 1;
+}
+
+
+int
+get_lt_leq()
+{
+  if (next_char() == '=')
+    return get_single(TK_LEQ);
+
+  join_token(TK_LT, NULL);
+  return 1;
+}
+
+
+int
+get_exclamation_neq()
+{
+  if (next_char() == '=')
+    return get_single(TK_NEQ);
+
+  join_token(TK_EXCLAMATION, NULL);
+  return 1;
+}
+
+
+int
+get_single(short type)
+{
+  join_token(type, NULL);
+  next_char();
+  return 1;
+}
+
+
+int
+jump_multi_comments()
+{
+  next_char();
+  while (next_char() != '*');
+
+  if (next_char() != '/')
+    jump_multi_comments();
   else
-    printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
+    return 1;
+}
+
+
+int
+jump_line_comments()
+{
+  while (next_char() != '\n');
+
+  return 1;
+}
+
+
+int
+get_divide_or_jump_comments()
+{
+  char ch = next_char();
+  if (ch == '*')
+    return jump_multi_comments();
+
+  if (ch == '/')
+    return jump_line_comments();
+
+  join_token(TK_DIVIDE, NULL);
+  return 1;
 }
 
 

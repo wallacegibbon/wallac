@@ -2,6 +2,8 @@
 #define __MISC_H__
 
 
+#define UPPER(ch) ((ch) & ~(1 << 5))
+
 int
 walk_arguments(char **argv, char **end);
 
