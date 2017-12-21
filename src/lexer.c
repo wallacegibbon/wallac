@@ -182,12 +182,12 @@ get_zero(int line)
 int
 get_octal(int line)
 {
-  long i = 0;
+  long i;
 
   get_numstr(check_octal);
   i = get_numval(8, cnv_digit);
 
-  join_token(line, TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *) i);
   return 1;
 }
 
@@ -195,12 +195,12 @@ get_octal(int line)
 int
 get_decimal(int line)
 {
-  long i = 0;
+  long i;
 
   get_numstr(check_decimal);
   i = get_numval(10, cnv_digit);
 
-  join_token(line, TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *) i);
   return 1;
 }
 
@@ -208,12 +208,12 @@ get_decimal(int line)
 int
 get_hex(int line)
 {
-  long i = 0;
+  long i;
 
   get_numstr(check_hex);
   i = get_numval(16, cnv_hexdigit);
 
-  join_token(line, TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *) i);
   return 1;
 }
 
