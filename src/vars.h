@@ -3,10 +3,17 @@
 
 #include <stdio.h>
 
-extern char filename[], filename_out[];
-extern FILE *fp_in, *fp_out;
+extern
+char
+filename[], filename_out[];
 
-extern int current_line;
+extern
+FILE
+*fp_in, *fp_out;
+
+extern
+int
+current_line;
 
 
 #endif

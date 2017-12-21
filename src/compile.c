@@ -1,13 +1,10 @@
-#include "lexer.h"
-#include "token.h"
+#include "parser.h"
 
 
 int
 compile()
 {
-  tokenize();
-  print_token_list();
-
+  parse();
   return 0;
 }
 

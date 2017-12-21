@@ -4,6 +4,10 @@
 
 struct token { struct token *l, *r; int line; int type; void *value; };
 
+extern
+struct token
+*start_tk, *current_tk;
+
 
 void
 initialize_token_list();

@@ -424,7 +424,7 @@ get_plus_dplus()
 int
 get_minus_dminus_pointsto()
 {
-  int line = current_ch;
+  int line = current_line;
 
   next_char();
   if (current_ch == '-')
