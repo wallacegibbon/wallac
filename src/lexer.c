@@ -524,16 +524,24 @@ get_single(short type)
 }
 
 
+void
+jump_multi_comments_recur()
+{
+  while (current_ch != '*')
+    next_char();
+
+  if (next_char() != '/')
+    jump_multi_comments_recur();
+}
+
+
 int
 jump_multi_comments()
 {
   next_char();
-  while (next_char() != '*');
-
-  if (next_char() != '/')
-    jump_multi_comments();
-  else
-    return 1;
+  jump_multi_comments_recur();
+  next_char();
+  return 1;
 }
 
 
@@ -541,7 +549,6 @@ int
 jump_line_comments()
 {
   while (next_char() != '\n');
-
   return 1;
 }
 

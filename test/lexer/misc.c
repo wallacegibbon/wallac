@@ -20,6 +20,10 @@ int test(int argc, char **argv, ...)
 
   struct person *p = struct person { "Wallace", 27, 1 };
   p->age++ && p->age--;
+  /** ok **/
+  /***/
+  /**/
+  //
   return 0;
 }
 
