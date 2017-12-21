@@ -3,8 +3,7 @@
 #include "misc.h"
 
 
-struct token
-*start_tk = NULL, *current_tk = NULL;
+struct token *start_tk = NULL, *current_tk = NULL;
 
 
 void
