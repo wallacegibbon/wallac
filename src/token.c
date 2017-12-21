@@ -21,7 +21,7 @@ initialize_token_list()
 
 
 struct token *
-new_token(short type, void *value)
+new_token(int type, void *value)
 {
   struct token *t = malloc(sizeof(struct token));
   if (!t)
@@ -35,9 +35,10 @@ new_token(short type, void *value)
 
 
 void
-join_token(short type, void *p)
+join_token(int line, int type, void *p)
 {
   struct token *t = new_token(type, p);
+  t->line = line;
   t->l = current_tk;
   t->r = NULL;
   current_tk->r = t;
@@ -68,7 +69,7 @@ slide_tk(struct token **p)
 void
 print_token(struct token *t)
 {
-  printf("[%s]", token_type_str(t->type));
+  printf("(%d)[%s]", t->line, token_type_str(t->type));
   if (t->type != TK_CSTR && t->type != TK_IDENT)
     printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
   else
@@ -77,7 +78,7 @@ print_token(struct token *t)
 
 
 char *
-token_type_str(short type)
+token_type_str(int type)
 {
   if (type == TK_ASTERISK)
     return "TK_ASTERISK";

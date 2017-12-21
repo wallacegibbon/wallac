@@ -25,6 +25,9 @@ next_char()
   if (current_ch == EOF && ferror(fp_in))
     exit_with_info("Failed reading input file, %d\n", errno);
 
+  if (current_line >= INT_MAX)
+    exit_with_info("File too long\n");
+
   if (current_ch == '\n')
     current_line++;
 
@@ -53,17 +56,53 @@ get_token()
   if (current_ch == EOF)
     return 0;
 
-  if (check_identifier_start(current_ch))
-    return get_identifier();
+  if (current_ch == ';')
+    return get_single(current_line, TK_SEMICOLON);
 
-  if (check_decimal(current_ch))
-    return get_integer();
+  if (current_ch == ':')
+    return get_single(current_line, TK_COLON);
 
-  if (current_ch == '"')
-    return get_string();
+  if (current_ch == ',')
+    return get_single(current_line, TK_COMMA);
 
-  if (current_ch == '\'')
-    return get_character();
+  if (current_ch == '?')
+    return get_single(current_line, TK_QUESTION);
+
+  if (current_ch == '^')
+    return get_single(current_line, TK_CARET);
+
+  if (current_ch == '~')
+    return get_single(current_line, TK_TILDE);
+
+  if (current_ch == '*')
+    return get_single(current_line, TK_ASTERISK);
+
+  if (current_ch == '%')
+    return get_single(current_line, TK_MOD);
+
+  if (current_ch == '{')
+    return get_single(current_line, TK_BEGIN);
+
+  if (current_ch == '}')
+    return get_single(current_line, TK_END);
+
+  if (current_ch == '[')
+    return get_single(current_line, TK_OPENBR);
+
+  if (current_ch == ']')
+    return get_single(current_line, TK_CLOSEBR);
+
+  if (current_ch == '(')
+    return get_single(current_line, TK_OPENPA);
+
+  if (current_ch == ')')
+    return get_single(current_line, TK_CLOSEPA);
+
+  if (current_ch == '/')
+    return get_divide_or_jump_comments();
+
+  if (current_ch == '!')
+    return get_exclamation_neq();
 
   if (current_ch == '+')
     return get_plus_dplus();
@@ -89,55 +128,19 @@ get_token()
   if (current_ch == '<')
     return get_lt_leq();
 
-  if (current_ch == '!')
-    return get_exclamation_neq();
+  if (current_ch == '\'')
+    return get_character();
 
-  if (current_ch == '/')
-    return get_divide_or_jump_comments();
+  if (current_ch == '"')
+    return get_string();
 
-  if (current_ch == ';')
-    return get_single(TK_SEMICOLON);
+  if (check_identifier_start(current_ch))
+    return get_identifier();
 
-  if (current_ch == ':')
-    return get_single(TK_COLON);
+  if (check_decimal(current_ch))
+    return get_integer();
 
-  if (current_ch == ',')
-    return get_single(TK_COMMA);
-
-  if (current_ch == '?')
-    return get_single(TK_QUESTION);
-
-  if (current_ch == '^')
-    return get_single(TK_CARET);
-
-  if (current_ch == '~')
-    return get_single(TK_TILDE);
-
-  if (current_ch == '*')
-    return get_single(TK_ASTERISK);
-
-  if (current_ch == '%')
-    return get_single(TK_MOD);
-
-  if (current_ch == '{')
-    return get_single(TK_BEGIN);
-
-  if (current_ch == '}')
-    return get_single(TK_END);
-
-  if (current_ch == '[')
-    return get_single(TK_OPENBR);
-
-  if (current_ch == ']')
-    return get_single(TK_CLOSEBR);
-
-  if (current_ch == '(')
-    return get_single(TK_OPENPA);
-
-  if (current_ch == ')')
-    return get_single(TK_CLOSEPA);
-
-  exit_with_info("[%d][LEXER]Unknown char: %02X\n",
+  exit_with_info("[%d][LEXER]Unknown char: [0X%02X]\n",
       current_line, current_ch);
 
   return 1;
@@ -147,69 +150,70 @@ get_token()
 int
 get_integer()
 {
+  int line = current_line;
   char ch = current_ch;
 
   if (ch != '0')
-    return get_decimal();
+    return get_decimal(line);
 
   ch = next_char();
 
   if (check_octal(ch))
-    return get_octal();
+    return get_octal(line);
 
   if (!check_decimal(ch))
-    return get_zero();
+    return get_zero(line);
 
   assert_ch(UPPER(ch), 'X');
   next_char();
 
-  return get_hex();
+  return get_hex(line);
 }
 
 
 int
-get_zero()
+get_zero(int line)
 {
-  join_token(TK_CINT, (void *) 0);
+  join_token(line, TK_CINT, (void *) 0);
   return 1;
 }
 
 
 int
-get_octal()
+get_octal(int line)
 {
   long i = 0;
 
   get_numstr(check_octal);
   i = get_numval(8, cnv_digit);
 
-  join_token(TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *)i);
   return 1;
 }
 
 
 int
-get_decimal()
+get_decimal(int line)
 {
   long i = 0;
 
   get_numstr(check_decimal);
   i = get_numval(10, cnv_digit);
 
-  join_token(TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *)i);
   return 1;
 }
 
 
 int
-get_hex()
+get_hex(int line)
 {
   long i = 0;
 
   get_numstr(check_hex);
   i = get_numval(16, cnv_hexdigit);
 
-  join_token(TK_CINT, (void *)i);
+  join_token(line, TK_CINT, (void *)i);
   return 1;
 }
 
@@ -278,6 +282,7 @@ get_identifier()
 {
   char *buffer = buff_tmp;
   char *p;
+  int line = current_line;
   int cnt = 1;
 
   *buffer++ = current_ch;
@@ -293,7 +298,7 @@ get_identifier()
   p = malloc(strlen(buff_tmp) + 1);
   strcpy(p, buff_tmp);
 
-  join_token(TK_IDENT, p);
+  join_token(line, TK_IDENT, p);
   return 1;
 }
 
@@ -302,8 +307,9 @@ int
 get_string()
 {
   char *buffer = buff_tmp;
-  char *p;
   int cnt = 0;
+  int line = current_line;
+  char *p;
   char ch;
 
   while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
@@ -317,7 +323,7 @@ get_string()
   p = malloc(strlen(buff_tmp) + 1);
   strcpy(p, buff_tmp);
 
-  join_token(TK_CSTR, p);
+  join_token(line, TK_CSTR, p);
 
   next_char();
   return 1;
@@ -345,6 +351,8 @@ int
 get_character()
 {
   char ch = next_char();
+  int line = current_line;
+
   assert_not_eof(ch);
   assert_not_ch(ch, '\'');
 
@@ -353,7 +361,7 @@ get_character()
 
   assert_ch(next_char(), '\'');
 
-  join_token(TK_CCHAR, (void *) ch);
+  join_token(line, TK_CCHAR, (void *) ch);
 
   next_char();
   return 1;
@@ -402,11 +410,13 @@ get_hexnum()
 int
 get_plus_dplus()
 {
+  int line = current_line;
+
   next_char();
   if (current_ch == '+')
-    return get_single(TK_DPLUS);
+    return get_single(line, TK_DPLUS);
 
-  join_token(TK_PLUS, NULL);
+  join_token(line, TK_PLUS, NULL);
   return 1;
 }
 
@@ -414,25 +424,27 @@ get_plus_dplus()
 int
 get_minus_dminus_pointsto()
 {
+  int line = current_ch;
+
   next_char();
   if (current_ch == '-')
-    return get_single(TK_DMINUS);
+    return get_single(line, TK_DMINUS);
 
   if (current_ch == '>')
-    return get_single(TK_POINTSTO);
+    return get_single(line, TK_POINTSTO);
 
-  join_token(TK_MINUS, NULL);
+  join_token(line, TK_MINUS, NULL);
   return 1;
 }
 
 
 int
-get_ellipsis()
+get_ellipsis(int line)
 {
   if (next_char() != '.')
     exit_with_info("[%d][LEXER]Unsupported element \"..\"\n", current_line);
 
-  join_token(TK_ELLIPSIS, NULL);
+  join_token(line, TK_ELLIPSIS, NULL);
   next_char();
   return 1;
 }
@@ -441,10 +453,12 @@ get_ellipsis()
 int
 get_dot_ellipsis()
 {
-  if (next_char() == '.')
-    return get_ellipsis();
+  int line = current_line;
 
-  join_token(TK_DOT, NULL);
+  if (next_char() == '.')
+    return get_ellipsis(line);
+
+  join_token(line, TK_DOT, NULL);
   return 1;
 }
 
@@ -452,10 +466,12 @@ get_dot_ellipsis()
 int
 get_and_dand()
 {
-  if (next_char() == '&')
-    return get_single(TK_DAND);
+  int line = current_line;
 
-  join_token(TK_AND, NULL);
+  if (next_char() == '&')
+    return get_single(line, TK_DAND);
+
+  join_token(line, TK_AND, NULL);
   return 1;
 }
 
@@ -463,10 +479,12 @@ get_and_dand()
 int
 get_or_dor()
 {
-  if (next_char() == '|')
-    return get_single(TK_DOR);
+  int line = current_line;
 
-  join_token(TK_DOR, NULL);
+  if (next_char() == '|')
+    return get_single(line, TK_DOR);
+
+  join_token(line, TK_DOR, NULL);
   return 1;
 }
 
@@ -474,10 +492,12 @@ get_or_dor()
 int
 get_assign_eq()
 {
-  if (next_char() == '=')
-    return get_single(TK_EQ);
+  int line = current_line;
 
-  join_token(TK_ASSIGN, NULL);
+  if (next_char() == '=')
+    return get_single(line, TK_EQ);
+
+  join_token(line, TK_ASSIGN, NULL);
   return 1;
 }
 
@@ -485,10 +505,12 @@ get_assign_eq()
 int
 get_gt_geq()
 {
-  if (next_char() == '=')
-    return get_single(TK_GEQ);
+  int line = current_line;
 
-  join_token(TK_GT, NULL);
+  if (next_char() == '=')
+    return get_single(line, TK_GEQ);
+
+  join_token(line, TK_GT, NULL);
   return 1;
 }
 
@@ -496,10 +518,12 @@ get_gt_geq()
 int
 get_lt_leq()
 {
-  if (next_char() == '=')
-    return get_single(TK_LEQ);
+  int line = current_line;
 
-  join_token(TK_LT, NULL);
+  if (next_char() == '=')
+    return get_single(line, TK_LEQ);
+
+  join_token(line, TK_LT, NULL);
   return 1;
 }
 
@@ -507,18 +531,20 @@ get_lt_leq()
 int
 get_exclamation_neq()
 {
-  if (next_char() == '=')
-    return get_single(TK_NEQ);
+  int line = current_line;
 
-  join_token(TK_EXCLAMATION, NULL);
+  if (next_char() == '=')
+    return get_single(line, TK_NEQ);
+
+  join_token(line, TK_EXCLAMATION, NULL);
   return 1;
 }
 
 
 int
-get_single(short type)
+get_single(int line, int type)
 {
-  join_token(type, NULL);
+  join_token(line, type, NULL);
   next_char();
   return 1;
 }
@@ -557,13 +583,15 @@ int
 get_divide_or_jump_comments()
 {
   char ch = next_char();
+  int line = current_line;
+
   if (ch == '*')
     return jump_multi_comments();
 
   if (ch == '/')
     return jump_line_comments();
 
-  join_token(TK_DIVIDE, NULL);
+  join_token(line, TK_DIVIDE, NULL);
   return 1;
 }
 

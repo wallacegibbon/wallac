@@ -17,16 +17,16 @@ int
 get_integer();
 
 int
-get_zero();
+get_zero(int line);
 
 int
-get_octal();
+get_octal(int line);
 
 int
-get_decimal();
+get_decimal(int line);
 
 int
-get_hex();
+get_hex(int line);
 
 int
 get_character();
@@ -86,7 +86,7 @@ int
 get_exclamation_neq();
 
 int
-get_single(short type);
+get_single(int line, int type);
 
 int
 get_divide_or_jump_comments();

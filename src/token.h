@@ -2,17 +2,17 @@
 #define __TOKEN_H__
 
 
-struct token { struct token *l, *r; short type; void *value; };
+struct token { struct token *l, *r; int line; int type; void *value; };
 
 
 void
 initialize_token_list();
 
 struct token *
-new_token(short type, void *value);
+new_token(int type, void *value);
 
 void
-join_token(short type, void *p);
+join_token(int line, int type, void *p);
 
 void
 print_token_list();
@@ -24,7 +24,7 @@ void
 print_token(struct token *t);
 
 char *
-token_type_str(short type);
+token_type_str(int type);
 
 
 #define TK_ASTERISK 10101
