@@ -365,29 +365,27 @@ get_escape_seq()
 {
   char ch = next_char();
   assert_not_eof(ch);
-  switch (ch)
-  {
-  case 'x':
+
+  if (ch == 'x')
     return get_hexnum() * 16 + get_hexnum();
-  case 'a':
+  if (ch == 'a')
     return 7;
-  case 'b':
+  if (ch == 'b')
     return 8;
-  case 't':
+  if (ch == 't')
     return 9;
-  case 'n':
+  if (ch == 'n')
     return 10;
-  case 'v':
+  if (ch == 'v')
     return 11;
-  case 'f':
+  if (ch == 'f')
     return 12;
-  case 'r':
+  if (ch == 'r')
     return 13;
-  case '0':
+  if (ch == '0')
     return 0;
-  default:
-    return ch;
-  }
+
+  return ch;
 }
 
 

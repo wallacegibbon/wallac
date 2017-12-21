@@ -79,89 +79,86 @@ print_token(struct token *t)
 char *
 token_type_str(short type)
 {
-  switch (type)
-  {
-  case TK_ASTERISK:
+  if (type == TK_ASTERISK)
     return "TK_ASTERISK";
-  case TK_DPLUS:
+  if (type == TK_DPLUS)
     return "TK_DPLUS";
-  case TK_PLUS:
+  if (type == TK_PLUS)
     return "TK_PLUS";
-  case TK_DMINUS:
+  if (type == TK_DMINUS)
     return "TK_DMINUS";
-  case TK_MINUS:
+  if (type == TK_MINUS)
     return "TK_MINUS";
-  case TK_POINTSTO:
+  if (type == TK_POINTSTO)
     return "TK_POINTSTO";
-  case TK_DIVIDE:
+  if (type == TK_DIVIDE)
     return "TK_DIVIDE";
-  case TK_MOD:
+  if (type == TK_MOD)
     return "TK_MOD";
-  case TK_ASSIGN:
+  if (type == TK_ASSIGN)
     return "TK_ASSIGN";
-  case TK_EQ:
+  if (type == TK_EQ)
     return "TK_EQ";
-  case TK_EXCLAMATION:
+  if (type == TK_EXCLAMATION)
     return "TK_EXCLAMATION";
-  case TK_NEQ:
+  if (type == TK_NEQ)
     return "TK_NEQ";
-  case TK_LT:
+  if (type == TK_LT)
     return "TK_LT";
-  case TK_LEQ:
+  if (type == TK_LEQ)
     return "TK_LEQ";
-  case TK_GT:
+  if (type == TK_GT)
     return "TK_GT";
-  case TK_GEQ:
+  if (type == TK_GEQ)
     return "TK_GEQ";
-  case TK_DOT:
+  if (type == TK_DOT)
     return "TK_DOT";
-  case TK_ELLIPSIS:
+  if (type == TK_ELLIPSIS)
     return "TK_ELLIPSIS";
-  case TK_TILDE:
+  if (type == TK_TILDE)
     return "TK_TILDE";
-  case TK_CARET:
+  if (type == TK_CARET)
     return "TK_CARET";
-  case TK_AND:
+  if (type == TK_AND)
     return "TK_AND";
-  case TK_OR:
+  if (type == TK_OR)
     return "TK_OR";
-  case TK_DAND:
+  if (type == TK_DAND)
     return "TK_DAND";
-  case TK_DOR:
+  if (type == TK_DOR)
     return "TK_DOR";
-  case TK_OPENPA:
+  if (type == TK_OPENPA)
     return "TK_OPENPA";
-  case TK_CLOSEPA:
+  if (type == TK_CLOSEPA)
     return "TK_CLOSEPA";
-  case TK_OPENBR:
+  if (type == TK_OPENBR)
     return "TK_OPENBR";
-  case TK_CLOSEBR:
+  if (type == TK_CLOSEBR)
     return "TK_CLOSEBR";
-  case TK_BEGIN:
+  if (type == TK_BEGIN)
     return "TK_BEGIN";
-  case TK_END:
+  if (type == TK_END)
     return "TK_END";
-  case TK_QUESTION:
+  if (type == TK_QUESTION)
     return "TK_QUESTION";
-  case TK_COLON:
+  if (type == TK_COLON)
     return "TK_COLON";
-  case TK_SEMICOLON:
+  if (type == TK_SEMICOLON)
     return "TK_SEMICOLON";
-  case TK_COMMA:
+  if (type == TK_COMMA)
     return "TK_COMMA";
-  case TK_CINT:
+  if (type == TK_CINT)
     return "TK_CINT";
-  case TK_CCHAR:
+  if (type == TK_CCHAR)
     return "TK_CCHAR";
-  case TK_CSTR:
+  if (type == TK_CSTR)
     return "TK_CSTR";
-  case TK_IDENT:
+  if (type == TK_IDENT)
     return "TK_IDENT";
-  case TK_EOF:
+  if (type == TK_EOF)
     return "TK_EOF";
-  default:
-    return "TK_UNKNOWN";
-  }
+
+  return "TK_UNKNOWN";
 }
 
 
