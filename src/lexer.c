@@ -58,85 +58,58 @@ get_token()
 
   if (current_ch == ';')
     return get_single(current_line, TK_SEMICOLON);
-
   if (current_ch == ':')
     return get_single(current_line, TK_COLON);
-
   if (current_ch == ',')
     return get_single(current_line, TK_COMMA);
-
   if (current_ch == '?')
     return get_single(current_line, TK_QUESTION);
-
   if (current_ch == '^')
     return get_single(current_line, TK_CARET);
-
   if (current_ch == '~')
     return get_single(current_line, TK_TILDE);
-
   if (current_ch == '*')
     return get_single(current_line, TK_ASTERISK);
-
   if (current_ch == '%')
     return get_single(current_line, TK_MOD);
-
   if (current_ch == '{')
     return get_single(current_line, TK_BEGIN);
-
   if (current_ch == '}')
     return get_single(current_line, TK_END);
-
   if (current_ch == '[')
     return get_single(current_line, TK_OPENBR);
-
   if (current_ch == ']')
     return get_single(current_line, TK_CLOSEBR);
-
   if (current_ch == '(')
     return get_single(current_line, TK_OPENPA);
-
   if (current_ch == ')')
     return get_single(current_line, TK_CLOSEPA);
-
   if (current_ch == '/')
     return get_divide_or_jump_comments();
-
   if (current_ch == '!')
     return get_exclamation_neq();
-
   if (current_ch == '+')
     return get_plus_dplus();
-
   if (current_ch == '-')
     return get_minus_dminus_pointsto();
-
   if (current_ch == '.')
     return get_dot_ellipsis();
-
   if (current_ch == '&')
     return get_and_dand();
-
   if (current_ch == '|')
     return get_or_dor();
-
   if (current_ch == '=')
     return get_assign_eq();
-
   if (current_ch == '>')
     return get_gt_geq();
-
   if (current_ch == '<')
     return get_lt_leq();
-
   if (current_ch == '\'')
     return get_character();
-
   if (current_ch == '"')
     return get_string();
-
   if (check_identifier_start(current_ch))
     return get_identifier();
-
   if (check_decimal(current_ch))
     return get_integer();
 
@@ -262,10 +235,8 @@ cnv_hexdigit(char ch)
 {
   if (ch >= 'a' && ch <= 'f')
     return ch - 'a' + 10;
-
   if (ch >= 'A' && ch <= 'F')
     return ch - 'A' + 10;
-
   return ch - '0';
 }
 
