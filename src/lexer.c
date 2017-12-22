@@ -278,12 +278,40 @@ cnv_digit(char ch)
 
 
 int
+check_get_keyword(char *identifier)
+{
+  struct kw_pair *keyword = kw_map;
+  int cnt = 0;
+
+  while (cnt++ < 32 && strcmp(keyword->name, identifier) != 0)
+    keyword++;
+
+  if (cnt < 33)
+    return keyword->type;
+  else
+    return 0;
+}
+
+
+char *
+copy_buff_tmp()
+{
+  char *p = malloc(strlen(buff_tmp) + 1);
+  if (!p)
+    exit_with_info("Failed to malloc memory for copying buff_tmp\n");
+
+  strcpy(p, buff_tmp);
+  return p;
+}
+
+
+int
 get_identifier()
 {
-  char *buffer = buff_tmp;
-  char *p;
   int line = current_line;
   int cnt = 1;
+  int type;
+  char *buffer = buff_tmp;
 
   *buffer++ = current_ch;
 
@@ -295,10 +323,12 @@ get_identifier()
 
   *buffer = '\0';
 
-  p = malloc(strlen(buff_tmp) + 1);
-  strcpy(p, buff_tmp);
+  type = check_get_keyword(buff_tmp);
+  if (!type)
+    join_token(line, TK_IDENT, copy_buff_tmp());
+  else
+    join_token(line, type, NULL);
 
-  join_token(line, TK_IDENT, p);
   return 1;
 }
 
@@ -306,10 +336,9 @@ get_identifier()
 int
 get_string()
 {
-  char *buffer = buff_tmp;
-  int cnt = 0;
   int line = current_line;
-  char *p;
+  int cnt = 0;
+  char *buffer = buff_tmp;
   char ch;
 
   while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
@@ -320,10 +349,7 @@ get_string()
 
   *buffer = '\0';
 
-  p = malloc(strlen(buff_tmp) + 1);
-  strcpy(p, buff_tmp);
-
-  join_token(line, TK_CSTR, p);
+  join_token(line, TK_CSTR, copy_buff_tmp());
 
   next_char();
   return 1;

@@ -2,33 +2,6 @@
 #define __TOKEN_H__
 
 
-struct token { struct token *l, *r; int line; int type; void *value; };
-
-extern struct token *start_tk, *current_tk;
-
-
-void
-initialize_token_list();
-
-struct token *
-new_token(int type, void *value);
-
-void
-join_token(int line, int type, void *p);
-
-void
-print_token_list();
-
-struct token *
-slide_tk(struct token **p);
-
-void
-print_token(struct token *t);
-
-char *
-token_type_str(int type);
-
-
 #define TK_ASTERISK 10101
 
 #define TK_DPLUS 10201
@@ -81,7 +54,82 @@ token_type_str(int type);
 #define TK_CSTR 11404
 #define TK_IDENT 11405
 
-#define TK_EOF 11501
+#define KW_IF 11501
+#define KW_ELSE 11502
+#define KW_WHILE 11503
+
+#define KW_SWITCH 11504
+#define KW_CASE 11505
+#define KW_DEFAULT 11506
+#define KW_FOR 11507
+#define KW_DO 11508
+
+#define KW_RETURN 11509
+#define KW_GOTO 11510
+#define KW_CONTINUE 11511
+#define KW_BREAK 11512
+
+#define KW_VIOD 11513
+#define KW_CHAR 11514
+#define KW_INT 11515
+#define KW_FLOAT 11516
+#define KW_DOUBLE 11517
+
+#define KW_SHORT 11518
+#define KW_LONG 11519
+#define KW_SIGNED 11520
+#define KW_UNSIGNED 11521
+
+#define KW_STRUCT 11522
+#define KW_UNION 11523
+#define KW_ENUM 11524
+
+#define KW_TYPEDEF 11525
+#define KW_SIZEOF 11526
+
+#define KW_EXTERN 11527
+#define KW_VOLATILE 11528
+#define KW_CONST 11529
+#define KW_AUTO 11530
+#define KW_STATIC 11531
+#define KW_REGISTER 11532
+
+
+struct token { struct token *l, *r; int line; int type; void *value; };
+
+struct kw_pair { int type; char *name; };
+
+extern struct token *start_tk, *current_tk;
+extern struct kw_pair kw_map[32];
+
+
+void
+initialize_token_list();
+
+
+struct token *
+new_token(int type, void *value);
+
+
+void
+join_token(int line, int type, void *p);
+
+
+void
+print_token_list();
+
+
+struct token *
+slide_tk(struct token **p);
+
+
+void
+print_token(struct token *t);
+
+
+char *
+token_type_str(int type);
+
 
 
 #endif

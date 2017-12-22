@@ -5,6 +5,43 @@
 
 struct token *start_tk = NULL, *current_tk = NULL;
 
+struct kw_pair kw_map[32] =
+{
+  { KW_IF, "if" },
+  { KW_ELSE, "else" },
+  { KW_WHILE, "while" },
+  { KW_SWITCH, "switch" },
+  { KW_CASE, "case" },
+  { KW_DEFAULT, "default" },
+  { KW_FOR, "for" },
+  { KW_DO, "do" },
+  { KW_RETURN, "return" },
+  { KW_GOTO, "goto" },
+  { KW_CONTINUE, "continue" },
+  { KW_BREAK, "break" },
+  { KW_VIOD, "void" },
+  { KW_CHAR, "char" },
+  { KW_INT, "int" },
+  { KW_FLOAT, "float" },
+  { KW_DOUBLE, "double" },
+  { KW_SHORT, "short" },
+  { KW_LONG, "long" },
+  { KW_SIGNED, "signed" },
+  { KW_UNSIGNED, "unsigned" },
+  { KW_STRUCT, "struct" },
+  { KW_UNION, "union" },
+  { KW_ENUM, "enum" },
+  { KW_TYPEDEF, "typedef" },
+  { KW_SIZEOF, "sizeof" },
+  { KW_EXTERN, "extern" },
+  { KW_VOLATILE, "volatile" },
+  { KW_CONST, "const" },
+  { KW_AUTO, "auto" },
+  { KW_STATIC, "static" },
+  { KW_REGISTER, "register" }
+};
+
+
 
 void
 initialize_token_list()
@@ -156,8 +193,70 @@ token_type_str(int type)
     return "TK_CSTR";
   if (type == TK_IDENT)
     return "TK_IDENT";
-  if (type == TK_EOF)
-    return "TK_EOF";
+  if (type == KW_IF)
+    return "KW_IF";
+  if (type == KW_ELSE)
+    return "KW_ELSE";
+  if (type == KW_WHILE)
+    return "KW_WHILE";
+  if (type == KW_SWITCH)
+    return "KW_SWITCH";
+  if (type == KW_CASE)
+    return "KW_CASE";
+  if (type == KW_DEFAULT)
+    return "KW_DEFAULT";
+  if (type == KW_FOR)
+    return "KW_FOR";
+  if (type == KW_DO)
+    return "KW_DO";
+  if (type == KW_RETURN)
+    return "KW_RETURN";
+  if (type == KW_GOTO)
+    return "KW_GOTO";
+  if (type == KW_CONTINUE)
+    return "KW_CONTINUE";
+  if (type == KW_BREAK)
+    return "KW_BREAK";
+  if (type == KW_VIOD)
+    return "KW_VIOD";
+  if (type == KW_CHAR)
+    return "KW_CHAR";
+  if (type == KW_INT)
+    return "KW_INT";
+  if (type == KW_FLOAT)
+    return "KW_FLOAT";
+  if (type == KW_DOUBLE)
+    return "KW_DOUBLE";
+  if (type == KW_SHORT)
+    return "KW_SHORT";
+  if (type == KW_LONG)
+    return "KW_LONG";
+  if (type == KW_SIGNED)
+    return "KW_SIGNED";
+  if (type == KW_UNSIGNED)
+    return "KW_UNSIGNED";
+  if (type == KW_STRUCT)
+    return "KW_STRUCT";
+  if (type == KW_UNION)
+    return "KW_UNION";
+  if (type == KW_ENUM)
+    return "KW_ENUM";
+  if (type == KW_TYPEDEF)
+    return "KW_TYPEDEF";
+  if (type == KW_SIZEOF)
+    return "KW_SIZEOF";
+  if (type == KW_EXTERN)
+    return "KW_EXTERN";
+  if (type == KW_VOLATILE)
+    return "KW_VOLATILE";
+  if (type == KW_CONST)
+    return "KW_CONST";
+  if (type == KW_AUTO)
+    return "KW_AUTO";
+  if (type == KW_STATIC)
+    return "KW_STATIC";
+  if (type == KW_REGISTER)
+    return "KW_REGISTER";
 
   return "TK_UNKNOWN";
 }
