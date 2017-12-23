@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "token.h"
 #include "misc.h"
 
@@ -51,8 +52,8 @@ initialize_token_list()
     exit_with_info("Failed alloc memory for start_tk\n");
 
   start_tk->type = 0;
-  start_tk->l = NULL;
-  start_tk->r = NULL;
+  start_tk->prev = NULL;
+  start_tk->next = NULL;
   current_tk = start_tk;
 }
 
@@ -76,9 +77,9 @@ join_token(int line, int type, void *p)
 {
   struct token *t = new_token(type, p);
   t->line = line;
-  t->l = current_tk;
-  t->r = NULL;
-  current_tk->r = t;
+  t->prev = current_tk;
+  t->next = NULL;
+  current_tk->next = t;
   current_tk = t;
 }
 
@@ -86,20 +87,18 @@ join_token(int line, int type, void *p)
 void
 print_token_list()
 {
-  struct token *p;
-  p = start_tk->r;
+  struct token *p = start_tk->next;
 
-  while (p)
-    print_token(slide_tk(&p));
+  for (; p; p = p->next)
+    print_token(p);
 }
 
 
-struct token *
-slide_tk(struct token **p)
+void
+print_token_value(void *raw)
 {
-  struct token *t = *p;
-  *p = (*p)->r;
-  return t;
+  int v = (int) raw;
+  printf("0x%x, 0o%o, %d\n", v, v, v);
 }
 
 
@@ -108,7 +107,7 @@ print_token(struct token *t)
 {
   printf("(%d)[%s]", t->line, token_type_str(t->type));
   if (t->type != TK_CSTR && t->type != TK_IDENT)
-    printf("0x%x, 0o%o, %d\n", t->value, t->value, t->value);
+    print_token_value(t->value);
   else
     printf("<%s>\n", t->value);
 }

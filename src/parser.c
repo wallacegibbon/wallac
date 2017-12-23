@@ -1,6 +1,8 @@
 #include "lexer.h"
 #include "token.h"
 
+int
+rec_tokens(struct token *t);
 
 int
 parse()
@@ -8,15 +10,19 @@ parse()
   tokenize();
   print_token_list();
 
-  rec_tokens(start_tk->r);
+  rec_tokens(start_tk->next);
+
+  return 0;
 }
 
 
 int
 rec_tokens(struct token *t)
 {
-  if (t->r)
-    rec_tokens(t->r);
+  if (t->next)
+    return rec_tokens(t->next);
+
+  return 0;
 }
 
 

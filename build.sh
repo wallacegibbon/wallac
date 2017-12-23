@@ -1,7 +1,7 @@
 OUTDIR=./out
 TARGET=wallac
 CC=gcc
-CFLAGS=-w
+CFLAGS="-Wno-logical-op-parentheses -Wno-int-to-void-pointer-cast"
 
 
 mkdir -p $OUTDIR

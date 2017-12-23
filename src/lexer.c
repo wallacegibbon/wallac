@@ -35,6 +35,16 @@ next_char()
 }
 
 
+void
+close_input_file()
+{
+  int i = fclose(fp_in);
+
+  if (i == EOF && ferror(fp_in))
+    exit_with_info("Failed closing input file, %d\n", errno);
+}
+
+
 int
 tokenize()
 {
@@ -43,6 +53,7 @@ tokenize()
   next_char();
   while (get_token());
 
+  close_input_file();
   return 0;
 }
 
@@ -55,7 +66,6 @@ get_token()
 
   if (current_ch == EOF)
     return 0;
-
   if (current_ch == ';')
     return get_single(current_line, TK_SEMICOLON);
   if (current_ch == ':')
@@ -113,8 +123,8 @@ get_token()
   if (check_decimal(current_ch))
     return get_integer();
 
-  exit_with_info("[%d][LEXER]Unknown char: [0X%02X]\n",
-      current_line, current_ch);
+  exit_with_info("%s:%d:[LEXER]Unknown char: [0X%02X]\n",
+      filename, current_line, current_ch);
 
   return 1;
 }
@@ -203,7 +213,8 @@ get_numstr(int chkfn(char))
     *buffer++ = current_ch;
 
   if (cnt == MAX_INT_LENGTH)
-    exit_with_info("[%d][LEXER]Number too long\n", current_line);
+    exit_with_info("%s:%d:[LEXER]Number too long\n",
+        filename, current_line);
 
   *buffer = '\0';
 }
@@ -290,7 +301,8 @@ get_identifier()
     *buffer++ = current_ch;
 
   if (cnt == MAX_IDENT_LENGTH)
-    exit_with_info("[%d][LEXER]Identifier too long\n", current_line);
+    exit_with_info("%s:%d:[LEXER]Identifier too long\n",
+        filename, current_line);
 
   *buffer = '\0';
 
@@ -316,7 +328,8 @@ get_string()
     *buffer++ = ch;
 
   if (cnt == MAX_CSTR_LENGTH)
-    exit_with_info("[%d][LEXER]String too long\n", current_line);
+    exit_with_info("%s:%d:[LEXER]String too long\n",
+        filename, current_line);
 
   *buffer = '\0';
 
@@ -439,7 +452,8 @@ int
 get_ellipsis(int line)
 {
   if (next_char() != '.')
-    exit_with_info("[%d][LEXER]Unsupported element \"..\"\n", current_line);
+    exit_with_info("%s:%d:[LEXER]Unsupported element \"..\"\n",
+        filename, current_line);
 
   join_token(line, TK_ELLIPSIS, NULL);
   next_char();

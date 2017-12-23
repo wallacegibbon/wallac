@@ -95,7 +95,7 @@
 #define KW_REGISTER 11532
 
 
-struct token { struct token *l, *r; int line; int type; void *value; };
+struct token { struct token *next, *prev; int line; int type; void *value; };
 
 struct kw_pair { int type; char *name; };
 
@@ -117,10 +117,6 @@ join_token(int line, int type, void *p);
 
 void
 print_token_list();
-
-
-struct token *
-slide_tk(struct token **p);
 
 
 void

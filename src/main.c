@@ -5,6 +5,7 @@
 #include "compile.h"
 #include "limits.h"
 #include "misc.h"
+#include "cmdargs.h"
 
 
 char filename[MAX_FILENAME_SIZE];
