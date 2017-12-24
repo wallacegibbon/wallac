@@ -1,15 +1,14 @@
 #include <string.h>
 #include <stdio.h>
+#include "cvars.h"
 
 
-struct variable { char *name; int type; struct variable *next; };
-
-struct variable *global_vars = NULL;
+struct cvars *global_vars = NULL;
 
 
 
 int
-find_variable(char *name, struct variable *p, long *offset)
+find_variable(char *name, struct cvars *p, long *offset)
 {
   long cnt = 0;
 
