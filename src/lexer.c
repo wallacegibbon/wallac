@@ -144,19 +144,9 @@ get_integer()
   if (check_octal(ch))
     return get_octal(line);
 
-  if (!check_decimal(ch))
-    return get_zero(line);
+  if (UPPER(ch) == 'X')
+    return get_hex(line);
 
-  assert_ch(UPPER(ch), 'X');
-  next_char();
-
-  return get_hex(line);
-}
-
-
-int
-get_zero(int line)
-{
   join_token(line, TK_CINT, (void *) 0);
   return 1;
 }
@@ -192,6 +182,8 @@ int
 get_hex(int line)
 {
   long i;
+
+  next_char();
 
   get_numstr(check_hex);
   i = get_numval(16, cnv_hexdigit);

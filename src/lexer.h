@@ -17,9 +17,6 @@ int
 get_integer();
 
 int
-get_zero(int line);
-
-int
 get_octal(int line);
 
 int

@@ -5,6 +5,7 @@ int test(int argc, char **argv, ...)
   char c1 = 'c', c2 = '\x65';
   char *s = "abcdefg\\hijklmn", *t = "";
   int i = 123;
+  //int j = 0b101;
 
   printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);
   //char *s = "abcdefghijklmn";
