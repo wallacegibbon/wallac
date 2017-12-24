@@ -469,6 +469,10 @@ get_dot_ellipsis()
   if (next_char() == '.')
     return get_ellipsis(line);
 
+  if (check_decimal(current_ch))
+    exit_with_info("%s:%d:[LEXER]Float literal is not supported\n",
+        filename, current_line);
+
   join_token(line, TK_DOT, NULL);
   return 1;
 }

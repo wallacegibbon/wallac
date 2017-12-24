@@ -24,6 +24,8 @@ int test(int argc, char **argv, ...)
   /**/
   //
   //$errorsym
+  //.2;
+  //0.2;
   return 0;
 }
 
