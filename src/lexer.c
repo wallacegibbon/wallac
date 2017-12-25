@@ -217,9 +217,12 @@ get_numval(int base, int cnvfn(char))
 {
   long i = 0, j, k;
   char *buffer = buff_tmp;
-  char *cmpstr =
-    base == 8 ? MAX_OCTAL_STRING :
-      base == 10 ? MAX_DECIMAL_STRING : MAX_HEX_STRING;
+  char *cmpstr = MAX_DECIMAL_STRING;
+
+  if (base == 8)
+    cmpstr = MAX_OCTAL_STRING;
+  if (base == 16)
+    cmpstr = MAX_HEX_STRING;
 
   j = strlen(buffer);
   k = strlen(cmpstr);
@@ -352,8 +355,8 @@ get_strchar(char *ch)
 int
 get_character()
 {
-  char ch = next_char();
   int line = current_line;
+  char ch = next_char();
 
   assert_not_eof(ch);
   assert_not_ch(ch, '\'');

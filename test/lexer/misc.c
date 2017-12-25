@@ -30,3 +30,4 @@ int test(int argc, char **argv, ...)
   return 0;
 }
 
+typedef int a;

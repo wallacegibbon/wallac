@@ -1,108 +1,175 @@
+#include <stdlib.h>
 #include "lexer.h"
+#include "misc.h"
 #include "token.h"
-
-
-#define STAT_IF 1
-#define STAT_IF_ELSE 2
-#define STAT_FOR 3
-#define STAT_WHILE 4
-#define STAT_EXPRESSION 5
-#define STAT_RETURN 6
-#define STAT_LABEL 8
-#define STAT_GOTO 7
-
-#define EXPR_ADD 1
-#define EXPR_MINUS 2
-#define EXPR_MUL 3
-#define EXPR_DIV 4
-#define EXPR_MOD 5
-#define EXPR_AND 6
-#define EXPR_OR 7
-#define EXPR_XOR 8
-#define EXPR_REV 9 //~
-#define EXPR_NOT 10
-#define EXPR_DAND 11
-#define EXPR_DOR 12
-#define EXPR_ASSIGN 13
-#define EXPR_GT 14
-#define EXPR_GEQ 15
-#define EXPR_LT 16
-#define EXPR_LEQ 17
-#define EXPR_EQ 18
-#define EXPR_NEQ 19
-#define EXPR_POINTER 20 //*x
-#define EXPR_ADDRESS 21 //&x
-#define EXPR_CALL 22 //x()
-#define EXPR_ARR 23 //x[]
-#define EXPR_DOT 24 //x.a
-#define EXPR_POINTSTO 25 //x->a
-#define EXPR_VAR_GLOBAL 26
-#define EXPR_VAR_LOCAL 27
-#define EXPR_VAR_ARG 28
-#define EXPR_NUMBER 29
-#define EXPR_STRING 30
-#define EXPR_CHAR 31
-
-
-struct expr { struct expr *next; int type; void *ops; };
-
-struct stat { struct stat *next; int type; void *v; };
-struct stat_if { struct expr *cond; struct stat *t; };
-struct stat_if_else { struct expr *cond; struct stat *t, *f; };
-struct stat_for { struct expr *e1, *e2, *e3; struct stat *s; };
-struct stat_while { struct expr *cond; struct stat *s; };
-struct stat_expr { struct expr *expr; };
-struct stat_return { struct expr *expr; };
-struct stat_goto { int lbidx; };
-
-struct label { int stat_idx; char *name; };
-
-struct fn { struct cvars *as, *vs; struct label *lbs; struct stat *sta; };
+#include "vars.h"
 
 
 
-/*
+struct pair { struct pair *car, *cdr; int type; };
+struct pair *program;
 
-if (expression) statement1
-if (expression) statement1 else statement2
+int
+print_pairs(struct pair *p);
 
-for ([expr1]; [expr2]; [expr3]) statement
-while (expression) statement
 
-return [expression];
-goto identifier;
+struct pair *
+new_pair(int type, struct pair *car, struct pair *cdr)
+{
+  struct pair *p = malloc(sizeof(struct pair));
+  if (!p)
+    exit_with_info("Failed malloc memory for new pair\n");
+  p->type = type;
+  p->car = car;
+  p->cdr = cdr;
+  return p;
+}
 
-extern data-definition;
-extern function-prototype;
 
-volatile data-definition;
+struct pair *
+car(struct pair *p)
+{
+  return p->car;
+}
 
-*/
+
+struct pair *
+cdr(struct pair *p)
+{
+  return p->cdr;
+}
+
+
+struct pair *
+cons(struct pair *car, struct pair *cdr)
+{
+  struct pair *p = new_pair(0, car, cdr);
+  return p;
+}
 
 
 int
-rec_tokens(struct token *t);
+print_pairs_nopa(struct pair *p)
+{
+  if (!p)
+    return 0;
+
+  if (p->type != 0)
+    return printf(" %s ", token_type_str(p->type));
+
+  if (car(p)->type != 0)
+    print_pairs_nopa(car(p));
+  else
+    print_pairs(car(p));
+
+  print_pairs_nopa(cdr(p));
+
+  return 0;
+}
+
+
+int
+print_pairs(struct pair *p)
+{
+  printf("(");
+  print_pairs_nopa(p);
+  printf(")\n");
+  return 0;
+}
+
+
+struct pair *
+new_token_pair(int type, struct token *t)
+{
+  struct pair *p = new_pair(type, (struct pair *) t, NULL);
+  return p;
+}
+
+
+int
+check_type(int type)
+{
+  return type == KW_VOLATILE || type == KW_STATIC || type == KW_REGISTER ||
+    type == KW_AUTO || type == KW_EXTERN || type == KW_CONST ||
+    type == KW_INT || type == KW_SHORT || type == KW_LONG ||
+    type == KW_CHAR || type == KW_VIOD;
+}
+
+
+struct token *
+next_token()
+{
+  if (!current_tk)
+    exit_with_info("No next token anymore\n");
+
+  current_tk = current_tk->next;
+  return current_tk;
+}
+
+
+
+struct pair *
+collect_type_tokens()
+{
+  struct pair *type = NULL;
+
+  for (; check_type(current_tk->type); next_token())
+    type = cons(new_token_pair(current_tk->type, current_tk), type);
+
+  return type;
+}
+
+
+int
+match_fn_declaration()
+{
+  struct pair *p = collect_type_tokens();
+  if (!p)
+    exit_with_info("%s:%d:[PARSER]Function declaration type error\n",
+        filename, current_tk->line);
+
+  if (current_tk->type != TK_IDENT)
+    exit_with_info("%s:%d:[PARSER]Function declaration name error\n",
+        filename, current_tk->line);
+
+  next_token();
+  if (current_tk->type != TK_OPENPA)
+    exit_with_info("%s:%d:[PARSER]Function declaration ( error\n",
+        filename, current_tk->line);
+
+  return 0;
+}
+
+
+int
+match_fn_definition()
+{
+  return 0;
+}
+
+
+int
+match_struct_definition()
+{
+  return 0;
+}
 
 
 int
 parse()
 {
+  struct pair *p;
+
   tokenize();
   print_token_list();
 
-  rec_tokens(start_tk->next);
+  current_tk = start_tk->next;
+
+  p = collect_type_tokens();
+  print_pairs(p);
+
+  //match_fn_declaration();
 
   return 0;
 }
-
-
-int
-rec_tokens(struct token *t)
-{
-  if (t->next)
-    return rec_tokens(t->next);
-
-  return 0;
-}
-
 
