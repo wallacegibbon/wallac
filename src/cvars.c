@@ -14,8 +14,8 @@ find_variable(char *name, struct cvars *p, long *offset)
 {
   long cnt = 0;
 
-  for (; p && strcmp(p->name, name) != 0; cnt++)
-    p = p->next;
+  for (; p && strcmp(p->name, name) != 0; p = p->next)
+    cnt++;
 
   if (!p)
     return 0;

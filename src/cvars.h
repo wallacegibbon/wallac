@@ -2,8 +2,8 @@
 #define __CVARIABLE_H__
 
 
-struct cvars { char *name; int type; struct cvars *next; };
-struct cstruct { char *name; struct cvars *vars; struct cstruct *next; };
+struct cvars { struct cvars *next; int type; char *name; };
+struct cstruct { struct cstruct *next; struct cvars *vars; char *name; };
 
 extern struct cvars *global_vars;
 extern struct cstruct *struct_defs;
@@ -85,6 +85,7 @@ is_extern(int type);
 #define STORAGE_REGISTER (6 << 7)
 
 #define STRUCTIDX_STARTBIT 16
+
 
 
 #endif
