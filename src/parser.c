@@ -7,7 +7,9 @@
 
 
 struct pair { struct pair *car, *cdr; int type; };
+
 struct pair *program;
+
 
 int
 print_pairs(struct pair *p);

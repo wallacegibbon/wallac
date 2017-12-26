@@ -12,10 +12,8 @@
 #include "lexer.h"
 
 
-int current_line = 1;
-int current_ch = 0;
-
 char buff_tmp[MAX_CSTR_LENGTH];
+int current_line, current_ch;
 
 
 int
@@ -51,6 +49,7 @@ tokenize()
 {
   initialize_token_list();
 
+  current_line = 1;
   next_char();
   while (get_token());
 
@@ -263,24 +262,6 @@ cnv_digit(char ch)
 }
 
 
-int
-check_get_keyword(char *identifier)
-{
-  struct kw_pair *keyword;
-  int cnt;
-
-  keyword = kw_map;
-  cnt = 0;
-  while (cnt++ < 32 && strcmp(keyword->name, identifier) != 0)
-    keyword++;
-
-  if (cnt < 33)
-    return keyword->type;
-  else
-    return 0;
-}
-
-
 char *
 copy_buff_tmp()
 {
@@ -316,7 +297,7 @@ get_identifier()
 
   *buffer = '\0';
 
-  type = check_get_keyword(buff_tmp);
+  type = try_get_keyword(buff_tmp);
   if (!type)
     join_token(line, TK_IDENT, copy_buff_tmp());
   else

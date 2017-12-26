@@ -8,10 +8,8 @@
 #include "cmdargs.h"
 
 
-char filename[MAX_FILENAME_SIZE];
-char filename_out[MAX_FILENAME_SIZE];
-FILE *fp_in;
-FILE *fp_out;
+char filename[MAX_FILENAME_SIZE], filename_out[MAX_FILENAME_SIZE];
+FILE *fp_in, *fp_out;
 
 
 

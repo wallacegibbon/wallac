@@ -1,47 +1,11 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include "token.h"
 #include "misc.h"
 
 
 struct token *start_tk, *current_tk;
-
-struct kw_pair kw_map[32] =
-{
-  { KW_IF, "if" },
-  { KW_ELSE, "else" },
-  { KW_FOR, "for" },
-  { KW_WHILE, "while" },
-  { KW_DO, "do" },
-  { KW_SWITCH, "switch" },
-  { KW_CASE, "case" },
-  { KW_DEFAULT, "default" },
-  { KW_RETURN, "return" },
-  { KW_GOTO, "goto" },
-  { KW_CONTINUE, "continue" },
-  { KW_BREAK, "break" },
-  { KW_VIOD, "void" },
-  { KW_CHAR, "char" },
-  { KW_INT, "int" },
-  { KW_FLOAT, "float" },
-  { KW_DOUBLE, "double" },
-  { KW_SHORT, "short" },
-  { KW_LONG, "long" },
-  { KW_SIGNED, "signed" },
-  { KW_UNSIGNED, "unsigned" },
-  { KW_STRUCT, "struct" },
-  { KW_UNION, "union" },
-  { KW_ENUM, "enum" },
-  { KW_TYPEDEF, "typedef" },
-  { KW_SIZEOF, "sizeof" },
-  { KW_EXTERN, "extern" },
-  { KW_VOLATILE, "volatile" },
-  { KW_CONST, "const" },
-  { KW_AUTO, "auto" },
-  { KW_STATIC, "static" },
-  { KW_REGISTER, "register" }
-};
-
 
 
 void
@@ -262,4 +226,74 @@ token_type_str(int type)
   return "TK_UNKNOWN";
 }
 
+
+int
+try_get_keyword(char *identifier)
+{
+  if (!strcmp(identifier, "if"))
+    return KW_IF;
+  if (!strcmp(identifier, "else"))
+    return KW_ELSE;
+  if (!strcmp(identifier, "for"))
+    return KW_FOR;
+  if (!strcmp(identifier, "while"))
+    return KW_WHILE;
+  if (!strcmp(identifier, "do"))
+    return KW_DO;
+  if (!strcmp(identifier, "switch"))
+    return KW_SWITCH;
+  if (!strcmp(identifier, "case"))
+    return KW_CASE;
+  if (!strcmp(identifier, "default"))
+    return KW_DEFAULT;
+  if (!strcmp(identifier, "return"))
+    return KW_RETURN;
+  if (!strcmp(identifier, "goto"))
+    return KW_GOTO;
+  if (!strcmp(identifier, "continue"))
+    return KW_CONTINUE;
+  if (!strcmp(identifier, "break"))
+    return KW_BREAK;
+  if (!strcmp(identifier, "void"))
+    return KW_VIOD;
+  if (!strcmp(identifier, "char"))
+    return KW_CHAR;
+  if (!strcmp(identifier, "int"))
+    return KW_INT;
+  if (!strcmp(identifier, "float"))
+    return KW_FLOAT;
+  if (!strcmp(identifier, "double"))
+    return KW_DOUBLE;
+  if (!strcmp(identifier, "short"))
+    return KW_SHORT;
+  if (!strcmp(identifier, "long"))
+    return KW_LONG;
+  if (!strcmp(identifier, "signed"))
+    return KW_SIGNED;
+  if (!strcmp(identifier, "unsigned"))
+    return KW_UNSIGNED;
+  if (!strcmp(identifier, "struct"))
+    return KW_STRUCT;
+  if (!strcmp(identifier, "union"))
+    return KW_UNION;
+  if (!strcmp(identifier, "enum"))
+    return KW_ENUM;
+  if (!strcmp(identifier, "typedef"))
+    return KW_TYPEDEF;
+  if (!strcmp(identifier, "sizeof"))
+    return KW_SIZEOF;
+  if (!strcmp(identifier, "extern"))
+    return KW_EXTERN;
+  if (!strcmp(identifier, "volatile"))
+    return KW_VOLATILE;
+  if (!strcmp(identifier, "const"))
+    return KW_CONST;
+  if (!strcmp(identifier, "auto"))
+    return KW_AUTO;
+  if (!strcmp(identifier, "static"))
+    return KW_STATIC;
+  if (!strcmp(identifier, "register"))
+    return KW_REGISTER;
+  return 0;
+}
 

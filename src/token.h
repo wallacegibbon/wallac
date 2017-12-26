@@ -96,36 +96,28 @@
 
 
 struct token { struct token *next, *prev; int line; int type; void *value; };
-
-struct kw_pair { int type; char *name; };
-
 extern struct token *start_tk, *current_tk;
-extern struct kw_pair kw_map[32];
-
 
 void
 initialize_token_list();
 
-
 struct token *
 new_token(int type, void *value);
-
 
 void
 join_token(int line, int type, void *p);
 
-
 void
 print_token_list();
-
 
 void
 print_token(struct token *t);
 
-
 char *
 token_type_str(int type);
 
+int
+try_get_keyword(char *identifier);
 
 
 #endif

@@ -4,8 +4,8 @@
 #include "limits.h"
 
 
-struct cvars *global_vars = NULL;
-struct cstruct *struct_defs = NULL;
+struct cvars *global_vars;
+struct cstruct *struct_defs;
 
 
 
