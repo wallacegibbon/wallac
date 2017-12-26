@@ -12,8 +12,9 @@ struct cstruct *struct_defs = NULL;
 int
 find_variable(char *name, struct cvars *p, long *offset)
 {
-  long cnt = 0;
+  long cnt;
 
+  cnt = 0;
   for (; p && strcmp(p->name, name) != 0; p = p->next)
     cnt++;
 
@@ -48,8 +49,11 @@ sizeof_type(int type)
 int
 sizeof_struct(int type)
 {
-  int idx = (type >> STRUCTIDX_STARTBIT) & 0xff;
-  struct cstruct *p = struct_defs;
+  struct cstruct *p;
+  int idx;
+
+  idx = (type >> STRUCTIDX_STARTBIT) & 0xff;
+  p = struct_defs;
 
   while (idx--)
     p = p->next;
@@ -61,8 +65,9 @@ sizeof_struct(int type)
 int
 sizeof_vars(struct cvars *p)
 {
-  int len = 0;
-  for (; p; p = p->next)
+  int len;
+
+  for (len = 0; p; p = p->next)
     len += sizeof_type(p->type);
 
   return len;

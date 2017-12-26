@@ -16,7 +16,9 @@ print_pairs(struct pair *p);
 struct pair *
 new_pair(int type, struct pair *car, struct pair *cdr)
 {
-  struct pair *p = malloc(sizeof(struct pair));
+  struct pair *p;
+
+  p = malloc(sizeof(struct pair));
   if (!p)
     exit_with_info("Failed malloc memory for new pair\n");
   p->type = type;
@@ -43,7 +45,9 @@ cdr(struct pair *p)
 struct pair *
 cons(struct pair *car, struct pair *cdr)
 {
-  struct pair *p = new_pair(0, car, cdr);
+  struct pair *p;
+
+  p = new_pair(0, car, cdr);
   return p;
 }
 
@@ -79,9 +83,11 @@ print_pairs(struct pair *p)
 
 
 struct pair *
-new_token_pair(int type, struct token *t)
+new_token_pair(struct token *t)
 {
-  struct pair *p = new_pair(type, (struct pair *) t, NULL);
+  struct pair *p;
+
+  p = new_pair(t->type, (struct pair *) t, NULL);
   return p;
 }
 
@@ -111,10 +117,11 @@ next_token()
 struct pair *
 collect_type_tokens()
 {
-  struct pair *type = NULL;
+  struct pair *type;
 
+  type = NULL;
   for (; check_type(current_tk->type); next_token())
-    type = cons(new_token_pair(current_tk->type, current_tk), type);
+    type = cons(new_token_pair(current_tk), type);
 
   return type;
 }
@@ -123,7 +130,9 @@ collect_type_tokens()
 int
 match_fn_declaration()
 {
-  struct pair *p = collect_type_tokens();
+  struct pair *p;
+
+  p = collect_type_tokens();
   if (!p)
     exit_with_info("%s:%d:[PARSER]Function declaration type error\n",
         filename, current_tk->line);
@@ -165,8 +174,8 @@ parse()
 
   current_tk = start_tk->next;
 
-  p = collect_type_tokens();
-  print_pairs(p);
+  //p = collect_type_tokens();
+  //print_pairs(p);
 
   //match_fn_declaration();
 

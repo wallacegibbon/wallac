@@ -4,7 +4,7 @@
 #include "misc.h"
 
 
-struct token *start_tk = NULL, *current_tk = NULL;
+struct token *start_tk, *current_tk;
 
 struct kw_pair kw_map[32] =
 {
@@ -61,7 +61,8 @@ initialize_token_list()
 struct token *
 new_token(int type, void *value)
 {
-  struct token *t = malloc(sizeof(struct token));
+  struct token *t;
+  t = malloc(sizeof(struct token));
   if (!t)
     exit_with_info("Failed alloc memory for token %d\n", type);
 
@@ -75,7 +76,8 @@ new_token(int type, void *value)
 void
 join_token(int line, int type, void *p)
 {
-  struct token *t = new_token(type, p);
+  struct token *t;
+  t = new_token(type, p);
   t->line = line;
   t->prev = current_tk;
   t->next = NULL;
@@ -87,9 +89,8 @@ join_token(int line, int type, void *p)
 void
 print_token_list()
 {
-  struct token *p = start_tk->next;
-
-  for (; p; p = p->next)
+  struct token *p;
+  for (p = start_tk->next; p; p = p->next)
     print_token(p);
 }
 
@@ -97,7 +98,8 @@ print_token_list()
 void
 print_token_value(void *raw)
 {
-  int v = (int) raw;
+  int v;
+  v = (int) raw;
   printf("0x%x, 0o%o, %d\n", v, v, v);
 }
 

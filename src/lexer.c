@@ -38,8 +38,9 @@ next_char()
 void
 close_input_file()
 {
-  int i = fclose(fp_in);
+  int i;
 
+  i = fclose(fp_in);
   if (i == EOF && ferror(fp_in))
     exit_with_info("Failed closing input file, %d\n", errno);
 }
@@ -133,8 +134,11 @@ get_token()
 int
 get_integer()
 {
-  int line = current_line;
-  char ch = current_ch;
+  int line;
+  char ch;
+
+  line = current_line;
+  ch = current_ch;
 
   if (ch != '0')
     return get_decimal(line);
@@ -196,11 +200,13 @@ get_hex(int line)
 void
 get_numstr(int chkfn(char))
 {
-  char *buffer = buff_tmp;
-  int cnt = 1;
+  char *buffer;
+  int cnt;
 
+  buffer = buff_tmp;
   *buffer++ = current_ch;
 
+  cnt = 1;
   while (cnt++ < MAX_INT_LENGTH-1 && chkfn(next_char()))
     *buffer++ = current_ch;
 
@@ -215,10 +221,12 @@ get_numstr(int chkfn(char))
 int
 get_numval(int base, int cnvfn(char))
 {
-  long i = 0, j, k;
-  char *buffer = buff_tmp;
-  char *cmpstr = MAX_DECIMAL_STRING;
+  char *buffer, *cmpstr;
+  long i, j, k;
 
+  buffer = buff_tmp;
+
+  cmpstr = MAX_DECIMAL_STRING;
   if (base == 8)
     cmpstr = MAX_OCTAL_STRING;
   if (base == 16)
@@ -229,6 +237,7 @@ get_numval(int base, int cnvfn(char))
   if (j > k || (j == k && strcmp(buffer, cmpstr) > 0))
     return LONG_MAX;
 
+  i = 0;
   while (*buffer)
     i = i * base + cnvfn(*buffer++);
 
@@ -257,9 +266,11 @@ cnv_digit(char ch)
 int
 check_get_keyword(char *identifier)
 {
-  struct kw_pair *keyword = kw_map;
-  int cnt = 0;
+  struct kw_pair *keyword;
+  int cnt;
 
+  keyword = kw_map;
+  cnt = 0;
   while (cnt++ < 32 && strcmp(keyword->name, identifier) != 0)
     keyword++;
 
@@ -273,7 +284,9 @@ check_get_keyword(char *identifier)
 char *
 copy_buff_tmp()
 {
-  char *p = malloc(strlen(buff_tmp) + 1);
+  char *p;
+
+  p = malloc(strlen(buff_tmp) + 1);
   if (!p)
     exit_with_info("Failed to malloc memory for copying buff_tmp\n");
 
@@ -285,13 +298,15 @@ copy_buff_tmp()
 int
 get_identifier()
 {
-  int line = current_line;
-  int cnt = 1;
-  int type;
-  char *buffer = buff_tmp;
+  char *buffer;
+  int line, cnt, type;
 
+  line = current_line;
+
+  buffer = buff_tmp;
   *buffer++ = current_ch;
 
+  cnt = 1;
   while (cnt++ < MAX_IDENT_LENGTH-1 && check_identifier(next_char()))
     *buffer++ = current_ch;
 
@@ -314,11 +329,13 @@ get_identifier()
 int
 get_string()
 {
-  int line = current_line;
-  int cnt = 0;
-  char *buffer = buff_tmp;
-  char ch;
+  char *buffer, ch;
+  int line, cnt;
 
+  line = current_line;
+  buffer = buff_tmp;
+
+  cnt = 0;
   while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
     *buffer++ = ch;
 
@@ -338,7 +355,9 @@ get_string()
 int
 get_strchar(char *ch)
 {
-  char c = next_char();
+  char c;
+
+  c = next_char();
   assert_not_eof(c);
   assert_not_ch(c, '\n');
   if (c == '"')
@@ -355,8 +374,11 @@ get_strchar(char *ch)
 int
 get_character()
 {
-  int line = current_line;
-  char ch = next_char();
+  int line;
+  char ch;
+
+  line = current_line;
+  ch = next_char();
 
   assert_not_eof(ch);
   assert_not_ch(ch, '\'');
@@ -376,9 +398,9 @@ get_character()
 int
 get_escape_seq()
 {
-  char ch = next_char();
+  char ch;
+  ch = next_char();
   assert_not_eof(ch);
-
   if (ch == 'x')
     return get_hexnum() * 16 + get_hexnum();
   if (ch == 'a')
@@ -405,7 +427,8 @@ get_escape_seq()
 int
 get_hexnum()
 {
-  char ch = next_char();
+  char ch;
+  ch = next_char();
   assert_not_eof(ch);
   assert_hex(ch);
   return cnv_hexdigit(ch);
@@ -415,8 +438,8 @@ get_hexnum()
 int
 get_plus_dplus()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   next_char();
   if (current_ch == '+')
     return get_single(line, TK_DPLUS);
@@ -429,8 +452,8 @@ get_plus_dplus()
 int
 get_minus_dminus_pointsto()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   next_char();
   if (current_ch == '-')
     return get_single(line, TK_DMINUS);
@@ -459,8 +482,8 @@ get_ellipsis(int line)
 int
 get_dot_ellipsis()
 {
-  int line = current_line;
-
+  int line; 
+  line = current_line;
   if (next_char() == '.')
     return get_ellipsis(line);
 
@@ -476,8 +499,8 @@ get_dot_ellipsis()
 int
 get_and_dand()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '&')
     return get_single(line, TK_DAND);
 
@@ -489,8 +512,8 @@ get_and_dand()
 int
 get_or_dor()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '|')
     return get_single(line, TK_DOR);
 
@@ -502,8 +525,8 @@ get_or_dor()
 int
 get_assign_eq()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '=')
     return get_single(line, TK_EQ);
 
@@ -515,8 +538,8 @@ get_assign_eq()
 int
 get_gt_geq()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '=')
     return get_single(line, TK_GEQ);
 
@@ -528,8 +551,8 @@ get_gt_geq()
 int
 get_lt_leq()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '=')
     return get_single(line, TK_LEQ);
 
@@ -541,8 +564,8 @@ get_lt_leq()
 int
 get_exclamation_neq()
 {
-  int line = current_line;
-
+  int line;
+  line = current_line;
   if (next_char() == '=')
     return get_single(line, TK_NEQ);
 
@@ -592,15 +615,15 @@ jump_line_comments()
 int
 get_divide_or_jump_comments()
 {
-  char ch = next_char();
-  int line = current_line;
+  int line;
+  char ch;
 
+  line = current_line;
+  ch = next_char();
   if (ch == '*')
     return jump_multi_comments();
-
   if (ch == '/')
     return jump_line_comments();
-
   join_token(line, TK_DIVIDE, NULL);
   return 1;
 }

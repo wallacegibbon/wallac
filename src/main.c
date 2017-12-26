@@ -10,8 +10,8 @@
 
 char filename[MAX_FILENAME_SIZE];
 char filename_out[MAX_FILENAME_SIZE];
-FILE *fp_in = NULL;
-FILE *fp_out = NULL;
+FILE *fp_in;
+FILE *fp_out;
 
 
 
