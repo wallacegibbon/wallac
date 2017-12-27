@@ -1,5 +1,5 @@
-#ifndef __CVARIABLE_H__
-#define __CVARIABLE_H__
+#ifndef __CVARS_H__
+#define __CVARS_H__
 
 
 struct cvars { struct cvars *next; int type; char *name; };
@@ -85,6 +85,7 @@ is_extern(int type);
 #define STORAGE_REGISTER (6 << 7)
 
 #define STRUCTIDX_STARTBIT 16
+#define POINTERDEPTH_STARTBIT 24
 
 
 

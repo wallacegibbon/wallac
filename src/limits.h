@@ -3,6 +3,7 @@
 
 
 #define MAX_STRUCT_NUMBER 0xff
+#define MAX_POINTER_DEPTH 0x7f
 
 #define MAX_CSTR_LENGTH 256
 #define MAX_IDENT_LENGTH 64

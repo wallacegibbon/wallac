@@ -228,71 +228,71 @@ token_type_str(int type)
 
 
 int
-try_get_keyword(char *identifier)
+try_get_keyword(char *s)
 {
-  if (!strcmp(identifier, "if"))
+  if (!strcmp(s, "if"))
     return KW_IF;
-  if (!strcmp(identifier, "else"))
+  if (!strcmp(s, "else"))
     return KW_ELSE;
-  if (!strcmp(identifier, "for"))
+  if (!strcmp(s, "for"))
     return KW_FOR;
-  if (!strcmp(identifier, "while"))
+  if (!strcmp(s, "while"))
     return KW_WHILE;
-  if (!strcmp(identifier, "do"))
+  if (!strcmp(s, "do"))
     return KW_DO;
-  if (!strcmp(identifier, "switch"))
+  if (!strcmp(s, "switch"))
     return KW_SWITCH;
-  if (!strcmp(identifier, "case"))
+  if (!strcmp(s, "case"))
     return KW_CASE;
-  if (!strcmp(identifier, "default"))
+  if (!strcmp(s, "default"))
     return KW_DEFAULT;
-  if (!strcmp(identifier, "return"))
+  if (!strcmp(s, "return"))
     return KW_RETURN;
-  if (!strcmp(identifier, "goto"))
+  if (!strcmp(s, "goto"))
     return KW_GOTO;
-  if (!strcmp(identifier, "continue"))
+  if (!strcmp(s, "continue"))
     return KW_CONTINUE;
-  if (!strcmp(identifier, "break"))
+  if (!strcmp(s, "break"))
     return KW_BREAK;
-  if (!strcmp(identifier, "void"))
+  if (!strcmp(s, "void"))
     return KW_VIOD;
-  if (!strcmp(identifier, "char"))
+  if (!strcmp(s, "char"))
     return KW_CHAR;
-  if (!strcmp(identifier, "int"))
+  if (!strcmp(s, "int"))
     return KW_INT;
-  if (!strcmp(identifier, "float"))
+  if (!strcmp(s, "float"))
     return KW_FLOAT;
-  if (!strcmp(identifier, "double"))
+  if (!strcmp(s, "double"))
     return KW_DOUBLE;
-  if (!strcmp(identifier, "short"))
+  if (!strcmp(s, "short"))
     return KW_SHORT;
-  if (!strcmp(identifier, "long"))
+  if (!strcmp(s, "long"))
     return KW_LONG;
-  if (!strcmp(identifier, "signed"))
+  if (!strcmp(s, "signed"))
     return KW_SIGNED;
-  if (!strcmp(identifier, "unsigned"))
+  if (!strcmp(s, "unsigned"))
     return KW_UNSIGNED;
-  if (!strcmp(identifier, "struct"))
+  if (!strcmp(s, "struct"))
     return KW_STRUCT;
-  if (!strcmp(identifier, "union"))
+  if (!strcmp(s, "union"))
     return KW_UNION;
-  if (!strcmp(identifier, "enum"))
+  if (!strcmp(s, "enum"))
     return KW_ENUM;
-  if (!strcmp(identifier, "typedef"))
+  if (!strcmp(s, "typedef"))
     return KW_TYPEDEF;
-  if (!strcmp(identifier, "sizeof"))
+  if (!strcmp(s, "sizeof"))
     return KW_SIZEOF;
-  if (!strcmp(identifier, "extern"))
+  if (!strcmp(s, "extern"))
     return KW_EXTERN;
-  if (!strcmp(identifier, "volatile"))
+  if (!strcmp(s, "volatile"))
     return KW_VOLATILE;
-  if (!strcmp(identifier, "const"))
+  if (!strcmp(s, "const"))
     return KW_CONST;
-  if (!strcmp(identifier, "auto"))
+  if (!strcmp(s, "auto"))
     return KW_AUTO;
-  if (!strcmp(identifier, "static"))
+  if (!strcmp(s, "static"))
     return KW_STATIC;
-  if (!strcmp(identifier, "register"))
+  if (!strcmp(s, "register"))
     return KW_REGISTER;
   return 0;
 }

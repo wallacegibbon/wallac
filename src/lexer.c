@@ -63,7 +63,6 @@ get_token()
 {
   while (check_space(current_ch))
     next_char();
-
   if (current_ch == EOF)
     return 0;
   if (current_ch == ';')
