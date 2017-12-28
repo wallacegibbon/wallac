@@ -1,6 +1,7 @@
 package org.wallacegibbon.cc;
 
-public enum TokenType {
+public enum TokenType
+{
     ASTERISK,
     DPLUS,
     PLUS,

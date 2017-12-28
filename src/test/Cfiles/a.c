@@ -13,7 +13,7 @@ int test(int argc, char **argv, ...)
   char *s = "abcdefghijklmn
              invalid newline";
   */
-  char *s = "test escape: \x65, \a, \n";
+  char *s = "test escape: \x65, \a, \t, \n, \10000a\9bc\7de\11fg";
   char *t = "a string with newline\
              like this";
   i >= 3 && i <= 5 || i%2==1;
@@ -25,8 +25,9 @@ int test(int argc, char **argv, ...)
   /**/
   //
   //$errorsym
-  //.2;
-  //0.2;
+  .1;
+  0.2;
+  12.34;
   return 0;
 }
 
