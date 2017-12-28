@@ -38,7 +38,8 @@ public class Lexer
                     tks.add(tk);
                 }
             }
-        } catch (EOFException e)
+        }
+        catch (EOFException e)
         {
             tks.add(new Token(TokenType.EOF, lineNumber));
         }

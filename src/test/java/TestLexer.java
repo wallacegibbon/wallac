@@ -19,7 +19,8 @@ public class TestLexer
             {
                 System.out.println(l.get(i));
             }
-        } catch (LexerException e)
+        }
+        catch (LexerException e)
         {
             System.err.print(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
         }
