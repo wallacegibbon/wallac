@@ -1,11 +1,13 @@
-struct person { char *name; int age; char gender } wallace;
+struct person { char *name; short age; int gender; long blah; };
 
 int test(int argc, char **argv, ...)
 {
-  float f1 = 3.1415926, f2 = .15;
   char c1 = 'c', c2 = '\x65';
-  char *s = "abcdefg\\hijklmn";
-  printf("\"f\" is %f, and \"i\" is %d\n", f, i);
+  char *s = "abcdefg\\hijklmn", *t = "";
+  int i = 123;
+  //int j = 0b101;
+
+  printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);
   //char *s = "abcdefghijklmn";
   /*
   char *s = "abcdefghijklmn
@@ -18,10 +20,14 @@ int test(int argc, char **argv, ...)
 
   struct person *p = struct person { "Wallace", 27, 1 };
   p->age++ && p->age--;
-
+  /** ok **/
+  /***/
+  /**/
+  //
   //$errorsym
-  int i = 10, j = 0x10, k = 010, l = 0x1000, m = 01000;
-
+  //.2;
+  //0.2;
   return 0;
 }
 
+typedef int a;
