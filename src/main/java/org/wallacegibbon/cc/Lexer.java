@@ -21,13 +21,12 @@ public class Lexer
     public List<Token> tokenize() throws IOException, LexerException
     {
         List<Token> tks = new ArrayList<Token>();
-        Token tk = null;
         try
         {
             getChar();
             while (true)
             {
-                tk = getToken();
+                Token tk = getToken();
                 if (tk != null)
                 {
                     tks.add(tk);
@@ -38,6 +37,7 @@ public class Lexer
         {
             tks.add(new Token(TokenType.EOF, lineNumber));
         }
+        fr.close();
         return tks;
     }
 

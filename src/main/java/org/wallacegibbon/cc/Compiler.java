@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Compiler
 {
-    public static void main(String[] args) throws IOException, LexerException
+    public static void main(String[] args)
     {
 //        checkArgs(args);
 //        String filename = args[3];
@@ -20,6 +20,10 @@ public class Compiler
         {
             System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
             System.exit(1);
+        }
+        catch (IOException e)
+        {
+            System.err.print("Failed reading file " + filename + ": " + e.getMessage());
         }
 
         for (Token tk : tks)
