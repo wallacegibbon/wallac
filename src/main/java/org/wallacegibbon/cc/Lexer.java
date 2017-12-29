@@ -18,11 +18,6 @@ public class Lexer
         fr = new FileReader(filename);
     }
 
-    /**
-     * This method will call getToken until it reaches the end of the input file.
-     *
-     * @return The collected tokens in a list
-     */
     public List<Token> tokenize() throws IOException, LexerException
     {
         List<Token> tks = new ArrayList<Token>();
@@ -46,9 +41,6 @@ public class Lexer
         return tks;
     }
 
-    /**
-     * @return
-     */
     Token getToken() throws IOException, LexerException, EOFException
     {
         Token tk = null;

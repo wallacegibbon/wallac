@@ -22,9 +22,9 @@ public class Compiler
             System.exit(1);
         }
 
-        for (int i = 0; i < tks.size(); i++)
+        for (Token tk : tks)
         {
-            System.out.println(tks.get(i));
+            System.out.println(tk);
         }
 
         new Parser(tks);
