@@ -11,7 +11,7 @@ public class Compiler
 //        String filename = args[3];
         String filename = "src/test/Cfiles/a.c";
 
-        List<Token> tks = null;
+        List<Token> tks;
         try
         {
             tks = new Lexer(filename).tokenize();
@@ -19,11 +19,12 @@ public class Compiler
         catch (LexerException e)
         {
             System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
-            System.exit(1);
+            return;
         }
         catch (IOException e)
         {
             System.err.print("Failed reading file " + filename + ": " + e.getMessage());
+            return;
         }
 
         for (Token tk : tks)
