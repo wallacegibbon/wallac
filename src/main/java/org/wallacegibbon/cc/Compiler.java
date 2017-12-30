@@ -9,7 +9,7 @@ public class Compiler
     {
 //        checkArgs(args);
 //        String filename = args[3];
-        String filename = "src/test/Cfiles/a.c";
+        String filename = "src/test/resources/a.c";
 
         List<Token> tks;
         try
