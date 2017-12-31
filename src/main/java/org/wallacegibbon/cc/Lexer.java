@@ -41,7 +41,7 @@ public class Lexer
         return tks;
     }
 
-    Token getToken() throws IOException, LexerException, EOFException
+    private Token getToken() throws IOException, LexerException, EOFException
     {
         Token tk = null;
         skipSpaces();
@@ -188,32 +188,32 @@ public class Lexer
         throw new LexerException("Unknown character " + ch + "[" + (int) ch + "]", lineNumber);
     }
 
-    boolean isIdentifier(char c)
+    private boolean isIdentifier(char c)
     {
         return isAlphabet(c) || isDecimal(c) || c == '_';
     }
 
-    boolean isAlphabet(char c)
+    private boolean isAlphabet(char c)
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
-    boolean isDecimal(char c)
+    private boolean isDecimal(char c)
     {
         return c >= '0' && c <= '9';
     }
 
-    boolean isOctal(char c)
+    private boolean isOctal(char c)
     {
         return c >= '0' && c <= '7';
     }
 
-    boolean isHex(char c)
+    private boolean isHex(char c)
     {
         return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
 
-    Token getNumber() throws IOException, EOFException, LexerException
+    private Token getNumber() throws IOException, EOFException, LexerException
     {
         long line = lineNumber;
         Number n;
@@ -285,7 +285,7 @@ public class Lexer
         return new Token(TokenType.CNUMBER, line, n);
     }
 
-    static long parseInt(String intStr, int radix, long line) throws LexerException
+    private static long parseInt(String intStr, int radix, long line) throws LexerException
     {
         try
         {
@@ -297,7 +297,7 @@ public class Lexer
         }
     }
 
-    static Double parseFloat(String floatStr, long line) throws LexerException
+    private static Double parseFloat(String floatStr, long line) throws LexerException
     {
         try
         {
@@ -309,7 +309,7 @@ public class Lexer
         }
     }
 
-    Token getCharacter() throws IOException, EOFException, LexerException
+    private Token getCharacter() throws IOException, EOFException, LexerException
     {
         long line = lineNumber;
         char c = getChar();
@@ -334,7 +334,7 @@ public class Lexer
 
     }
 
-    Token getString() throws IOException, EOFException, LexerException
+    private Token getString() throws IOException, EOFException, LexerException
     {
         long line = lineNumber;
         String s = "";
@@ -355,7 +355,7 @@ public class Lexer
         return new Token(TokenType.CSTR, line, s);
     }
 
-    char getEscapeSequence() throws IOException, EOFException, LexerException
+    private char getEscapeSequence() throws IOException, EOFException, LexerException
     {
         char c;
         switch (getChar())
@@ -402,7 +402,7 @@ public class Lexer
         }
     }
 
-    int getOctalEsc() throws IOException, EOFException
+    private int getOctalEsc() throws IOException, EOFException
     {
         String s = "" + ch;
         getChar();
@@ -420,7 +420,7 @@ public class Lexer
         return Integer.parseInt(s, 8);
     }
 
-    int getHexDigit() throws LexerException, IOException, EOFException
+    private int getHexDigit() throws LexerException, IOException, EOFException
     {
         long line = lineNumber;
         char c = getChar();
@@ -443,7 +443,7 @@ public class Lexer
     }
 
 
-    Token getIdentifier() throws IOException, EOFException
+    private Token getIdentifier() throws IOException, EOFException
     {
         long line = lineNumber;
         String name = "" + ch;
@@ -462,7 +462,7 @@ public class Lexer
         }
     }
 
-    TokenType tryGetKeyword(String identifier)
+    private TokenType tryGetKeyword(String identifier)
     {
         if (identifier.equals("if"))
         {
@@ -595,7 +595,7 @@ public class Lexer
         return null;
     }
 
-    Token getGtGeq() throws IOException, EOFException
+    private Token getGtGeq() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '=')
@@ -609,7 +609,7 @@ public class Lexer
         }
     }
 
-    Token getLtLeq() throws IOException, EOFException
+    private Token getLtLeq() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '=')
@@ -623,7 +623,7 @@ public class Lexer
         }
     }
 
-    Token getAssignOrEqual() throws IOException, EOFException
+    private Token getAssignOrEqual() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '=')
@@ -637,7 +637,7 @@ public class Lexer
         }
     }
 
-    Token getAndOrDand() throws IOException, EOFException
+    private Token getAndOrDand() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '&')
@@ -651,7 +651,7 @@ public class Lexer
         }
     }
 
-    Token getOrOrDor() throws IOException, EOFException
+    private Token getOrOrDor() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '|')
@@ -665,7 +665,7 @@ public class Lexer
         }
     }
 
-    Token getDotOrEllipsisOrDecimal() throws IOException, LexerException, EOFException
+    private Token getDotOrEllipsisOrDecimal() throws IOException, LexerException, EOFException
     {
         long line = lineNumber;
         char c = getChar();
@@ -698,7 +698,7 @@ public class Lexer
         }
     }
 
-    Token getDivideOrJumpComments() throws IOException, EOFException
+    private Token getDivideOrJumpComments() throws IOException, EOFException
     {
         long line = lineNumber;
         char c = getChar();
@@ -718,7 +718,7 @@ public class Lexer
         }
     }
 
-    Token getExclamationOrNeq() throws IOException, EOFException
+    private Token getExclamationOrNeq() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '=')
@@ -732,7 +732,7 @@ public class Lexer
         }
     }
 
-    Token getPlusOrDplus() throws IOException, EOFException
+    private Token getPlusOrDplus() throws IOException, EOFException
     {
         long line = lineNumber;
         if (getChar() == '+')
@@ -746,7 +746,7 @@ public class Lexer
         }
     }
 
-    Token getMinusOrDminusOrPointsto() throws IOException, EOFException
+    private Token getMinusOrDminusOrPointsto() throws IOException, EOFException
     {
         long line = lineNumber;
         char c = getChar();
@@ -766,14 +766,14 @@ public class Lexer
         }
     }
 
-    void jumpLineComment() throws IOException, EOFException
+    private void jumpLineComment() throws IOException, EOFException
     {
         while (getChar() != '\n')
         {
         }
     }
 
-    void jumpMultiComment() throws IOException, EOFException
+    private void jumpMultiComment() throws IOException, EOFException
     {
         char c1;
         char c2 = getChar();
@@ -786,7 +786,7 @@ public class Lexer
         getChar();
     }
 
-    void skipSpaces() throws IOException, EOFException
+    private void skipSpaces() throws IOException, EOFException
     {
         while (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t')
         {
@@ -794,7 +794,7 @@ public class Lexer
         }
     }
 
-    char getChar() throws IOException, EOFException
+    private char getChar() throws IOException, EOFException
     {
         int i = fr.read();
         if (i == -1)

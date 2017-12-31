@@ -35,7 +35,7 @@ public class Compiler
         new Parser(tks);
     }
 
-    static void checkArgs(String[] args)
+    private static void checkArgs(String[] args)
     {
         if (args.length != 3)
         {
