@@ -213,7 +213,7 @@ public class Lexer
         return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
 
-    Token getNumber() throws IOException, EOFException
+    Token getNumber() throws IOException, EOFException, LexerException
     {
         long line = lineNumber;
         Number n;
@@ -222,12 +222,24 @@ public class Lexer
             getChar();
             if (ch == 'x' || ch == 'X')
             {
+                String x = "";
                 getChar();
-                n = getHexadecimalNumber();
+                while (isHex(ch))
+                {
+                    x += ch;
+                    getChar();
+                }
+                n = parseInt(x, 16, line);
             }
             else if (isOctal(ch))
             {
-                n = getOctalNumber();
+                String x = "";
+                while (isOctal(ch))
+                {
+                    x += ch;
+                    getChar();
+                }
+                n = parseInt(x, 8, line);
             }
             else if (ch == '.')
             {
@@ -238,7 +250,7 @@ public class Lexer
                     x += ch;
                     getChar();
                 }
-                n = Float.parseFloat(x);
+                n = parseFloat(x, line);
             }
             else
             {
@@ -247,58 +259,54 @@ public class Lexer
         }
         else
         {
-            n = getDecimalNumber();
+            String x = "";
+            while (isDecimal(ch))
+            {
+                x += ch;
+                getChar();
+            }
+            if (ch == '.')
+            {
+                x += ch;
+                getChar();
+                while (isDecimal(ch))
+                {
+                    x += ch;
+                    getChar();
+                }
+                n = parseFloat(x, line);
+            }
+            else
+            {
+                n = parseInt(x, 10, line);
+            }
         }
 
         return new Token(TokenType.CNUMBER, line, n);
     }
 
-    Number getHexadecimalNumber() throws IOException, EOFException
+    static long parseInt(String intStr, int radix, long line) throws LexerException
     {
-        String n = "";
-        while (isHex(ch))
+        try
         {
-            n += ch;
-            getChar();
+            return Long.parseLong(intStr, radix);
         }
-        return Integer.parseInt(n, 16);
+        catch (NumberFormatException e)
+        {
+            throw new LexerException("Invalid int literal " + intStr, line);
+        }
     }
 
-    Number getOctalNumber() throws IOException, EOFException
+    static Double parseFloat(String floatStr, long line) throws LexerException
     {
-        String n = "";
-        while (isOctal(ch))
+        try
         {
-            n += ch;
-            getChar();
+            return Double.parseDouble(floatStr);
         }
-        return Integer.parseInt(n, 8);
-    }
-
-    Number getDecimalNumber() throws IOException, EOFException
-    {
-        String n = "";
-        while (isDecimal(ch))
+        catch (NumberFormatException e)
         {
-            n += ch;
-            getChar();
+            throw new LexerException("Invalid float literal " + floatStr, line);
         }
-        if (ch == '.')
-        {
-            n += ch;
-            getChar();
-            while (isDecimal(ch))
-            {
-                n += ch;
-                getChar();
-            }
-            return Float.parseFloat(n);
-        }
-        else
-        {
-            return Integer.parseInt(n);
-        }
-
     }
 
     Token getCharacter() throws IOException, EOFException, LexerException
@@ -682,7 +690,7 @@ public class Lexer
                 n += ch;
                 getChar();
             }
-            return new Token(TokenType.CNUMBER, line, Float.parseFloat(n));
+            return new Token(TokenType.CNUMBER, line, parseFloat(n, line));
         }
         else
         {
@@ -767,22 +775,15 @@ public class Lexer
 
     void jumpMultiComment() throws IOException, EOFException
     {
-        getChar();
-        jumpMultiCommentRecur();
-        getChar();
-    }
-
-    void jumpMultiCommentRecur() throws IOException, EOFException
-    {
-        while (ch != '*')
+        char c1;
+        char c2 = getChar();
+        do
         {
-            getChar();
+            c1 = c2;
+            c2 = getChar();
         }
-
-        if (getChar() != '/')
-        {
-            jumpMultiCommentRecur();
-        }
+        while (!(c1 == '*' && c2 == '/'));
+        getChar();
     }
 
     void skipSpaces() throws IOException, EOFException
