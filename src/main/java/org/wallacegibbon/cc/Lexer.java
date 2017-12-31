@@ -43,7 +43,7 @@ public class Lexer
 
     private Token getToken() throws IOException, LexerException, EOFException
     {
-        Token tk = null;
+        Token tk;
         skipSpaces();
         if (ch == ';')
         {
@@ -222,35 +222,35 @@ public class Lexer
             getChar();
             if (ch == 'x' || ch == 'X')
             {
-                String x = "";
+                StringBuilder x = new StringBuilder();
                 getChar();
                 while (isHex(ch))
                 {
-                    x += ch;
+                    x.append(ch);
                     getChar();
                 }
-                n = parseInt(x, 16, line);
+                n = parseInt(x.toString(), 16, line);
             }
             else if (isOctal(ch))
             {
-                String x = "";
+                StringBuilder x = new StringBuilder();
                 while (isOctal(ch))
                 {
-                    x += ch;
+                    x.append(ch);
                     getChar();
                 }
-                n = parseInt(x, 8, line);
+                n = parseInt(x.toString(), 8, line);
             }
             else if (ch == '.')
             {
-                String x = ".";
+                StringBuilder x = new StringBuilder(".");
                 getChar();
                 while (isDecimal(ch))
                 {
-                    x += ch;
+                    x.append(ch);
                     getChar();
                 }
-                n = parseFloat(x, line);
+                n = parseFloat(x.toString(), line);
             }
             else
             {
@@ -259,26 +259,26 @@ public class Lexer
         }
         else
         {
-            String x = "";
+            StringBuilder x = new StringBuilder();
             while (isDecimal(ch))
             {
-                x += ch;
+                x.append(ch);
                 getChar();
             }
             if (ch == '.')
             {
-                x += ch;
+                x.append(ch);
                 getChar();
                 while (isDecimal(ch))
                 {
-                    x += ch;
+                    x.append(ch);
                     getChar();
                 }
-                n = parseFloat(x, line);
+                n = parseFloat(x.toString(), line);
             }
             else
             {
-                n = parseInt(x, 10, line);
+                n = parseInt(x.toString(), 10, line);
             }
         }
 
@@ -337,22 +337,22 @@ public class Lexer
     private Token getString() throws IOException, EOFException, LexerException
     {
         long line = lineNumber;
-        String s = "";
+        StringBuilder s = new StringBuilder();
         getChar();
         while (ch != '"')
         {
             if (ch == '\\')
             {
-                s += getEscapeSequence();
+                s.append(getEscapeSequence());
             }
             else
             {
-                s += ch;
+                s.append(ch);
                 getChar();
             }
         }
         getChar();
-        return new Token(TokenType.CSTR, line, s);
+        return new Token(TokenType.CSTR, line, s.toString());
     }
 
     private char getEscapeSequence() throws IOException, EOFException, LexerException
@@ -446,15 +446,16 @@ public class Lexer
     private Token getIdentifier() throws IOException, EOFException
     {
         long line = lineNumber;
-        String name = "" + ch;
+        StringBuilder name = new StringBuilder();
+        name.append(ch);
         while (isIdentifier(getChar()))
         {
-            name += ch;
+            name.append(ch);
         }
-        TokenType k = tryGetKeyword(name);
+        TokenType k = tryGetKeyword(name.toString());
         if (k == null)
         {
-            return new Token(TokenType.IDENT, line, name);
+            return new Token(TokenType.IDENT, line, name.toString());
         }
         else
         {
@@ -683,14 +684,15 @@ public class Lexer
         }
         else if (isDecimal(c))
         {
-            String n = "." + c;
+            StringBuilder x = new StringBuilder(".");
+            x.append(c);
             getChar();
             while (isDecimal(ch))
             {
-                n += ch;
+                x.append(ch);
                 getChar();
             }
-            return new Token(TokenType.CNUMBER, line, parseFloat(n, line));
+            return new Token(TokenType.CNUMBER, line, parseFloat(x.toString(), line));
         }
         else
         {
