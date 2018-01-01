@@ -5,42 +5,40 @@ import java.util.List;
 
 public class Compiler
 {
-    public static void main(String[] args)
+  public static void main(String[] args)
+  {
+    String filename = "src/test/resources/a.c";
+
+    List<Token> tks;
+    try
     {
-//        checkArgs(args);
-//        String filename = args[3];
-        String filename = "src/test/resources/a.c";
-
-        List<Token> tks;
-        try
-        {
-            tks = new Lexer(filename).tokenize();
-        }
-        catch (LexerException e)
-        {
-            System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
-            return;
-        }
-        catch (IOException e)
-        {
-            System.err.print("Failed reading file " + filename + ": " + e.getMessage());
-            return;
-        }
-
-        for (Token tk : tks)
-        {
-            System.out.println(tk);
-        }
-
-        new Parser(tks);
+      tks = new Lexer(filename).tokenize();
+    }
+    catch (LexerException e)
+    {
+      System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
+      return;
+    }
+    catch (IOException e)
+    {
+      System.err.print("Failed reading file " + filename + ": " + e.getMessage());
+      return;
     }
 
-    private static void checkArgs(String[] args)
+    for (Token tk : tks)
     {
-        if (args.length != 3)
-        {
-            System.err.println("Usage: java wallac myfile.c");
-            System.exit(1);
-        }
+      System.out.println(tk);
     }
+
+    new Parser(tks);
+  }
+
+  private static void checkArgs(String[] args)
+  {
+    if (args.length != 3)
+    {
+      System.err.println("Usage: java wallac myfile.c");
+      System.exit(1);
+    }
+  }
 }
