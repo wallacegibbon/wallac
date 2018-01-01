@@ -28,10 +28,10 @@ public class Lexer
       getChar();
       while (true)
       {
-        Token tk = getToken();
-        if (tk != null)
+        Token t = getToken();
+        if (t != null)
         {
-          tks.add(tk);
+          tks.add(t);
         }
       }
     }
@@ -54,91 +54,90 @@ public class Lexer
 
   private Token getToken() throws LexerException, EOFException
   {
-    Token tk;
     skipSpaces();
     if (ch == ';')
     {
-      tk = new Token(TokenType.SEMICOLON, lineNumber);
+      Token t = new Token(TokenType.SEMICOLON, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == ':')
     {
-      tk = new Token(TokenType.COLON, lineNumber);
+      Token t = new Token(TokenType.COLON, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == ',')
     {
-      tk = new Token(TokenType.COMMA, lineNumber);
+      Token t = new Token(TokenType.COMMA, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '?')
     {
-      tk = new Token(TokenType.QUESTION, lineNumber);
+      Token t = new Token(TokenType.QUESTION, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '^')
     {
-      tk = new Token(TokenType.CARET, lineNumber);
+      Token t = new Token(TokenType.CARET, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '~')
     {
-      tk = new Token(TokenType.TILDE, lineNumber);
+      Token t = new Token(TokenType.TILDE, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '*')
     {
-      tk = new Token(TokenType.ASTERISK, lineNumber);
+      Token t = new Token(TokenType.ASTERISK, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '%')
     {
-      tk = new Token(TokenType.MOD, lineNumber);
+      Token t = new Token(TokenType.MOD, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '{')
     {
-      tk = new Token(TokenType.BEGIN, lineNumber);
+      Token t = new Token(TokenType.BEGIN, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '}')
     {
-      tk = new Token(TokenType.END, lineNumber);
+      Token t = new Token(TokenType.END, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '[')
     {
-      tk = new Token(TokenType.OPENBR, lineNumber);
+      Token t = new Token(TokenType.OPENBR, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == ']')
     {
-      tk = new Token(TokenType.CLOSEBR, lineNumber);
+      Token t = new Token(TokenType.CLOSEBR, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '(')
     {
-      tk = new Token(TokenType.OPENPA, lineNumber);
+      Token t = new Token(TokenType.OPENPA, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == ')')
     {
-      tk = new Token(TokenType.CLOSEPA, lineNumber);
+      Token t = new Token(TokenType.CLOSEPA, lineNumber);
       getChar();
-      return tk;
+      return t;
     }
     if (ch == '/')
     {
@@ -342,7 +341,6 @@ public class Lexer
     {
       throw new LexerException("Invalid character literal", line);
     }
-
   }
 
   private Token getString() throws EOFException, LexerException
@@ -427,7 +425,6 @@ public class Lexer
         getChar();
       }
     }
-
     return Integer.parseInt(s, 8);
   }
 
