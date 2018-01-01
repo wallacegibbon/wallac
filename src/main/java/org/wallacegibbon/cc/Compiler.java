@@ -1,5 +1,6 @@
 package org.wallacegibbon.cc;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -19,9 +20,9 @@ public class Compiler
       System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
       return;
     }
-    catch (IOException e)
+    catch (FileNotFoundException e)
     {
-      System.err.print("Failed reading file " + filename + ": " + e.getMessage());
+      System.err.println("Failed reading " + filename + ": " + e.getMessage());
       return;
     }
 
