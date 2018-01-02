@@ -53,7 +53,7 @@ public class Lexer
     }
     catch (IOException e)
     {
-      System.err.print("Failed closing " + filename);
+      throw new LexerException("Failed closing " + filename, 0);
     }
 
     return tks;
