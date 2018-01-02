@@ -6,7 +6,8 @@ public class Compiler
 {
   public static void main(String[] args)
   {
-    String filename = "src/test/resources/a.c";
+    checkArgs(args);
+    String filename = args[0];
 
     List<Token> tks;
     try
@@ -29,9 +30,9 @@ public class Compiler
 
   private static void checkArgs(String[] args)
   {
-    if (args.length != 3)
+    if (args.length != 1)
     {
-      System.err.println("Usage: java wallac myfile.c");
+      System.err.println("** The target source file is not given");
       System.exit(1);
     }
   }

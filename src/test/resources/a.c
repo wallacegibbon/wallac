@@ -1,4 +1,4 @@
-struct person { char *name; short age; int gender; long blah; };
+typedef struct person { char *name; short age; int gender; long blah; } Person;
 
 int test(int argc, char **argv, ...)
 {
@@ -29,5 +29,3 @@ int test(int argc, char **argv, ...)
   //12345678913123412313142341234123;
   return 0;
 }
-
-typedef int a;
