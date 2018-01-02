@@ -1,6 +1,5 @@
 package org.wallacegibbon.cc;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 public class Compiler
@@ -17,11 +16,6 @@ public class Compiler
     catch (LexerException e)
     {
       System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
-      return;
-    }
-    catch (FileNotFoundException e)
-    {
-      System.err.println("Failed reading " + filename + ": " + e.getMessage());
       return;
     }
 

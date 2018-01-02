@@ -14,10 +14,17 @@ public class Lexer
   private FileReader fr;
   private String filename;
 
-  public Lexer(String filename) throws FileNotFoundException
+  public Lexer(String filename) throws LexerException
   {
     this.filename = filename;
-    fr = new FileReader(filename);
+    try
+    {
+      fr = new FileReader(filename);
+    }
+    catch (FileNotFoundException e)
+    {
+      throw new LexerException("File not found", 0);
+    }
   }
 
   public List<Token> tokenize() throws LexerException
@@ -813,7 +820,7 @@ public class Lexer
     }
     catch (IOException e)
     {
-      throw new LexerException("IO Error, " + e.getMessage(), lineNumber);
+      throw new LexerException(e.getMessage(), lineNumber);
     }
 
     if (i == -1)
