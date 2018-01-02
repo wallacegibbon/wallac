@@ -6,7 +6,11 @@ public class Compiler
 {
   public static void main(String[] args)
   {
-    checkArgs(args);
+    if (args.length != 1)
+    {
+      System.err.println("** The target source file is not given");
+      System.exit(1);
+    }
     String filename = args[0];
 
     List<Token> tks;
@@ -26,14 +30,5 @@ public class Compiler
     }
 
     new Parser(tks);
-  }
-
-  private static void checkArgs(String[] args)
-  {
-    if (args.length != 1)
-    {
-      System.err.println("** The target source file is not given");
-      System.exit(1);
-    }
   }
 }

@@ -298,7 +298,6 @@ public class Lexer
         n = parseInt(x.toString(), 10, line);
       }
     }
-
     return new Token(TokenType.CNUMBER, line, n);
   }
 
@@ -456,7 +455,6 @@ public class Lexer
       throw new LexerException("Invalid hex digit", line);
     }
   }
-
 
   private Token getIdentifier() throws LexerException, EOFException
   {
