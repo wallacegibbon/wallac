@@ -5,7 +5,7 @@ public class Token
   private TokenType type;
   private long lineNumber;
   private String s = "";
-  private char c = '\0';
+  private char c = ' ';
   private Number n = 0;
 
   Token(TokenType type, long lineNumber, String s)

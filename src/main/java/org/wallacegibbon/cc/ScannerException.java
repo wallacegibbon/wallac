@@ -1,10 +1,10 @@
 package org.wallacegibbon.cc;
 
-public class LexerException extends Exception
+public class ScannerException extends Exception
 {
   private long line;
 
-  LexerException(String message, long line)
+  ScannerException(String message, long line)
   {
     super(message);
     this.line = line;

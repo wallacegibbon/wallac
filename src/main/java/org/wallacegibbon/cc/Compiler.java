@@ -16,11 +16,11 @@ public class Compiler
     List<Token> tks;
     try
     {
-      tks = new Lexer(filename).tokenize();
+      tks = new Scanner(filename).tokenize();
     }
-    catch (LexerException e)
+    catch (ScannerException e)
     {
-      System.err.println(filename + ":" + e.getLine() + ":" + "[LEXER]" + e.getMessage());
+      System.err.println(filename + ":" + e.getLine() + ":" + "[SCANNER]" + e.getMessage());
       return;
     }
 

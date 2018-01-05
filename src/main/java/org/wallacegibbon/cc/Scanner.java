@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Lexer
+public class Scanner
 {
   private long lineNumber = 1;
   private char ch;
   private FileReader fr;
   private String filename;
 
-  public Lexer(String filename) throws LexerException
+  public Scanner(String filename) throws ScannerException
   {
     this.filename = filename;
     try
@@ -23,11 +23,11 @@ public class Lexer
     }
     catch (FileNotFoundException e)
     {
-      throw new LexerException("File not found", 0);
+      throw new ScannerException("File not found", 0);
     }
   }
 
-  public List<Token> tokenize() throws LexerException
+  public List<Token> tokenize() throws ScannerException
   {
     List<Token> tks = new ArrayList<Token>();
     try
@@ -53,13 +53,13 @@ public class Lexer
     }
     catch (IOException e)
     {
-      throw new LexerException("Failed closing " + filename, 0);
+      throw new ScannerException("Failed closing " + filename, 0);
     }
 
     return tks;
   }
 
-  private Token getToken() throws LexerException, EOFException
+  private Token getToken() throws ScannerException, EOFException
   {
     skipSpaces();
     if (ch == ';')
@@ -202,7 +202,7 @@ public class Lexer
     {
       return getNumber();
     }
-    throw new LexerException("Unknown character " + ch + "[" + (int) ch + "]", lineNumber);
+    throw new ScannerException("Unknown character " + ch + "[" + (int) ch + "]", lineNumber);
   }
 
   private boolean isIdentifier(char c)
@@ -230,7 +230,7 @@ public class Lexer
     return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
   }
 
-  private Token getNumber() throws EOFException, LexerException
+  private Token getNumber() throws EOFException, ScannerException
   {
     long line = lineNumber;
     Number n;
@@ -301,7 +301,7 @@ public class Lexer
     return new Token(TokenType.CNUMBER, line, n);
   }
 
-  private static long parseInt(String intStr, int radix, long line) throws LexerException
+  private static long parseInt(String intStr, int radix, long line) throws ScannerException
   {
     try
     {
@@ -309,11 +309,11 @@ public class Lexer
     }
     catch (NumberFormatException e)
     {
-      throw new LexerException("Invalid int literal " + intStr, line);
+      throw new ScannerException("Invalid int literal " + intStr, line);
     }
   }
 
-  private static Double parseFloat(String floatStr, long line) throws LexerException
+  private static Double parseFloat(String floatStr, long line) throws ScannerException
   {
     try
     {
@@ -321,11 +321,11 @@ public class Lexer
     }
     catch (NumberFormatException e)
     {
-      throw new LexerException("Invalid float literal " + floatStr, line);
+      throw new ScannerException("Invalid float literal " + floatStr, line);
     }
   }
 
-  private Token getCharacter() throws EOFException, LexerException
+  private Token getCharacter() throws EOFException, ScannerException
   {
     long line = lineNumber;
     char c = getChar();
@@ -345,11 +345,11 @@ public class Lexer
     }
     else
     {
-      throw new LexerException("Invalid character literal", line);
+      throw new ScannerException("Invalid character literal", line);
     }
   }
 
-  private Token getString() throws EOFException, LexerException
+  private Token getString() throws EOFException, ScannerException
   {
     long line = lineNumber;
     StringBuilder s = new StringBuilder();
@@ -370,7 +370,7 @@ public class Lexer
     return new Token(TokenType.CSTR, line, s.toString());
   }
 
-  private char getEscapeSequence() throws EOFException, LexerException
+  private char getEscapeSequence() throws EOFException, ScannerException
   {
     char c;
     switch (getChar())
@@ -417,7 +417,7 @@ public class Lexer
     }
   }
 
-  private int getOctalEsc() throws LexerException, EOFException
+  private int getOctalEsc() throws ScannerException, EOFException
   {
     String s = "" + ch;
     getChar();
@@ -434,7 +434,7 @@ public class Lexer
     return Integer.parseInt(s, 8);
   }
 
-  private int getHexDigit() throws LexerException, EOFException
+  private int getHexDigit() throws ScannerException, EOFException
   {
     long line = lineNumber;
     char c = getChar();
@@ -452,11 +452,11 @@ public class Lexer
     }
     else
     {
-      throw new LexerException("Invalid hex digit", line);
+      throw new ScannerException("Invalid hex digit", line);
     }
   }
 
-  private Token getIdentifier() throws LexerException, EOFException
+  private Token getIdentifier() throws ScannerException, EOFException
   {
     long line = lineNumber;
     StringBuilder name = new StringBuilder();
@@ -478,138 +478,78 @@ public class Lexer
 
   private TokenType tryGetKeyword(String identifier)
   {
-    if (identifier.equals("if"))
+    switch (identifier)
     {
+    case "if":
       return TokenType.KW_IF;
-    }
-    if (identifier.equals("else"))
-    {
+    case "else":
       return TokenType.KW_ELSE;
-    }
-    if (identifier.equals("while"))
-    {
+    case "while":
       return TokenType.KW_WHILE;
-    }
-    if (identifier.equals("switch"))
-    {
+    case "switch":
       return TokenType.KW_SWITCH;
-    }
-    if (identifier.equals("case"))
-    {
+    case "case":
       return TokenType.KW_CASE;
-    }
-    if (identifier.equals("default"))
-    {
+    case "default":
       return TokenType.KW_DEFAULT;
-    }
-    if (identifier.equals("for"))
-    {
+    case "for":
       return TokenType.KW_FOR;
-    }
-    if (identifier.equals("do"))
-    {
+    case "do":
       return TokenType.KW_DO;
-    }
-    if (identifier.equals("return"))
-    {
+    case "return":
       return TokenType.KW_RETURN;
-    }
-    if (identifier.equals("goto"))
-    {
+    case "goto":
       return TokenType.KW_GOTO;
-    }
-    if (identifier.equals("continue"))
-    {
+    case "continue":
       return TokenType.KW_CONTINUE;
-    }
-    if (identifier.equals("break"))
-    {
+    case "break":
       return TokenType.KW_BREAK;
-    }
-    if (identifier.equals("void"))
-    {
+    case "void":
       return TokenType.KW_VIOD;
-    }
-    if (identifier.equals("char"))
-    {
+    case "char":
       return TokenType.KW_CHAR;
-    }
-    if (identifier.equals("int"))
-    {
+    case "int":
       return TokenType.KW_INT;
-    }
-    if (identifier.equals("float"))
-    {
+    case "float":
       return TokenType.KW_FLOAT;
-    }
-    if (identifier.equals("double"))
-    {
+    case "double":
       return TokenType.KW_DOUBLE;
-    }
-    if (identifier.equals("short"))
-    {
+    case "short":
       return TokenType.KW_SHORT;
-    }
-    if (identifier.equals("long"))
-    {
+    case "long":
       return TokenType.KW_LONG;
-    }
-    if (identifier.equals("signed"))
-    {
+    case "signed":
       return TokenType.KW_SIGNED;
-    }
-    if (identifier.equals("unsigned"))
-    {
+    case "unsigned":
       return TokenType.KW_UNSIGNED;
-    }
-    if (identifier.equals("struct"))
-    {
+    case "struct":
       return TokenType.KW_STRUCT;
-    }
-    if (identifier.equals("union"))
-    {
+    case "union":
       return TokenType.KW_UNION;
-    }
-    if (identifier.equals("enum"))
-    {
+    case "enum":
       return TokenType.KW_ENUM;
-    }
-    if (identifier.equals("typedef"))
-    {
+    case "typedef":
       return TokenType.KW_TYPEDEF;
-    }
-    if (identifier.equals("sizeof"))
-    {
+    case "sizeof":
       return TokenType.KW_SIZEOF;
-    }
-    if (identifier.equals("extern"))
-    {
+    case "extern":
       return TokenType.KW_EXTERN;
-    }
-    if (identifier.equals("volatile"))
-    {
+    case "volatile":
       return TokenType.KW_VOLATILE;
-    }
-    if (identifier.equals("const"))
-    {
+    case "const":
       return TokenType.KW_CONST;
-    }
-    if (identifier.equals("auto"))
-    {
+    case "auto":
       return TokenType.KW_AUTO;
-    }
-    if (identifier.equals("static"))
-    {
+    case "static":
       return TokenType.KW_STATIC;
-    }
-    if (identifier.equals("register"))
-    {
+    case "register":
       return TokenType.KW_REGISTER;
+    default:
+      return null;
     }
-    return null;
   }
 
-  private Token getGtGeq() throws LexerException, EOFException
+  private Token getGtGeq() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '=')
@@ -623,7 +563,7 @@ public class Lexer
     }
   }
 
-  private Token getLtLeq() throws LexerException, EOFException
+  private Token getLtLeq() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '=')
@@ -637,7 +577,7 @@ public class Lexer
     }
   }
 
-  private Token getAssignOrEqual() throws LexerException, EOFException
+  private Token getAssignOrEqual() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '=')
@@ -651,7 +591,7 @@ public class Lexer
     }
   }
 
-  private Token getAndOrDand() throws LexerException, EOFException
+  private Token getAndOrDand() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '&')
@@ -665,7 +605,7 @@ public class Lexer
     }
   }
 
-  private Token getOrOrDor() throws LexerException, EOFException
+  private Token getOrOrDor() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '|')
@@ -679,7 +619,7 @@ public class Lexer
     }
   }
 
-  private Token getDotOrEllipsisOrDecimal() throws LexerException, EOFException
+  private Token getDotOrEllipsisOrDecimal() throws ScannerException, EOFException
   {
     long line = lineNumber;
     char c = getChar();
@@ -692,7 +632,7 @@ public class Lexer
       }
       else
       {
-        throw new LexerException("\"..\" is not a valid c element", line);
+        throw new ScannerException("\"..\" is not a valid c element", line);
       }
     }
     else if (isDecimal(c))
@@ -713,7 +653,7 @@ public class Lexer
     }
   }
 
-  private Token getDivideOrJumpComments() throws LexerException, EOFException
+  private Token getDivideOrJumpComments() throws ScannerException, EOFException
   {
     long line = lineNumber;
     char c = getChar();
@@ -733,7 +673,7 @@ public class Lexer
     }
   }
 
-  private Token getExclamationOrNeq() throws LexerException, EOFException
+  private Token getExclamationOrNeq() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '=')
@@ -747,7 +687,7 @@ public class Lexer
     }
   }
 
-  private Token getPlusOrDplus() throws LexerException, EOFException
+  private Token getPlusOrDplus() throws ScannerException, EOFException
   {
     long line = lineNumber;
     if (getChar() == '+')
@@ -761,7 +701,7 @@ public class Lexer
     }
   }
 
-  private Token getMinusOrDminusOrPointsto() throws LexerException, EOFException
+  private Token getMinusOrDminusOrPointsto() throws ScannerException, EOFException
   {
     long line = lineNumber;
     char c = getChar();
@@ -781,14 +721,14 @@ public class Lexer
     }
   }
 
-  private void jumpLineComment() throws LexerException, EOFException
+  private void jumpLineComment() throws ScannerException, EOFException
   {
     while (getChar() != '\n')
     {
     }
   }
 
-  private void jumpMultiComment() throws LexerException, EOFException
+  private void jumpMultiComment() throws ScannerException, EOFException
   {
     char c1;
     char c2 = getChar();
@@ -801,7 +741,7 @@ public class Lexer
     getChar();
   }
 
-  private void skipSpaces() throws LexerException, EOFException
+  private void skipSpaces() throws ScannerException, EOFException
   {
     while (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t')
     {
@@ -809,7 +749,7 @@ public class Lexer
     }
   }
 
-  private char getChar() throws LexerException, EOFException
+  private char getChar() throws ScannerException, EOFException
   {
     int i;
     try
@@ -818,7 +758,7 @@ public class Lexer
     }
     catch (IOException e)
     {
-      throw new LexerException(e.getMessage(), lineNumber);
+      throw new ScannerException(e.getMessage(), lineNumber);
     }
 
     if (i == -1)
