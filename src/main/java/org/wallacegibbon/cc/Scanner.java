@@ -29,7 +29,7 @@ public class Scanner
 
   public List<Token> tokenize() throws ScannerException
   {
-    List<Token> tks = new ArrayList<Token>();
+    List<Token> tks = new ArrayList<>(100);
     try
     {
       getChar();
