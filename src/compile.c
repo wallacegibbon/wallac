@@ -1,10 +1,12 @@
-#include "parser.h"
+#include "lexer.h"
 
 
 int
 compile()
 {
-  parse();
+  tokenize();
+  print_token_list();
+
   return 0;
 }
 
