@@ -74,8 +74,11 @@ void
 print_token_list()
 {
   struct token *p;
+  printf("Tokens generated from the C source file:\n");
   for (p = start_tk->next; p; p = p->next)
     print_token(p);
+
+  printf("\n");
 }
 
 

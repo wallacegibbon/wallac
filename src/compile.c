@@ -1,11 +1,14 @@
 #include "lexer.h"
+#include "vars.h"
 
 
 int
 compile()
 {
   tokenize();
-  print_token_list();
+
+  if (verbose)
+    print_token_list();
 
   return 0;
 }

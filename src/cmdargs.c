@@ -21,6 +21,14 @@ handle_outfile_argument(char **argv, char **end)
 
 
 int
+handle_verbose(char **argv, char **end)
+{
+  verbose = 1;
+  return walk_arguments(argv, end);
+}
+
+
+int
 handle_infile_argument(char **argv, char **end)
 {
   if (!IS_VALID_FILENAME(*argv))
@@ -39,6 +47,9 @@ walk_arguments(char **argv, char **end)
 
   if (strcmp(*argv, "-o") == 0)
     return handle_outfile_argument(argv + 1, end);
+
+  if (strcmp(*argv, "--verbose") == 0)
+    return handle_verbose(argv + 1, end);
 
   if (*argv[0] != '-')
     return handle_infile_argument(argv, end);

@@ -5,6 +5,8 @@
 
 extern char filename[], filename_out[];
 
+extern int verbose;
+
 extern FILE *fp_in, *fp_out;
 
 extern int current_line;

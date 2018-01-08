@@ -13,7 +13,7 @@
 #define MAX_OCTAL_STRING "37777777777"
 #define MAX_HEX_STRING "ffffffff"
 
-#define MAX_FILENAME_SIZE 60
+#define MAX_FILENAME_SIZE 250
 #define IS_VALID_FILENAME(f) (strlen(f) < MAX_FILENAME_SIZE-3)
 
 #define CHAR_MIN -127

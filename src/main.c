@@ -11,6 +11,7 @@
 char filename[MAX_FILENAME_SIZE], filename_out[MAX_FILENAME_SIZE];
 FILE *fp_in, *fp_out;
 
+int verbose;
 
 
 int
@@ -20,6 +21,8 @@ main(int argc, char **argv)
 
   if (argc == 1)
     exit_with_info("Usage: cc myfile.c [-c] [-o outputfile]\n");
+
+  verbose = 0;
 
   walk_arguments(argv + 1, argv + argc);
 
