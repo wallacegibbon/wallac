@@ -238,7 +238,7 @@ get_divide_or_jump_comments()
 
 
 void
-get_numstr(int chkfn(int), int line)
+get_numstr(int (*chkfn)(int), int line)
 {
   char *buffer;
   int cnt;
@@ -259,7 +259,7 @@ get_numstr(int chkfn(int), int line)
 
 
 int
-get_numval(int base, int cnvfn(int), int line)
+get_numval(int base, int (*cnvfn)(int), int line)
 {
   char *buffer, *cmpstr;
   long i, j, k;
