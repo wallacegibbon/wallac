@@ -3,7 +3,7 @@
 
 
 int
-check_identifier(char ch)
+check_identifier(int ch)
 {
   assert_not_eof(ch);
   return check_alpha(ch) || check_decimal(ch) || ch == '_';
@@ -11,7 +11,7 @@ check_identifier(char ch)
 
 
 int
-check_identifier_start(char ch)
+check_identifier_start(int ch)
 {
   assert_not_eof(ch);
   return check_alpha(ch) || ch == '_';
@@ -19,7 +19,7 @@ check_identifier_start(char ch)
 
 
 int
-check_string_end(char ch)
+check_string_end(int ch)
 {
   assert_not_ch(ch, '\r');
   assert_not_ch(ch, '\n');
@@ -29,7 +29,7 @@ check_string_end(char ch)
 
 
 int
-check_alpha(char ch)
+check_alpha(int ch)
 {
   assert_not_eof(ch);
   return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z';
@@ -37,7 +37,7 @@ check_alpha(char ch)
 
 
 int
-check_a2f(char ch)
+check_a2f(int ch)
 {
   assert_not_eof(ch);
   return ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F';
@@ -45,7 +45,7 @@ check_a2f(char ch)
 
 
 int
-check_octal(char ch)
+check_octal(int ch)
 {
   assert_not_eof(ch);
   return ch >= '0' && ch <= '7';
@@ -53,7 +53,7 @@ check_octal(char ch)
 
 
 int
-check_decimal(char ch)
+check_decimal(int ch)
 {
   assert_not_eof(ch);
   return ch >= '0' && ch <= '9';
@@ -61,7 +61,7 @@ check_decimal(char ch)
 
 
 int
-check_hex(char ch)
+check_hex(int ch)
 {
   assert_not_eof(ch);
   return check_decimal(ch) || check_a2f(ch);
@@ -69,7 +69,7 @@ check_hex(char ch)
 
 
 int
-check_space(char ch)
+check_space(int ch)
 {
   return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
 }

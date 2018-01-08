@@ -224,8 +224,7 @@ jump_line_comments()
 int
 get_divide_or_jump_comments()
 {
-  int line;
-  char ch;
+  int line, ch;
 
   line = current_line;
   ch = next_char();
@@ -239,7 +238,7 @@ get_divide_or_jump_comments()
 
 
 void
-get_numstr(int chkfn(char), int line)
+get_numstr(int chkfn(int), int line)
 {
   char *buffer;
   int cnt;
@@ -260,7 +259,7 @@ get_numstr(int chkfn(char), int line)
 
 
 int
-get_numval(int base, int cnvfn(char), int line)
+get_numval(int base, int cnvfn(int), int line)
 {
   char *buffer, *cmpstr;
   long i, j, k;
@@ -288,7 +287,7 @@ get_numval(int base, int cnvfn(char), int line)
 
 
 int
-cnv_hexdigit(char ch)
+cnv_hexdigit(int ch)
 {
   if (ch >= 'a' && ch <= 'f')
     return ch - 'a' + 10;
@@ -299,7 +298,7 @@ cnv_hexdigit(char ch)
 
 
 int
-cnv_digit(char ch)
+cnv_digit(int ch)
 {
   return ch - '0';
 }
@@ -337,7 +336,6 @@ get_hex(int line)
   long i;
 
   next_char();
-
   get_numstr(check_hex, line);
   i = get_numval(16, cnv_hexdigit, line);
 
@@ -349,8 +347,7 @@ get_hex(int line)
 int
 get_integer()
 {
-  int line;
-  char ch;
+  int line, ch;
 
   line = current_line;
   ch = current_ch;
@@ -359,7 +356,6 @@ get_integer()
     return get_decimal(line);
 
   ch = next_char();
-
   if (check_octal(ch))
     return get_octal(line);
 
@@ -378,7 +374,6 @@ get_identifier()
   int line, cnt, type;
 
   line = current_line;
-
   buffer = buff_tmp;
   *buffer++ = current_ch;
 
@@ -405,7 +400,7 @@ get_identifier()
 int
 get_hexnum()
 {
-  char ch;
+  int ch;
   ch = next_char();
   assert_not_eof(ch);
   assert_hex(ch);
@@ -416,7 +411,7 @@ get_hexnum()
 int
 get_escape_seq()
 {
-  char ch;
+  int ch;
   ch = next_char();
   assert_not_eof(ch);
   if (ch == 'x')
@@ -445,8 +440,7 @@ get_escape_seq()
 int
 get_character()
 {
-  int line;
-  char ch;
+  int line, ch;
 
   line = current_line;
   ch = next_char();

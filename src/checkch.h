@@ -2,31 +2,31 @@
 #define __CHECHCH_H__
 
 int
-check_identifier_start(char ch);
+check_identifier_start(int ch);
 
 int
-check_identifier(char ch);
+check_identifier(int ch);
 
 int
-check_string_end(char ch);
+check_string_end(int ch);
 
 int
-check_alpha(char ch);
+check_alpha(int ch);
 
 int
-check_a2f(char ch);
+check_a2f(int ch);
 
 int
-check_octal(char ch);
+check_octal(int ch);
 
 int
-check_decimal(char ch);
+check_decimal(int ch);
 
 int
-check_hex(char ch);
+check_hex(int ch);
 
 int
-check_space(char ch);
+check_space(int ch);
 
 
 #endif
