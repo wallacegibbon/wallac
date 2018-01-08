@@ -110,9 +110,6 @@ join_token(int line, int type, void *p);
 void
 print_token_list();
 
-void
-print_token(struct token *t);
-
 char *
 token_type_str(int type);
 

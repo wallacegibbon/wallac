@@ -7,8 +7,4 @@
 int
 tokenize();
 
-int
-get_token();
-
-
 #endif

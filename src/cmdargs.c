@@ -7,24 +7,6 @@
 
 
 int
-walk_arguments(char **argv, char **end)
-{
-  if (argv == end)
-    return 0;
-
-  if (strcmp(*argv, "-o") == 0)
-    return handle_outfile_argument(argv + 1, end);
-
-  if (*argv[0] != '-')
-    return handle_infile_argument(argv, end);
-
-  exit_with_info("Unknown argument: \"%s\"\n", *argv);
-
-  return 0;
-}
-
-
-int
 handle_outfile_argument(char **argv, char **end)
 {
   if (argv == end)
@@ -46,6 +28,24 @@ handle_infile_argument(char **argv, char **end)
 
   strcpy(filename, *argv);
   return walk_arguments(argv + 1, end);
+}
+
+
+int
+walk_arguments(char **argv, char **end)
+{
+  if (argv == end)
+    return 0;
+
+  if (strcmp(*argv, "-o") == 0)
+    return handle_outfile_argument(argv + 1, end);
+
+  if (*argv[0] != '-')
+    return handle_infile_argument(argv, end);
+
+  exit_with_info("Unknown argument: \"%s\"\n", *argv);
+
+  return 0;
 }
 
 

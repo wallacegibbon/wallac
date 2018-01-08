@@ -1,4 +1,5 @@
 struct person { char *name; short age; int gender; long blah; };
+struct person x;
 
 int test(int argc, char **argv, ...)
 {
@@ -27,6 +28,7 @@ int test(int argc, char **argv, ...)
   //$errorsym
   //.2;
   //0.2;
+
   return 0;
 }
 

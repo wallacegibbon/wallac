@@ -2,9 +2,9 @@
 #include "misc.h"
 
 
-struct cfunc { char *name; struct list *params, *vars; int type; };
-struct cvar { int type; char *name; int is_extern; };
-struct sfield { int type; char *name; };
+struct cfunc { char *name; int type; struct list *params, *vars, *stmts; };
+struct cvar { char *name; int type; int is_extern; };
+struct sfield { char *name; int type; };
 struct cstruct { char *name; struct list *fields; int size; };
 
 struct list { struct varlist *next; void *value; };
@@ -68,9 +68,10 @@ new_function(char *name, struct list *params, struct list *vars, int type)
     exit_with_info("Failed alloc memory for new c function\n");
 
   f->name = name;
+  f->type = type;
   f->params = params;
   f->vars = vars;
-  f->type = type;
+  f->stmts = NULL;
   return f;
 }
 

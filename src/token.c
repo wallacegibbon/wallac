@@ -51,15 +51,6 @@ join_token(int line, int type, void *p)
 
 
 void
-print_token_list()
-{
-  struct token *p;
-  for (p = start_tk->next; p; p = p->next)
-    print_token(p);
-}
-
-
-void
 print_token_value_as_int(void *raw)
 {
   int v;
@@ -76,6 +67,15 @@ print_token(struct token *t)
     print_token_value_as_int(t->value);
   else
     printf("<%s>\n", (char *) t->value);
+}
+
+
+void
+print_token_list()
+{
+  struct token *p;
+  for (p = start_tk->next; p; p = p->next)
+    print_token(p);
 }
 
 
