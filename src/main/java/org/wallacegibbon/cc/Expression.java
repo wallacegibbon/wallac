@@ -17,6 +17,12 @@ class FunctionCall extends Expression
   private List<CVar> args;
 }
 
+class AssignExpression extends Expression
+{
+  private String varName;
+  private Expression value;
+}
+
 class Op1Expression extends Expression
 {
   private Op operator;

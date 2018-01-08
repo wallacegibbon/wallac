@@ -1,7 +1,5 @@
 package org.wallacegibbon.cc;
 
-import java.util.List;
-
 public class CType
 {
   private boolean isVolatile = false;
