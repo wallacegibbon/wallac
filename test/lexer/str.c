@@ -3,5 +3,5 @@
 "abc\n\a"
 "abcd\x667"
 "abcd\1456"
-"abcd\14a6"
-"abcd\1ab6"
+"abcd\11a6"
+"abcd\7ab6"

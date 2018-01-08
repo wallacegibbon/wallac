@@ -2,12 +2,15 @@
 #include "misc.h"
 
 
+struct listele { struct listele *next; void *value; };
+struct list { struct listele *ele; int size; };
+
 struct cfunc { char *name; int type; struct list *params, *vars, *stmts; };
 struct cvar { char *name; int type; int is_extern; };
 struct sfield { char *name; int type; };
-struct cstruct { char *name; struct list *fields; int size; };
+struct cstruct { char *name; struct list *fields; };
 
-struct list { struct varlist *next; void *value; };
+struct stmt { int type; void *value; };
 
 struct list *struct_defs;
 struct list *global_vars;
@@ -54,7 +57,6 @@ new_struct(char *name)
 
   s->name = name;
   s->fields = NULL;
-  s->size = 0;
   return s;
 }
 

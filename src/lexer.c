@@ -398,24 +398,52 @@ get_identifier()
 
 
 int
-get_hexnum()
+get_hex_escape()
 {
-  int ch;
-  ch = next_char();
-  assert_not_eof(ch);
-  assert_hex(ch);
-  return cnv_hexdigit(ch);
+  int r, t;
+
+  t = next_char();
+  assert_not_eof(t);
+  assert_hex(t);
+  r = cnv_hexdigit(t) * 16;
+
+  t = next_char();
+  assert_not_eof(t);
+  assert_hex(t);
+  r += cnv_hexdigit(t);
+
+  next_char();
+
+  return r;
 }
 
 
 int
-get_escape_seq()
+get_octal_escape()
 {
-  int ch;
+  int ch, v;
+  v = cnv_digit(current_ch);
   ch = next_char();
-  assert_not_eof(ch);
-  if (ch == 'x')
-    return get_hexnum() * 16 + get_hexnum();
+  if (!check_octal(ch))
+    return v;
+  v *= 8;
+  v += cnv_digit(ch);
+
+  ch = next_char();
+  if (!check_octal(ch))
+    return v;
+  v *= 8;
+  v += cnv_digit(ch);
+
+  next_char();
+  return v;
+}
+
+
+int
+get_normal_escape(int ch)
+{
+  next_char();
   if (ch == 'a')
     return 7;
   if (ch == 'b')
@@ -432,8 +460,23 @@ get_escape_seq()
     return 13;
   if (ch == '0')
     return 0;
-
   return ch;
+}
+
+
+int
+get_escape_seq()
+{
+  int ch;
+  ch = next_char();
+  assert_not_eof(ch);
+
+  if (check_octal(ch))
+    return get_octal_escape();
+  if (ch == 'x')
+    return get_hex_escape();
+
+  return get_normal_escape(ch);
 }
 
 
@@ -450,8 +493,10 @@ get_character()
 
   if (ch == '\\')
     ch = get_escape_seq();
+  else
+    next_char();
 
-  assert_ch(next_char(), '\'');
+  assert_ch(current_ch, '\'');
 
   join_token(line, TK_CCHAR, (void *) ch);
 
@@ -461,20 +506,23 @@ get_character()
 
 
 int
-get_strchar(char *ch)
+get_strchar(char *c)
 {
-  char c;
+  char ch;
 
-  c = next_char();
-  assert_not_eof(c);
-  assert_not_ch(c, '\n');
-  if (c == '"')
+  ch = current_ch;
+  assert_not_eof(ch);
+  assert_not_ch(ch, '\n');
+
+  if (ch == '"')
     return 0;
 
-  if (c == '\\')
-    c = get_escape_seq();
+  if (ch == '\\')
+    ch = get_escape_seq();
+  else
+    next_char();
 
-  *ch = c;
+  *c = ch;
   return 1;
 }
 
@@ -487,6 +535,8 @@ get_string()
 
   line = current_line;
   buffer = buff_tmp;
+
+  next_char();
 
   cnt = 0;
   while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
