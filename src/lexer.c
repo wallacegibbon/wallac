@@ -66,33 +66,33 @@ get_token()
   if (current_ch == EOF)
     return 0;
   if (current_ch == ';')
-    return get_single(current_line, TK_SEMICOLON);
+    return join_token_nchar(current_line, TK_SEMICOLON);
   if (current_ch == ':')
-    return get_single(current_line, TK_COLON);
+    return join_token_nchar(current_line, TK_COLON);
   if (current_ch == ',')
-    return get_single(current_line, TK_COMMA);
+    return join_token_nchar(current_line, TK_COMMA);
   if (current_ch == '?')
-    return get_single(current_line, TK_QUESTION);
+    return join_token_nchar(current_line, TK_QUESTION);
   if (current_ch == '^')
-    return get_single(current_line, TK_CARET);
+    return join_token_nchar(current_line, TK_CARET);
   if (current_ch == '~')
-    return get_single(current_line, TK_TILDE);
+    return join_token_nchar(current_line, TK_TILDE);
   if (current_ch == '*')
-    return get_single(current_line, TK_ASTERISK);
+    return join_token_nchar(current_line, TK_ASTERISK);
   if (current_ch == '%')
-    return get_single(current_line, TK_MOD);
+    return join_token_nchar(current_line, TK_MOD);
   if (current_ch == '{')
-    return get_single(current_line, TK_BEGIN);
+    return join_token_nchar(current_line, TK_BEGIN);
   if (current_ch == '}')
-    return get_single(current_line, TK_END);
+    return join_token_nchar(current_line, TK_END);
   if (current_ch == '[')
-    return get_single(current_line, TK_OPENBR);
+    return join_token_nchar(current_line, TK_OPENBR);
   if (current_ch == ']')
-    return get_single(current_line, TK_CLOSEBR);
+    return join_token_nchar(current_line, TK_CLOSEBR);
   if (current_ch == '(')
-    return get_single(current_line, TK_OPENPA);
+    return join_token_nchar(current_line, TK_OPENPA);
   if (current_ch == ')')
-    return get_single(current_line, TK_CLOSEPA);
+    return join_token_nchar(current_line, TK_CLOSEPA);
   if (current_ch == '/')
     return get_divide_or_jump_comments();
   if (current_ch == '!')
@@ -422,7 +422,7 @@ get_plus_dplus()
   line = current_line;
   next_char();
   if (current_ch == '+')
-    return get_single(line, TK_DPLUS);
+    return join_token_nchar(line, TK_DPLUS);
 
   join_token(line, TK_PLUS, NULL);
   return 1;
@@ -436,10 +436,10 @@ get_minus_dminus_pointsto()
   line = current_line;
   next_char();
   if (current_ch == '-')
-    return get_single(line, TK_DMINUS);
+    return join_token_nchar(line, TK_DMINUS);
 
   if (current_ch == '>')
-    return get_single(line, TK_POINTSTO);
+    return join_token_nchar(line, TK_POINTSTO);
 
   join_token(line, TK_MINUS, NULL);
   return 1;
@@ -482,7 +482,7 @@ get_and_dand()
   int line;
   line = current_line;
   if (next_char() == '&')
-    return get_single(line, TK_DAND);
+    return join_token_nchar(line, TK_DAND);
 
   join_token(line, TK_AND, NULL);
   return 1;
@@ -495,7 +495,7 @@ get_or_dor()
   int line;
   line = current_line;
   if (next_char() == '|')
-    return get_single(line, TK_DOR);
+    return join_token_nchar(line, TK_DOR);
 
   join_token(line, TK_DOR, NULL);
   return 1;
@@ -508,7 +508,7 @@ get_assign_eq()
   int line;
   line = current_line;
   if (next_char() == '=')
-    return get_single(line, TK_EQ);
+    return join_token_nchar(line, TK_EQ);
 
   join_token(line, TK_ASSIGN, NULL);
   return 1;
@@ -521,7 +521,7 @@ get_gt_geq()
   int line;
   line = current_line;
   if (next_char() == '=')
-    return get_single(line, TK_GEQ);
+    return join_token_nchar(line, TK_GEQ);
 
   join_token(line, TK_GT, NULL);
   return 1;
@@ -534,7 +534,7 @@ get_lt_leq()
   int line;
   line = current_line;
   if (next_char() == '=')
-    return get_single(line, TK_LEQ);
+    return join_token_nchar(line, TK_LEQ);
 
   join_token(line, TK_LT, NULL);
   return 1;
@@ -547,7 +547,7 @@ get_exclamation_neq()
   int line;
   line = current_line;
   if (next_char() == '=')
-    return get_single(line, TK_NEQ);
+    return join_token_nchar(line, TK_NEQ);
 
   join_token(line, TK_EXCLAMATION, NULL);
   return 1;
@@ -555,7 +555,7 @@ get_exclamation_neq()
 
 
 int
-get_single(int line, int type)
+join_token_nchar(int line, int type)
 {
   join_token(line, type, NULL);
   next_char();

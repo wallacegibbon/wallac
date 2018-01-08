@@ -83,7 +83,7 @@ int
 get_exclamation_neq();
 
 int
-get_single(int line, int type);
+join_token_nchar(int line, int type);
 
 int
 get_divide_or_jump_comments();
