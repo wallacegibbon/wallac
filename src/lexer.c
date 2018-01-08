@@ -17,6 +17,86 @@ int current_line, current_ch;
 
 
 int
+next_char();
+
+int
+get_integer();
+
+int
+get_octal(int line);
+
+int
+get_decimal(int line);
+
+int
+get_hex(int line);
+
+int
+get_character();
+
+int
+get_string();
+
+int
+get_identifier();
+
+void
+get_numstr(int chkfn(char));
+
+int
+get_numval(int base, int cnvfn(char));
+
+int
+cnv_digit(char ch);
+
+int
+cnv_hexdigit(char ch);
+
+int
+get_strchar(char *ch);
+
+int
+get_escape_seq();
+
+int
+get_hexnum();
+
+int
+get_plus_dplus();
+
+int
+get_minus_dminus_pointsto();
+
+int
+get_dot_ellipsis();
+
+int
+get_and_dand();
+
+int
+get_or_dor();
+
+int
+get_assign_eq();
+
+int
+get_gt_geq();
+
+int
+get_lt_leq();
+
+int
+get_exclamation_neq();
+
+int
+join_token_nchar(int line, int type);
+
+int
+get_divide_or_jump_comments();
+
+
+
+int
 next_char()
 {
   current_ch = fgetc(fp_in);
@@ -261,20 +341,6 @@ cnv_digit(char ch)
 }
 
 
-char *
-copy_buff_tmp()
-{
-  char *p;
-
-  p = malloc(strlen(buff_tmp) + 1);
-  if (!p)
-    exit_with_info("Failed to malloc memory for copying buff_tmp\n");
-
-  strcpy(p, buff_tmp);
-  return p;
-}
-
-
 int
 get_identifier()
 {
@@ -298,7 +364,7 @@ get_identifier()
 
   type = try_get_keyword(buff_tmp);
   if (!type)
-    join_token(line, TK_IDENT, copy_buff_tmp());
+    join_token(line, TK_IDENT, copy_of_buffer(buff_tmp));
   else
     join_token(line, type, NULL);
 
@@ -325,7 +391,7 @@ get_string()
 
   *buffer = '\0';
 
-  join_token(line, TK_CSTR, copy_buff_tmp());
+  join_token(line, TK_CSTR, copy_of_buffer(buff_tmp));
 
   next_char();
   return 1;

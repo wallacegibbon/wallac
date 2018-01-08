@@ -29,3 +29,17 @@ exit_with_info(char *fmt, ...)
 }
 
 
+char *
+copy_of_buffer(char *buffer)
+{
+  char *p;
+
+  p = malloc(strlen(buffer) + 1);
+  if (!p)
+    exit_with_info("Failed to malloc memory for copy_of_buffer\n");
+
+  strcpy(p, buffer);
+  return p;
+}
+
+

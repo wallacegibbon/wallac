@@ -10,5 +10,8 @@ init_outputname(char *outname, char *inname);
 void
 exit_with_info(char *info, ...);
 
+char *
+copy_of_buffer(char *buffer);
+
 
 #endif
