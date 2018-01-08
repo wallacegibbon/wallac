@@ -41,10 +41,10 @@ int
 get_identifier();
 
 void
-get_numstr(int chkfn(char));
+get_numstr(int chkfn(char), int line);
 
 int
-get_numval(int base, int cnvfn(char));
+get_numval(int base, int cnvfn(char), int line);
 
 int
 cnv_digit(char ch);
@@ -239,8 +239,8 @@ get_octal(int line)
 {
   long i;
 
-  get_numstr(check_octal);
-  i = get_numval(8, cnv_digit);
+  get_numstr(check_octal, line);
+  i = get_numval(8, cnv_digit, line);
 
   join_token(line, TK_CINT, (void *) i);
   return 1;
@@ -252,8 +252,8 @@ get_decimal(int line)
 {
   long i;
 
-  get_numstr(check_decimal);
-  i = get_numval(10, cnv_digit);
+  get_numstr(check_decimal, line);
+  i = get_numval(10, cnv_digit, line);
 
   join_token(line, TK_CINT, (void *) i);
   return 1;
@@ -267,8 +267,8 @@ get_hex(int line)
 
   next_char();
 
-  get_numstr(check_hex);
-  i = get_numval(16, cnv_hexdigit);
+  get_numstr(check_hex, line);
+  i = get_numval(16, cnv_hexdigit, line);
 
   join_token(line, TK_CINT, (void *) i);
   return 1;
@@ -276,7 +276,7 @@ get_hex(int line)
 
 
 void
-get_numstr(int chkfn(char))
+get_numstr(int chkfn(char), int line)
 {
   char *buffer;
   int cnt;
@@ -290,14 +290,14 @@ get_numstr(int chkfn(char))
 
   if (cnt == MAX_INT_LENGTH)
     exit_with_info("%s:%d:[LEXER]Number too long\n",
-        filename, current_line);
+        filename, line);
 
   *buffer = '\0';
 }
 
 
 int
-get_numval(int base, int cnvfn(char))
+get_numval(int base, int cnvfn(char), int line)
 {
   char *buffer, *cmpstr;
   long i, j, k;
@@ -313,7 +313,8 @@ get_numval(int base, int cnvfn(char))
   j = strlen(buffer);
   k = strlen(cmpstr);
   if (j > k || (j == k && strcmp(buffer, cmpstr) > 0))
-    return LONG_MAX;
+    exit_with_info("%s:%d:[LEXER]Number too big\n",
+        filename, line);
 
   i = 0;
   while (*buffer)
