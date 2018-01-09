@@ -25,10 +25,10 @@ main(int argc, char **argv)
 
   walk_arguments(argv + 1, argv + argc);
 
-  if (filename[0] == '\0')
+  if (*filename == '\0')
     exit_with_info("filename is not given\n");
 
-  if (filename_out[0] == '\0')
+  if (*filename_out == '\0')
     init_outputname(filename_out, filename);
 
   printf("Will compiling %s to %s\n", filename, filename_out);

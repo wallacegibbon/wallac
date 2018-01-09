@@ -49,7 +49,7 @@ walk_arguments(char **argv, char **end)
   if (scmp(*argv, "--verbose") == 0)
     return handle_verbose(argv + 1, end);
 
-  if (*argv[0] != '-')
+  if (**argv != '-')
     return handle_infile_argument(argv, end);
 
   exit_with_info("Unknown argument: \"%s\"\n", *argv);
