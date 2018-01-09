@@ -104,10 +104,10 @@ initialize_token_list();
 struct token *
 new_token(int type, void *value);
 
-void
+int
 join_token(int line, int type, void *p);
 
-void
+int
 print_token_list();
 
 char *

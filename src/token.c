@@ -36,7 +36,7 @@ new_token(int type, void *value)
 }
 
 
-void
+int
 join_token(int line, int type, void *p)
 {
   struct token *t;
@@ -46,6 +46,8 @@ join_token(int line, int type, void *p)
   t->next = NULL;
   current_tk->next = t;
   current_tk = t;
+
+  return 1;
 }
 
 
@@ -58,7 +60,7 @@ print_token_value_as_int(void *raw)
 }
 
 
-void
+int
 print_token(struct token *t)
 {
   printf("(%d)[%s]", t->line, token_type_str(t->type));
@@ -66,10 +68,12 @@ print_token(struct token *t)
     print_token_value_as_int(t->value);
   else
     printf("<%s>\n", (char *) t->value);
+
+  return 1;
 }
 
 
-void
+int
 print_token_list()
 {
   struct token *p;
@@ -78,6 +82,7 @@ print_token_list()
     print_token(p);
 
   printf("\n");
+  return 1;
 }
 
 

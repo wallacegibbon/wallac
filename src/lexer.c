@@ -77,8 +77,7 @@ get_dot_ellipsis()
     exit_with_info("%s:%d:[LEXER]Float literal is not supported\n",
         filename, current_line);
 
-  join_token(line, TK_DOT, NULL);
-  return 1;
+  return join_token(line, TK_DOT, NULL);
 }
 
 
@@ -94,8 +93,7 @@ get_minus_dminus_pointsto()
   if (current_ch == '>')
     return join_token_nchar(line, TK_POINTSTO);
 
-  join_token(line, TK_MINUS, NULL);
-  return 1;
+  return join_token(line, TK_MINUS, NULL);
 }
 
 
@@ -108,8 +106,7 @@ get_plus_dplus()
   if (current_ch == '+')
     return join_token_nchar(line, TK_DPLUS);
 
-  join_token(line, TK_PLUS, NULL);
-  return 1;
+  return join_token(line, TK_PLUS, NULL);
 }
 
 
@@ -121,8 +118,7 @@ get_and_dand()
   if (next_char() == '&')
     return join_token_nchar(line, TK_DAND);
 
-  join_token(line, TK_AND, NULL);
-  return 1;
+  return join_token(line, TK_AND, NULL);
 }
 
 
@@ -134,8 +130,7 @@ get_or_dor()
   if (next_char() == '|')
     return join_token_nchar(line, TK_DOR);
 
-  join_token(line, TK_DOR, NULL);
-  return 1;
+  return join_token(line, TK_DOR, NULL);
 }
 
 
@@ -147,8 +142,7 @@ get_assign_eq()
   if (next_char() == '=')
     return join_token_nchar(line, TK_EQ);
 
-  join_token(line, TK_ASSIGN, NULL);
-  return 1;
+  return join_token(line, TK_ASSIGN, NULL);
 }
 
 
@@ -160,8 +154,7 @@ get_gt_geq()
   if (next_char() == '=')
     return join_token_nchar(line, TK_GEQ);
 
-  join_token(line, TK_GT, NULL);
-  return 1;
+  return join_token(line, TK_GT, NULL);
 }
 
 
@@ -173,8 +166,7 @@ get_lt_leq()
   if (next_char() == '=')
     return join_token_nchar(line, TK_LEQ);
 
-  join_token(line, TK_LT, NULL);
-  return 1;
+  return join_token(line, TK_LT, NULL);
 }
 
 
@@ -186,8 +178,7 @@ get_exclamation_neq()
   if (next_char() == '=')
     return join_token_nchar(line, TK_NEQ);
 
-  join_token(line, TK_EXCLAMATION, NULL);
-  return 1;
+  return join_token(line, TK_EXCLAMATION, NULL);
 }
 
 
@@ -233,12 +224,11 @@ get_divide_or_jump_comments()
     return jump_multi_comments();
   if (ch == '/')
     return jump_line_comments();
-  join_token(line, TK_DIVIDE, NULL);
-  return 1;
+  return join_token(line, TK_DIVIDE, NULL);
 }
 
 
-void
+int
 get_numstr(int (*chkfn)(int), int line)
 {
   char *buffer;
@@ -255,6 +245,8 @@ get_numstr(int (*chkfn)(int), int line)
   if (cnt > MAX_INT_LENGTH)
     exit_with_info("%s:%d:[LEXER]Number too long\n",
         filename, line);
+
+  return 1;
 }
 
 
@@ -311,8 +303,7 @@ get_octal(int line)
   get_numstr(check_octal, line);
   i = get_numval(8, cnv_digit, line);
 
-  join_token(line, TK_CINT, (void *) i);
-  return 1;
+  return join_token(line, TK_CINT, (void *) i);
 }
 
 
@@ -324,8 +315,7 @@ get_decimal(int line)
   get_numstr(check_decimal, line);
   i = get_numval(10, cnv_digit, line);
 
-  join_token(line, TK_CINT, (void *) i);
-  return 1;
+  return join_token(line, TK_CINT, (void *) i);
 }
 
 
@@ -338,8 +328,7 @@ get_hex(int line)
   get_numstr(check_hex, line);
   i = get_numval(16, cnv_hexdigit, line);
 
-  join_token(line, TK_CINT, (void *) i);
-  return 1;
+  return join_token(line, TK_CINT, (void *) i);
 }
 
 
@@ -361,8 +350,7 @@ get_integer()
   if (ch == 'x' || ch == 'X')
     return get_hex(line);
 
-  join_token(line, TK_CINT, (void *) 0);
-  return 1;
+  return join_token(line, TK_CINT, (void *) 0);
 }
 
 
@@ -370,7 +358,7 @@ int
 get_identifier()
 {
   char *buffer;
-  int line, cnt, type;
+  int line, cnt, kw;
 
   line = current_line;
   buffer = buff_tmp;
@@ -385,13 +373,11 @@ get_identifier()
     exit_with_info("%s:%d:[LEXER]Identifier too long\n",
         filename, current_line);
 
-  type = try_get_keyword(buff_tmp);
-  if (!type)
-    join_token(line, TK_IDENT, copy_of_buffer(buff_tmp));
-  else
-    join_token(line, type, NULL);
+  kw = try_get_keyword(buff_tmp);
+  if (kw)
+    return join_token(line, kw, NULL);
 
-  return 1;
+  return join_token(line, TK_IDENT, copy_of_buffer(buff_tmp));
 }
 
 
