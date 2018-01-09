@@ -359,7 +359,7 @@ get_integer()
   if (check_octal(ch))
     return get_octal(line);
 
-  if (UPPER(ch) == 'X')
+  if (ch == 'x' || ch == 'X')
     return get_hex(line);
 
   join_token(line, TK_CINT, (void *) 0);

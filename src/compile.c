@@ -1,3 +1,4 @@
+#include "token.h"
 #include "lexer.h"
 #include "vars.h"
 

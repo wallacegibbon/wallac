@@ -2,6 +2,37 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "vars.h"
+#include "limits.h"
+#include "misc.h"
+
+
+char *
+copy_of_buffer(char *buffer)
+{
+  char *p;
+
+  p = malloc(strlen(buffer) + 1);
+  if (!p)
+    exit_with_info("Failed to malloc memory for copy_of_buffer\n");
+
+  strcpy(p, buffer);
+  return p;
+}
+
+
+int
+is_valid_filename(char *filename)
+{
+  return strlen(filename) < MAX_FILENAME_SIZE - 3;
+}
+
+
+int
+upper_case(char ch)
+{
+  return ch & ~(1 << 5);
+}
 
 
 void
@@ -26,20 +57,6 @@ exit_with_info(char *fmt, ...)
   vfprintf(stderr, fmt, ap);
 
   exit(0);
-}
-
-
-char *
-copy_of_buffer(char *buffer)
-{
-  char *p;
-
-  p = malloc(strlen(buffer) + 1);
-  if (!p)
-    exit_with_info("Failed to malloc memory for copy_of_buffer\n");
-
-  strcpy(p, buffer);
-  return p;
 }
 
 

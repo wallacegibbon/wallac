@@ -5,14 +5,13 @@
 #include "cmdargs.h"
 
 
-
 int
 handle_outfile_argument(char **argv, char **end)
 {
   if (argv == end)
     exit_with_info("\"-o\" should follow output filename\n");
 
-  if (!IS_VALID_FILENAME(*argv))
+  if (!is_valid_filename(*argv))
     exit_with_info("output filename invalid:\"%s\"\n", *argv);
 
   strcpy(filename_out, *argv);
@@ -31,7 +30,7 @@ handle_verbose(char **argv, char **end)
 int
 handle_infile_argument(char **argv, char **end)
 {
-  if (!IS_VALID_FILENAME(*argv))
+  if (!is_valid_filename(*argv))
     exit_with_info("input filename invalid: \"%s\"\n", *argv);
 
   strcpy(filename, *argv);
