@@ -18,7 +18,7 @@ int
 assert_not_ch(char ch, char unexpected_ch)
 {
   if (ch == unexpected_ch)
-    exit_with_info("%s:%d:[LEXER]Unexpected char [0X%02X]\n",
+    exit_with_info("%s:%d:[LEXER]Unexpected char [0x%x]\n",
         filename, current_line, ch);
   return ch;
 }
@@ -28,7 +28,7 @@ int
 assert_ch(char ch, char expected_ch)
 {
   if (ch != expected_ch)
-    exit_with_info("%s:%d:[LEXER]Expect char [0X%02X](not [0X%02X])\n",
+    exit_with_info("%s:%d:[LEXER]Expect char [0x%x](not [0x%x])\n",
         filename, current_line, expected_ch, ch);
   return ch;
 }

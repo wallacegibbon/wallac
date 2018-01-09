@@ -602,7 +602,7 @@ get_token()
   if (check_decimal(current_ch))
     return get_integer();
 
-  exit_with_info("%s:%d:[LEXER]Unknown char: [0X%02X]\n",
+  exit_with_info("%s:%d:[LEXER]Unknown char: [0x%x]\n",
       filename, current_line, current_ch);
 
   return 1;
