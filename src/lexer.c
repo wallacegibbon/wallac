@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <errno.h>
 
@@ -195,7 +194,7 @@ get_exclamation_neq()
 void
 jump_multi_comments_recur()
 {
-  while (current_ch != '*')
+  for (; current_ch != '*'; )
     next_char();
 
   if (next_char() != '/')
@@ -216,7 +215,9 @@ jump_multi_comments()
 int
 jump_line_comments()
 {
-  while (next_char() != '\n');
+  for (; current_ch != '\n'; )
+    next_char();
+
   return 1;
 }
 
@@ -246,15 +247,14 @@ get_numstr(int (*chkfn)(int), int line)
   buffer = buff_tmp;
   *buffer++ = current_ch;
 
-  cnt = 1;
-  while (cnt++ < MAX_INT_LENGTH-1 && chkfn(next_char()))
+  for (cnt = 1; cnt < MAX_CSTR_LENGTH && chkfn(next_char()); cnt++)
     *buffer++ = current_ch;
 
-  if (cnt == MAX_INT_LENGTH)
+  *buffer = '\0';
+
+  if (cnt > MAX_INT_LENGTH)
     exit_with_info("%s:%d:[LEXER]Number too long\n",
         filename, line);
-
-  *buffer = '\0';
 }
 
 
@@ -272,15 +272,14 @@ get_numval(int base, int (*cnvfn)(int), int line)
   if (base == 16)
     cmpstr = MAX_HEX_STRING;
 
-  j = strlen(buffer);
-  k = strlen(cmpstr);
-  if (j > k || (j == k && strcmp(buffer, cmpstr) > 0))
+  j = slen(buffer);
+  k = slen(cmpstr);
+  if (j > k || (j == k && scmp(buffer, cmpstr) > 0))
     exit_with_info("%s:%d:[LEXER]Number too big\n",
         filename, line);
 
-  i = 0;
-  while (*buffer)
-    i = i * base + cnvfn(*buffer++);
+  for (i = 0; *buffer; buffer++)
+    i = i * base + cnvfn(*buffer);
 
   return i;
 }
@@ -377,15 +376,14 @@ get_identifier()
   buffer = buff_tmp;
   *buffer++ = current_ch;
 
-  cnt = 1;
-  while (cnt++ < MAX_IDENT_LENGTH-1 && check_identifier(next_char()))
+  for (cnt = 1; cnt < MAX_CSTR_LENGTH && check_ident(next_char()); cnt++)
     *buffer++ = current_ch;
 
-  if (cnt == MAX_IDENT_LENGTH)
+  *buffer = '\0';
+
+  if (cnt > MAX_IDENT_LENGTH)
     exit_with_info("%s:%d:[LEXER]Identifier too long\n",
         filename, current_line);
-
-  *buffer = '\0';
 
   type = try_get_keyword(buff_tmp);
   if (!type)
@@ -538,15 +536,14 @@ get_string()
 
   next_char();
 
-  cnt = 0;
-  while (cnt++ < MAX_CSTR_LENGTH-1 && get_strchar(&ch))
+  for (cnt = 0; cnt < MAX_CSTR_LENGTH && get_strchar(&ch); cnt++)
     *buffer++ = ch;
+
+  *buffer = '\0';
 
   if (cnt == MAX_CSTR_LENGTH)
     exit_with_info("%s:%d:[LEXER]String too long\n",
         filename, current_line);
-
-  *buffer = '\0';
 
   join_token(line, TK_CSTR, copy_of_buffer(buff_tmp));
 
@@ -558,7 +555,7 @@ get_string()
 int
 get_token()
 {
-  while (check_space(current_ch))
+  for (; check_space(current_ch); )
     next_char();
   if (current_ch == EOF)
     return 0;
@@ -614,7 +611,7 @@ get_token()
     return get_character();
   if (current_ch == '"')
     return get_string();
-  if (check_identifier_start(current_ch))
+  if (check_ident_start(current_ch))
     return get_identifier();
   if (check_decimal(current_ch))
     return get_integer();
@@ -633,7 +630,7 @@ tokenize()
 
   current_line = 1;
   next_char();
-  while (get_token());
+  for (; get_token(); );
 
   close_input_file();
   return 0;

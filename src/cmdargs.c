@@ -1,7 +1,6 @@
-#include <string.h>
-#include "vars.h"
-#include "misc.h"
 #include "limits.h"
+#include "misc.h"
+#include "vars.h"
 #include "cmdargs.h"
 
 
@@ -14,7 +13,7 @@ handle_outfile_argument(char **argv, char **end)
   if (!is_valid_filename(*argv))
     exit_with_info("output filename invalid:\"%s\"\n", *argv);
 
-  strcpy(filename_out, *argv);
+  scpy(filename_out, *argv);
   return walk_arguments(argv + 1, end);
 }
 
@@ -33,7 +32,7 @@ handle_infile_argument(char **argv, char **end)
   if (!is_valid_filename(*argv))
     exit_with_info("input filename invalid: \"%s\"\n", *argv);
 
-  strcpy(filename, *argv);
+  scpy(filename, *argv);
   return walk_arguments(argv + 1, end);
 }
 
@@ -44,10 +43,10 @@ walk_arguments(char **argv, char **end)
   if (argv == end)
     return 0;
 
-  if (strcmp(*argv, "-o") == 0)
+  if (scmp(*argv, "-o") == 0)
     return handle_outfile_argument(argv + 1, end);
 
-  if (strcmp(*argv, "--verbose") == 0)
+  if (scmp(*argv, "--verbose") == 0)
     return handle_verbose(argv + 1, end);
 
   if (*argv[0] != '-')

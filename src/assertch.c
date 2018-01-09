@@ -67,7 +67,7 @@ assert_hex(char ch)
 int
 assert_ident(char ch)
 {
-  if (!check_identifier(ch))
+  if (!check_ident(ch))
     exit_with_info("%s:%d:[LEXER]Expect identifier\n",
         filename, current_line);
   return ch;

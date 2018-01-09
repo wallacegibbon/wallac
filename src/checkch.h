@@ -2,10 +2,10 @@
 #define __CHECHCH_H__
 
 int
-check_identifier_start(int ch);
+check_ident_start(int ch);
 
 int
-check_identifier(int ch);
+check_ident(int ch);
 
 int
 check_string_end(int ch);

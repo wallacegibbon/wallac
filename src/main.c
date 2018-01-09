@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 #include "compile.h"
@@ -34,7 +33,7 @@ main(int argc, char **argv)
 
   printf("Will compiling %s to %s\n", filename, filename_out);
 
-  if (strcmp(filename, filename_out) == 0)
+  if (scmp(filename, filename_out) == 0)
     exit_with_info("filename and output filename can't be the same\n");
 
   fp_in = fopen(filename, "r");

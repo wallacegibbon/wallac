@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include "token.h"
 #include "misc.h"
@@ -233,69 +232,69 @@ token_type_str(int type)
 int
 try_get_keyword(char *s)
 {
-  if (!strcmp(s, "if"))
+  if (!scmp(s, "if"))
     return KW_IF;
-  if (!strcmp(s, "else"))
+  if (!scmp(s, "else"))
     return KW_ELSE;
-  if (!strcmp(s, "for"))
+  if (!scmp(s, "for"))
     return KW_FOR;
-  if (!strcmp(s, "while"))
+  if (!scmp(s, "while"))
     return KW_WHILE;
-  if (!strcmp(s, "do"))
+  if (!scmp(s, "do"))
     return KW_DO;
-  if (!strcmp(s, "switch"))
+  if (!scmp(s, "switch"))
     return KW_SWITCH;
-  if (!strcmp(s, "case"))
+  if (!scmp(s, "case"))
     return KW_CASE;
-  if (!strcmp(s, "default"))
+  if (!scmp(s, "default"))
     return KW_DEFAULT;
-  if (!strcmp(s, "return"))
+  if (!scmp(s, "return"))
     return KW_RETURN;
-  if (!strcmp(s, "goto"))
+  if (!scmp(s, "goto"))
     return KW_GOTO;
-  if (!strcmp(s, "continue"))
+  if (!scmp(s, "continue"))
     return KW_CONTINUE;
-  if (!strcmp(s, "break"))
+  if (!scmp(s, "break"))
     return KW_BREAK;
-  if (!strcmp(s, "void"))
+  if (!scmp(s, "void"))
     return KW_VIOD;
-  if (!strcmp(s, "char"))
+  if (!scmp(s, "char"))
     return KW_CHAR;
-  if (!strcmp(s, "int"))
+  if (!scmp(s, "int"))
     return KW_INT;
-  if (!strcmp(s, "float"))
+  if (!scmp(s, "float"))
     return KW_FLOAT;
-  if (!strcmp(s, "double"))
+  if (!scmp(s, "double"))
     return KW_DOUBLE;
-  if (!strcmp(s, "short"))
+  if (!scmp(s, "short"))
     return KW_SHORT;
-  if (!strcmp(s, "long"))
+  if (!scmp(s, "long"))
     return KW_LONG;
-  if (!strcmp(s, "signed"))
+  if (!scmp(s, "signed"))
     return KW_SIGNED;
-  if (!strcmp(s, "unsigned"))
+  if (!scmp(s, "unsigned"))
     return KW_UNSIGNED;
-  if (!strcmp(s, "struct"))
+  if (!scmp(s, "struct"))
     return KW_STRUCT;
-  if (!strcmp(s, "union"))
+  if (!scmp(s, "union"))
     return KW_UNION;
-  if (!strcmp(s, "enum"))
+  if (!scmp(s, "enum"))
     return KW_ENUM;
-  if (!strcmp(s, "typedef"))
+  if (!scmp(s, "typedef"))
     return KW_TYPEDEF;
-  if (!strcmp(s, "sizeof"))
+  if (!scmp(s, "sizeof"))
     return KW_SIZEOF;
-  if (!strcmp(s, "extern"))
+  if (!scmp(s, "extern"))
     return KW_EXTERN;
-  if (!strcmp(s, "volatile"))
+  if (!scmp(s, "volatile"))
     return KW_VOLATILE;
-  if (!strcmp(s, "const"))
+  if (!scmp(s, "const"))
     return KW_CONST;
-  if (!strcmp(s, "auto"))
+  if (!scmp(s, "auto"))
     return KW_AUTO;
-  if (!strcmp(s, "static"))
+  if (!scmp(s, "static"))
     return KW_STATIC;
-  if (!strcmp(s, "register"))
+  if (!scmp(s, "register"))
     return KW_REGISTER;
   return 0;
 }
