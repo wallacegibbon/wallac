@@ -6,6 +6,7 @@ test(char *fmt, ...)
   s = "escape,\what? hex:\x654, octal:\7a\11b\14567\nOther esc\
        new\tline";
   printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);
+  //"abc
   p->age++ && --p->age || **p->x%2==1;
   /***************
    * this is a long comment

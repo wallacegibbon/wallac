@@ -589,7 +589,9 @@ get_strchar(struct lex *lx, char *c)
 
   ch = lx->ch;
   assert_not_eof(lx, ch);
-  assert_not_ch(lx, ch, '\n');
+  if (ch == '\n')
+    exit_with_info("%s:%d:[LEXER]String break by newline\n",
+        lx->fname, lx->line - 1);
 
   if (ch == '"')
     return 0;
