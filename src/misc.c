@@ -122,6 +122,7 @@ void
 init_outputname(char *outname, char *inname)
 {
   scpy(outname, inname);
+
   for (; *outname != '.' && *outname != '\0'; )
     outname++;
 
@@ -135,10 +136,8 @@ void
 exit_with_info(char *fmt, ...)
 {
   char *ap;
-  int i;
 
-  i = sizeof(int) - 1;
-  ap = (char *)&fmt + ((sizeof(fmt) + i) & ~i);
+  ap = (char *) &fmt + sizeof(int);
 
   vprintf(fmt, ap);
 
