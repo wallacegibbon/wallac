@@ -8,9 +8,6 @@ int
 check_ident(int ch);
 
 int
-check_string_end(int ch);
-
-int
 check_alpha(int ch);
 
 int

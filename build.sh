@@ -1,5 +1,5 @@
 OUTDIR=./out
-TARGET=wallac
+TARGET=wcc
 CC=cc
 AS=as
 LD=cc

@@ -96,19 +96,12 @@
 
 
 struct token { struct token *next, *prev; int line; int type; void *value; };
-extern struct token *start_tk, *current_tk;
-
-void
-initialize_token_list();
 
 struct token *
 new_token(int type, void *value);
 
 int
-join_token(int line, int type, void *p);
-
-int
-print_token_list();
+print_token_list(struct token *start);
 
 char *
 token_type_str(int type);

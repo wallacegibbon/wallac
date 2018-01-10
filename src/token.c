@@ -4,22 +4,6 @@
 #include "misc.h"
 
 
-struct token *start_tk, *current_tk;
-
-
-void
-initialize_token_list()
-{
-  start_tk = malloc(sizeof(struct token));
-  if (!start_tk)
-    exit_with_info("Failed alloc memory for start_tk\n");
-
-  start_tk->type = 0;
-  start_tk->prev = NULL;
-  start_tk->next = NULL;
-  current_tk = start_tk;
-}
-
 
 struct token *
 new_token(int type, void *value)
@@ -33,21 +17,6 @@ new_token(int type, void *value)
   t->value = value;
 
   return t;
-}
-
-
-int
-join_token(int line, int type, void *p)
-{
-  struct token *t;
-  t = new_token(type, p);
-  t->line = line;
-  t->prev = current_tk;
-  t->next = NULL;
-  current_tk->next = t;
-  current_tk = t;
-
-  return 1;
 }
 
 
@@ -74,11 +43,10 @@ print_token(struct token *t)
 
 
 int
-print_token_list()
+print_token_list(struct token *start)
 {
   struct token *p;
-  printf("Tokens generated from the C source file:\n");
-  for (p = start_tk->next; p; p = p->next)
+  for (p = start->next; p; p = p->next)
     print_token(p);
 
   printf("\n");

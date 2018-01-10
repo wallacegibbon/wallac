@@ -1,26 +1,30 @@
 #ifndef __ASSERT_H__
 #define __ASSERT_H__
 
-int
-assert_not_eof(char ch);
+
+#include "lexer.h"
+
 
 int
-assert_not_ch(char ch, char unexpected_ch);
+assert_not_eof(struct lex *lx, char ch);
 
 int
-assert_ch(char ch, char expected_ch);
+assert_not_ch(struct lex *lx, char ch, char unexpected_ch);
 
 int
-assert_octal(char ch);
+assert_ch(struct lex *lx, char ch, char expected_ch);
 
 int
-assert_decimal(char ch);
+assert_octal(struct lex *lx, char ch);
 
 int
-assert_hex(char ch);
+assert_decimal(struct lex *lx, char ch);
 
 int
-assert_ident(char ch);
+assert_hex(struct lex *lx, char ch);
+
+int
+assert_ident(struct lex *lx, char ch);
 
 
 #endif

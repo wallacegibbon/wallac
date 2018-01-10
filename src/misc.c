@@ -136,8 +136,10 @@ void
 exit_with_info(char *fmt, ...)
 {
   char *ap;
+  int i;
 
-  ap = (char *) &fmt + sizeof(int);
+  i = sizeof(int) - 1;
+  ap = (char *) &fmt + ((sizeof(fmt) + i) & ~i);
 
   vprintf(fmt, ap);
 

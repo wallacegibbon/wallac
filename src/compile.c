@@ -6,10 +6,14 @@
 int
 compile()
 {
-  tokenize();
+  struct token *tks;
+
+  init_lexers();
+
+  tks = tokenize();
 
   if (verbose)
-    print_token_list();
+    print_token_list(tks);
 
   return 0;
 }

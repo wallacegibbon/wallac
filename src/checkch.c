@@ -1,11 +1,9 @@
-#include "assertch.h"
 #include "checkch.h"
 
 
 int
 check_ident(int ch)
 {
-  assert_not_eof(ch);
   return check_alpha(ch) || check_decimal(ch) || ch == '_';
 }
 
@@ -13,25 +11,13 @@ check_ident(int ch)
 int
 check_ident_start(int ch)
 {
-  assert_not_eof(ch);
   return check_alpha(ch) || ch == '_';
-}
-
-
-int
-check_string_end(int ch)
-{
-  assert_not_ch(ch, '\r');
-  assert_not_ch(ch, '\n');
-
-  return ch == '"';
 }
 
 
 int
 check_alpha(int ch)
 {
-  assert_not_eof(ch);
   return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z';
 }
 
@@ -39,7 +25,6 @@ check_alpha(int ch)
 int
 check_a2f(int ch)
 {
-  assert_not_eof(ch);
   return ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F';
 }
 
@@ -47,7 +32,6 @@ check_a2f(int ch)
 int
 check_octal(int ch)
 {
-  assert_not_eof(ch);
   return ch >= '0' && ch <= '7';
 }
 
@@ -55,7 +39,6 @@ check_octal(int ch)
 int
 check_decimal(int ch)
 {
-  assert_not_eof(ch);
   return ch >= '0' && ch <= '9';
 }
 
@@ -63,7 +46,6 @@ check_decimal(int ch)
 int
 check_hex(int ch)
 {
-  assert_not_eof(ch);
   return check_decimal(ch) || check_a2f(ch);
 }
 
