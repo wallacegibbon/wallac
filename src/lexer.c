@@ -51,17 +51,6 @@ init_lexers()
 }
 
 
-void
-close_input_file()
-{
-  int i;
-
-  i = fclose(fp_in);
-  if (i == EOF && ferror(fp_in))
-    exit_with_info("Failed closing input file, %d\n", errno);
-}
-
-
 int
 join_token(struct lex *lx, int line, int type, void *p)
 {
@@ -520,7 +509,11 @@ get_octal_escape(struct lex *lx)
 int
 get_normal_escape(struct lex *lx, int ch)
 {
+  int line;
+
+  line = lx->line;
   lx->nchar();
+
   if (ch == 'a')
     return 7;
   if (ch == 'b')
@@ -535,8 +528,18 @@ get_normal_escape(struct lex *lx, int ch)
     return 12;
   if (ch == 'r')
     return 13;
-  if (ch == '0')
-    return 0;
+  if (ch == '\\')
+    return '\\';
+  if (ch == '\'')
+    return '\'';
+  if (ch == '"')
+    return '"';
+  if (ch == '\n')
+    return 0xff;
+
+  exit_with_info("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
+      lx->fname, line, ch);
+
   return ch;
 }
 
@@ -566,12 +569,23 @@ get_character(struct lex *lx)
   ch = lx->nchar();
 
   assert_not_eof(lx, ch);
-  assert_not_ch(lx, ch, '\'');
+
+  if (ch == '\'')
+    exit_with_info("%s:%d:[LEXER]Empty character literal\n",
+        lx->fname, line);
 
   if (ch == '\\')
     ch = get_escape_seq(lx);
   else
     lx->nchar();
+
+  if (ch == '\n')
+    exit_with_info("%s:%d:[LEXER]Missing terminating \"'\"\n",
+        lx->fname, line);
+
+  if (ch == 0xff)
+    exit_with_info("%s:%d:[LEXER]Invalid character\n",
+        lx->fname, line);
 
   assert_ch(lx, lx->ch, '\'');
 
@@ -583,14 +597,15 @@ get_character(struct lex *lx)
 
 
 int
-get_strchar(struct lex *lx, char *c)
+get_strchar_sub(struct lex *lx)
 {
   char ch;
 
   ch = lx->ch;
   assert_not_eof(lx, ch);
+
   if (ch == '\n')
-    exit_with_info("%s:%d:[LEXER]String break by newline\n",
+    exit_with_info("%s:%d:[LEXER]Missing terminating '\"'\n",
         lx->fname, lx->line - 1);
 
   if (ch == '"')
@@ -601,8 +616,25 @@ get_strchar(struct lex *lx, char *c)
   else
     lx->nchar();
 
+  return ch;
+}
+
+
+int
+get_strchar(struct lex *lx, char *c)
+{
+  char ch;
+
+  ch = get_strchar_sub(lx);
+  for (; ch == 0xff; )
+    ch = get_strchar_sub(lx);
+
   *c = ch;
-  return 1;
+
+  if (ch == 0)
+    return 0;
+  else
+    return 1;
 }
 
 
@@ -630,6 +662,75 @@ get_string(struct lex *lx)
   join_token(lx, line, TK_CSTR, copy_of_buffer(buff_tmp));
 
   lx->nchar();
+  return 1;
+}
+
+
+char *
+get_headername(char *line)
+{
+  char *p;
+}
+
+
+int
+handle_header(char *line)
+{
+}
+
+
+int
+handle_define(char *line)
+{
+}
+
+
+int
+handle_ifndef(char *line)
+{
+}
+
+
+int
+preprocess(struct lex *lx)
+{
+  char *buffer, ch;
+  int line;
+
+  buffer = buff_tmp;
+  line = lx->line;
+
+  ch = lx->nchar();
+  assert_not_eof(lx, ch);
+
+  if (check_space(ch))
+    exit_with_info("%s:%d:[LEXER]Do not write space after \"#\"\n",
+        lx->fname, line);
+
+  for (; ch != '\n'; ch = lx->nchar(), assert_not_eof(lx, ch))
+    *buffer++ = ch;
+
+  *buffer = '\0';
+
+  if (*(buffer - 1) == '\\')
+    exit_with_info("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
+        lx->fname, line);
+
+  if (!scmpn(buff_tmp, "include", 7))
+    return handle_header(buff_tmp);
+
+  if (!scmpn(buff_tmp, "define", 6))
+    return handle_define(buff_tmp);
+
+  if (!scmpn(buff_tmp, "ifndef", 6))
+    return handle_ifndef(buff_tmp);
+
+  if (!scmpn(buff_tmp, "endif", 5))
+    return 1;
+
+  exit_with_info("%s:%d:[LEXER]Preprocess directive error\n",
+      lx->fname, line);
+
   return 1;
 }
 
@@ -693,6 +794,8 @@ get_token(struct lex *lx)
     return get_character(lx);
   if (lx->ch == '"')
     return get_string(lx);
+  if (lx->ch == '#')
+    return preprocess(lx);
   if (check_ident_start(lx->ch))
     return get_identifier(lx);
   if (check_decimal(lx->ch))
@@ -711,7 +814,6 @@ tokenize_base(struct lex *lx)
   lx->nchar();
   for (; get_token(lx); );
 
-  //close_input_file();
   return lx->tk_s;
 }
 

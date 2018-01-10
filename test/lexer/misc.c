@@ -3,10 +3,12 @@ test(char *fmt, ...)
 {
   char c1, *s, *t;
   c1 = 'c', '\x65', 123;
-  s = "escape,\what? hex:\x654, octal:\7a\11b\14567\nOther esc\
-       new\tline";
+  s = "escape,what? hex:\x654, octal:\7a\11b\14567\nescape newline:\
+new\tline";
   printf("\"i\" is %d, and \"s\" is \"%s\"\n", i, s);
   //"abc
+  //""
+  //''
   p->age++ && --p->age || **p->x%2==1;
   /***************
    * this is a long comment

@@ -13,9 +13,9 @@ scmpn(char *s1, char *s2, int n)
   for (i = 0, t = 0; *s1 && *s2 && !t && i < n; i++)
     t = *s1++ - *s2++;
 
-  if (!t && *s1 && !*s2)
+  if (!t && *s1 && !*s2 && i < n)
     return 1;
-  if (!t && *s2 && !*s1)
+  if (!t && *s2 && !*s1 && i < n)
     return -1;
 
   return t;
