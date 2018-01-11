@@ -13,7 +13,10 @@ int
 hash_keyexist(struct hashtbl *h, char *key);
 
 int
-hash_insert(struct hashtbl *h, char *key, void *value);
+hash_put(struct hashtbl *h, char *key, void *value);
+
+struct hashnode *
+hash_get(struct hashtbl *h, char *key);
 
 int
 hash_print(struct hashtbl *h);

@@ -28,43 +28,6 @@ new_hashtbl(int bucketsize)
 }
 
 
-int
-strhash(char *str, int bucketsize)
-{
-  unsigned int i;
-
-  for (i = 0; *str; str++)
-    i = i * 131 + *str;
-
-  return i % bucketsize;
-}
-
-
-int
-hash_keyexist(struct hashtbl *h, char *key)
-{
-  struct hashnode **bk, *p;
-  int i;
-
-  bk = h->bucket;
-
-  i = strhash(key, h->bucketsize);
-  bk += i;
-
-  p = *bk;
-
-  if (!p)
-    return 0;
-
-  for (; p && scmp(p->key, key) != 0; p = p->next);
-
-  if (p)
-    return 1;
-  else
-    return 0;
-}
-
-
 struct hashnode *
 new_hashnode(char *key, void *value)
 {
@@ -83,38 +46,97 @@ new_hashnode(char *key, void *value)
 
 
 int
-append_hashnode(struct hashnode *start, struct hashnode *n)
+strhash(char *str)
 {
-  if (!start)
-    return -1;
+  unsigned int i;
 
-  for (; start->next; start = start->next);
+  for (i = 0; *str; str++)
+    i = i * 131 + *str;
 
-  start->next = n;
-  return 1;
+  return i;
 }
 
 
 int
-hash_insert(struct hashtbl *h, char *key, void *value)
+hash_keyexist(struct hashtbl *h, char *key)
 {
-  struct hashnode **p, *n;
+  struct hashnode *p;
   int i;
 
-  if (hash_keyexist(h, key))
-    return -1;
+  i = strhash(key) % h->bucketsize;
+  p = *(h->bucket + i);
 
-  n = new_hashnode(key, value);
+  if (!p)
+    return 0;
 
-  i = strhash(key, h->bucketsize);
+  for (; p && scmp(p->key, key) != 0; p = p->next);
+
+  if (p)
+    return 1;
+  else
+    return 0;
+}
+
+
+int
+append_hashnode(struct hashnode *p, char *key, void *value)
+{
+  struct hashnode *t;
+  int r;
+
+  if (!p)
+    return 0;
+
+  for (; p && scmp(p->key, key); p = p->next)
+    t = p;
+
+  r = 1;
+  if (!p)
+    t->next = new_hashnode(key, value);
+  else
+    r = 0;
+
+  return r;
+}
+
+
+int
+hash_put(struct hashtbl *h, char *key, void *value)
+{
+  struct hashnode **p;
+  int i, r;
+
+  i = strhash(key) % h->bucketsize;
   p = h->bucket + i;
 
+  r = 1;
   if (*p)
-    append_hashnode(*p, n);
+    r = append_hashnode(*p, key, value);
   else
-    *p = n;
+    *p = new_hashnode(key, value);
 
-  return 1;
+  return r;
+}
+
+
+struct hashnode *
+hash_get(struct hashtbl *h, char *key)
+{
+  struct hashnode *p;
+  int i;
+
+  i = strhash(key) % h->bucketsize;
+  p = *(h->bucket + i);
+
+  if (!p)
+    return NULL;
+
+  for (; p && scmp(p->key, key); p = p->next);
+
+  if (!p)
+    return NULL;
+
+  return p;
 }
 
 
