@@ -141,12 +141,12 @@ hash_get(struct hashtbl *h, char *key)
 
 
 int
-print_node_chain(int idx, struct hashnode *chain)
+print_node_chain(int idx, struct hashnode *p)
 {
   printf("%d)\t", idx);
 
-  for (; chain; chain = chain->next)
-    printf("[%s|%d] -> ", chain->key, chain->value);
+  for (; p; p = p->next)
+    printf("[%s|%d] -> ", p->key, (int) p->value);
 
   printf("\n");
   return 1;

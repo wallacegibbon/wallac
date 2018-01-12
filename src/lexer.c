@@ -9,10 +9,14 @@
 #include "vars.h"
 #include "token.h"
 #include "lexer.h"
+#include "hashtbl.h"
+
 
 
 char buff_tmp[MAX_CSTR_LENGTH];
-struct lex lxsrc, lxinc;
+struct lex lxsrc;
+
+struct hashtbl *macrotbl;
 
 
 
@@ -31,6 +35,7 @@ next_char()
   if (ch == '\n')
     lxsrc.line++;
 
+  lxsrc.pch = lxsrc.ch;
   lxsrc.ch = ch;
 
   return ch;
@@ -48,6 +53,8 @@ init_lexers()
   lxsrc.fname = filename;
   lxsrc.nchar = next_char;
   lxsrc.line = 1;
+
+  macrotbl = new_hashtbl(20);
 }
 
 
@@ -666,28 +673,54 @@ get_string(struct lex *lx)
 }
 
 
-char *
-get_headername(char *line)
+int
+handle_header(struct lex *lx, int line, char *p)
 {
-  char *p;
+  char *a, *b;
+
+  a = p;
+  b = p;
+
+  for (p = p + 7; *p && check_space(*p); p++);
+
+  if (!*p || *p != '"')
+    exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
+        lx->fname, line);
+
+  p++;
+  for (; check_ident(*p) || *p == '.'; )
+    *b++ = *p++;
+
+  *b = '\0';
+
+  if (*p != '"')
+    exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
+        lx->fname, line);
+
+  p++;
+  for (; *p && check_space(*p); p++);
+
+  if (*p)
+    exit_with_info("%s:%d:[LEXER]Invalid content after include\n",
+        lx->fname, line);
+
+  printf("will including file: %s...\n", a);
+
+  return 1;
 }
 
 
 int
-handle_header(char *line)
+handle_define(struct lex *lx, int line, char *p)
 {
+  return 1;
 }
 
 
 int
-handle_define(char *line)
+handle_ifndef(struct lex *lx, int line, char *p)
 {
-}
-
-
-int
-handle_ifndef(char *line)
-{
+  return 1;
 }
 
 
@@ -699,6 +732,10 @@ preprocess(struct lex *lx)
 
   buffer = buff_tmp;
   line = lx->line;
+
+  if (lx->line != 1 && lx->pch != '\n')
+    exit_with_info("%s:%d:[LEXER]Do not write space before \"#\"\n",
+        lx->fname, line);
 
   ch = lx->nchar();
   assert_not_eof(lx, ch);
@@ -717,13 +754,13 @@ preprocess(struct lex *lx)
         lx->fname, line);
 
   if (!scmpn(buff_tmp, "include", 7))
-    return handle_header(buff_tmp);
+    return handle_header(lx, line, buff_tmp);
 
   if (!scmpn(buff_tmp, "define", 6))
-    return handle_define(buff_tmp);
+    return handle_define(lx, line, buff_tmp);
 
   if (!scmpn(buff_tmp, "ifndef", 6))
-    return handle_ifndef(buff_tmp);
+    return handle_ifndef(lx, line, buff_tmp);
 
   if (!scmpn(buff_tmp, "endif", 5))
     return 1;
