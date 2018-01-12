@@ -53,6 +53,8 @@ init_lexers()
   lxsrc.fname = filename;
   lxsrc.nchar = next_char;
   lxsrc.line = 1;
+  lxsrc.ch = '\0';
+  lxsrc.pch = '\0';
 
   macrotbl = new_hashtbl(20);
 }
@@ -673,38 +675,46 @@ get_string(struct lex *lx)
 }
 
 
-int
-handle_header(struct lex *lx, int line, char *p)
+char *
+header_filename(struct lex *lx, int line, char *s)
 {
   char *a, *b;
 
-  a = p;
-  b = p;
+  for (a = s + 7; *a && check_space(*a); a++);
 
-  for (p = p + 7; *p && check_space(*p); p++);
-
-  if (!*p || *p != '"')
+  if (!*a || *a != '"')
     exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
         lx->fname, line);
-
-  p++;
-  for (; check_ident(*p) || *p == '.'; )
-    *b++ = *p++;
+  a++;
+  b = s;
+  for (; check_ident(*a) || *a == '.'; )
+    *b++ = *a++;
 
   *b = '\0';
 
-  if (*p != '"')
+  if (*a != '"')
     exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
         lx->fname, line);
 
-  p++;
-  for (; *p && check_space(*p); p++);
+  a++;
+  for (; *a && check_space(*a); a++);
 
-  if (*p)
+  if (*a)
     exit_with_info("%s:%d:[LEXER]Invalid content after include\n",
         lx->fname, line);
 
-  printf("will including file: %s...\n", a);
+  return s;
+}
+
+
+int
+handle_header(struct lex *lx, int line, char *p)
+{
+  char *fname;
+
+  fname = header_filename(lx, line, p);
+
+  printf("will including file: %s...\n", fname);
 
   return 1;
 }
@@ -724,17 +734,17 @@ handle_ifndef(struct lex *lx, int line, char *p)
 }
 
 
-int
-preprocess(struct lex *lx)
+char *
+preprocess_content(struct lex *lx)
 {
-  char *buffer, ch;
+  char ch, *buffer;
   int line;
 
-  buffer = buff_tmp;
   line = lx->line;
+  buffer = buff_tmp;
 
-  if (lx->line != 1 && lx->pch != '\n')
-    exit_with_info("%s:%d:[LEXER]Do not write space before \"#\"\n",
+  if ((lx->line == 1 && lx->pch != 0) || (lx->line != 1 && lx->pch != '\n'))
+    exit_with_info("%s:%d:[LEXER]\"#\" should be the 1st ch of a line\n",
         lx->fname, line);
 
   ch = lx->nchar();
@@ -753,16 +763,29 @@ preprocess(struct lex *lx)
     exit_with_info("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
         lx->fname, line);
 
-  if (!scmpn(buff_tmp, "include", 7))
-    return handle_header(lx, line, buff_tmp);
+  return buff_tmp;
+}
 
-  if (!scmpn(buff_tmp, "define", 6))
-    return handle_define(lx, line, buff_tmp);
 
-  if (!scmpn(buff_tmp, "ifndef", 6))
-    return handle_ifndef(lx, line, buff_tmp);
+int
+preprocess(struct lex *lx)
+{
+  char *buffer;
+  int line;
 
-  if (!scmpn(buff_tmp, "endif", 5))
+  line = lx->line;
+  buffer = preprocess_content(lx);
+
+  if (!scmpn(buffer, "include", 7))
+    return handle_header(lx, line, buffer);
+
+  if (!scmpn(buffer, "define", 6))
+    return handle_define(lx, line, buffer);
+
+  if (!scmpn(buffer, "ifndef", 6))
+    return handle_ifndef(lx, line, buffer);
+
+  if (!scmpn(buffer, "endif", 5))
     return 1;
 
   exit_with_info("%s:%d:[LEXER]Preprocess directive error\n",
