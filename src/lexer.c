@@ -19,6 +19,19 @@ struct lex lxsrc;
 struct hashtbl *macrotbl;
 
 
+struct filereader { int fd; char *buffer; };
+
+int
+new_filereader(char *filename)
+{
+}
+
+
+int
+file_nextchar(int fd)
+{
+}
+
 
 int
 next_char()
