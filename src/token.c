@@ -32,7 +32,7 @@ print_token_value_as_int(void *raw)
 int
 print_token(struct token *t)
 {
-  printf("(%d)[%s]", t->line, token_type_str(t->type));
+  printf("(%d)%s ", t->line, token_type_str(t->type));
   if (t->type != TK_CSTR && t->type != TK_IDENT)
     print_token_value_as_int(t->value);
   else

@@ -13,8 +13,6 @@
 
 
 
-char buff_tmp[MAX_CSTR_LENGTH];
-
 
 int
 file_nextchar(struct lex *lx)
@@ -69,7 +67,7 @@ nextchar(struct lex *lx)
 
 
 struct lex *
-new_lexer_common()
+new_lexer_common(char *buff)
 {
   struct lex *lx;
 
@@ -86,6 +84,8 @@ new_lexer_common()
   lx->fp = NULL;
   lx->str = NULL;
 
+  lx->buff = buff;
+
   lx->line = 1;
   lx->ch = '\0';
   lx->pch = '\0';
@@ -96,10 +96,10 @@ new_lexer_common()
 
 
 struct lex *
-new_lexer_file(char *fname)
+new_lexer_file(char *fname, char *buff)
 {
   struct lex *lx;
-  lx = new_lexer_common();
+  lx = new_lexer_common(buff);
 
   lx->fname = fname;
   lx->fp = fopen(fname, "r");
@@ -111,10 +111,10 @@ new_lexer_file(char *fname)
 
 
 struct lex *
-new_lexer_str(char *str)
+new_lexer_str(char *str, char *buff)
 {
   struct lex *lx;
-  lx = new_lexer_common();
+  lx = new_lexer_common(buff);
 
   lx->str = str;
   return lx;
@@ -377,7 +377,7 @@ get_numstr(struct lex *lx, int (*chkfn)(int), int line)
   char *buffer;
   int cnt;
 
-  buffer = buff_tmp;
+  buffer = lx->buff;
   *buffer++ = lx->ch;
 
   for (cnt = 1; cnt < MAX_CSTR_LENGTH && chkfn(nextchar(lx)); cnt++)
@@ -399,7 +399,7 @@ get_numval(struct lex *lx, int base, int (*cnvfn)(int), int line)
   char *buffer, *cmpstr;
   long i, j, k;
 
-  buffer = buff_tmp;
+  buffer = lx->buff;
 
   cmpstr = MAX_DECIMAL_STRING;
   if (base == 8)
@@ -508,7 +508,7 @@ get_identifier(struct lex *lx)
 
   line = lx->line;
 
-  buffer = buff_tmp;
+  buffer = lx->buff;
   *buffer++ = lx->ch;
 
   for (cnt = 1; cnt < MAX_CSTR_LENGTH && check_ident(nextchar(lx)); cnt++)
@@ -520,11 +520,11 @@ get_identifier(struct lex *lx)
     exit_with_info("%s:%d:[LEXER]Identifier too long\n",
         lx->fname, line);
 
-  kw = try_get_keyword(buff_tmp);
+  kw = try_get_keyword(lx->buff);
   if (kw)
     return join_token(lx, line, kw, NULL);
 
-  return join_token(lx, line, TK_IDENT, copy_of_buffer(buff_tmp));
+  return join_token(lx, line, TK_IDENT, copy_of_buffer(lx->buff));
 }
 
 
@@ -715,7 +715,7 @@ get_string(struct lex *lx)
   int line, cnt;
 
   line = lx->line;
-  buffer = buff_tmp;
+  buffer = lx->buff;
 
   ch = nextchar(lx);
   assert_not_eof(lx, ch);
@@ -729,7 +729,7 @@ get_string(struct lex *lx)
     exit_with_info("%s:%d:[LEXER]String too long\n",
         lx->fname, line);
 
-  join_token(lx, line, TK_CSTR, copy_of_buffer(buff_tmp));
+  join_token(lx, line, TK_CSTR, copy_of_buffer(lx->buff));
 
   nextchar(lx);
   return 1;
@@ -802,7 +802,7 @@ preprocess_content(struct lex *lx)
   int line;
 
   line = lx->line;
-  buffer = buff_tmp;
+  buffer = lx->buff;
 
   if ((lx->line == 1 && lx->pch != 0) || (lx->line != 1 && lx->pch != '\n'))
     exit_with_info("%s:%d:[LEXER]\"#\" should be the 1st ch of a line\n",
@@ -824,7 +824,7 @@ preprocess_content(struct lex *lx)
     exit_with_info("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
         lx->fname, line);
 
-  return buff_tmp;
+  return lx->buff;
 }
 
 
@@ -922,7 +922,7 @@ get_token(struct lex *lx)
   if (check_decimal(lx->ch))
     return get_integer(lx);
 
-  exit_with_info("%s:%d:[LEXER]Unknown char: [0x%x]\n",
+  exit_with_info("%s:%d:[LEXER]Unknown char (0x%x)\n",
       lx->fname, lx->line, lx->ch);
 
   return 1;
@@ -944,11 +944,16 @@ tokenize()
 {
   struct hashtbl *macrotbl;
   struct lex *lx;
-  
+  char *buff;
+
+  buff = malloc(MAX_CSTR_LENGTH);
+  if (!buff)
+    exit_with_info("Failed alloc memory for lex buffer\n");
+
   macrotbl = new_hashtbl(20);
 
-  lx = new_lexer_file(filename_src);
-  //lx = new_lexer_str("char *p; p = \"hello, world!\"");
+  //lx = new_lexer_str("char *p; p = \"hello, world!\"", buff);
+  lx = new_lexer_file(filename_src, buff);
 
   return tokenize_base(lx);
 }

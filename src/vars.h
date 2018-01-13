@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-extern char filename_src[], filename_out[];
+extern char *filename_src, *filename_out;
 
 extern int verbose;
 

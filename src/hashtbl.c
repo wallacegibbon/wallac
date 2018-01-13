@@ -146,7 +146,7 @@ print_node_chain(int idx, struct hashnode *p)
   printf("%d)\t", idx);
 
   for (; p; p = p->next)
-    printf("[%s|%d] -> ", p->key, (int) p->value);
+    printf("<%s|%d>--", p->key, (int) p->value);
 
   printf("\n");
   return 1;

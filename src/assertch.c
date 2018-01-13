@@ -19,7 +19,7 @@ int
 assert_not_ch(struct lex *lx, char ch, char unexpected_ch)
 {
   if (ch == unexpected_ch)
-    exit_with_info("%s:%d:[LEXER]Unexpected char [0x%x]\n",
+    exit_with_info("%s:%d:[LEXER]Unexpected char (0x%x)\n",
         lx->fname, lx->line, ch);
 
   return ch;
@@ -30,7 +30,7 @@ int
 assert_ch(struct lex *lx, char ch, char expected_ch)
 {
   if (ch != expected_ch)
-    exit_with_info("%s:%d:[LEXER]Expect char [0x%x](not [0x%x])\n",
+    exit_with_info("%s:%d:[LEXER]Expect char (0x%x), not (0x%x)\n",
         lx->fname, lx->line, expected_ch, ch);
 
   return ch;

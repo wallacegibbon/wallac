@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "compile.h"
@@ -6,8 +7,7 @@
 #include "cmdargs.h"
 
 
-char filename_src[MAX_FILENAME_SIZE], filename_out[MAX_FILENAME_SIZE];
-
+char *filename_src, *filename_out;
 int verbose;
 
 
@@ -17,9 +17,17 @@ main(int argc, char **argv)
   char *p;
 
   if (argc == 1)
-    exit_with_info("Usage: cc myfile.c [-c] [-o outputfile]\n");
+    exit_with_info("Usage: wcc myfile.c [-o outputfile]\n");
 
   verbose = 0;
+
+  filename_src = malloc(MAX_FILENAME_SIZE);
+  if (!filename_src)
+    exit_with_info("Failed alloc memory for filename_src\n");
+
+  filename_out = malloc(MAX_FILENAME_SIZE);
+  if (!filename_out)
+    exit_with_info("Failed alloc memory for filename_out\n");
 
   walk_arguments(argv + 1, argv + argc);
 
