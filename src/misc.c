@@ -87,11 +87,11 @@ copy_of_buffer(char *buffer)
 
   i = slen(buffer);
   if (i == -1)
-    exit_with_info("copy_of_buffer, string too long\n");
+    exit_with("copy_of_buffer, string too long\n");
 
   p = malloc(i + 1);
   if (!p)
-    exit_with_info("copy_of_buffer, failed on malloc\n");
+    exit_with("copy_of_buffer, failed on malloc\n");
 
   scpy(p, buffer);
   return p;
@@ -105,7 +105,7 @@ is_valid_filename(char *filename)
 
   i = slen(filename);
   if (i == -1)
-    exit_with_info("is_valid_filename, filename too long\n");
+    exit_with("is_valid_filename, filename too long\n");
 
   return i < MAX_FILENAME_SIZE - 3;
 }
@@ -133,7 +133,7 @@ init_outputname(char *outname, char *inname)
 
 
 void
-exit_with_info(char *fmt, ...)
+exit_with(char *fmt, ...)
 {
   char *ap;
   int i;

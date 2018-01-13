@@ -8,10 +8,10 @@ int
 handle_outfile_argument(char **argv, char **end)
 {
   if (argv == end)
-    exit_with_info("\"-o\" should follow output filename\n");
+    exit_with("\"-o\" should follow output filename\n");
 
   if (!is_valid_filename(*argv))
-    exit_with_info("output filename invalid:\"%s\"\n", *argv);
+    exit_with("output filename invalid:\"%s\"\n", *argv);
 
   scpy(filename_out, *argv);
   return walk_arguments(argv + 1, end);
@@ -30,7 +30,7 @@ int
 handle_infile_argument(char **argv, char **end)
 {
   if (!is_valid_filename(*argv))
-    exit_with_info("input filename invalid: \"%s\"\n", *argv);
+    exit_with("input filename invalid: \"%s\"\n", *argv);
 
   scpy(filename_src, *argv);
   return walk_arguments(argv + 1, end);
@@ -52,7 +52,7 @@ walk_arguments(char **argv, char **end)
   if (**argv != '-')
     return handle_infile_argument(argv, end);
 
-  exit_with_info("Unknown argument: \"%s\"\n", *argv);
+  exit_with("Unknown argument: \"%s\"\n", *argv);
 
   return 0;
 }

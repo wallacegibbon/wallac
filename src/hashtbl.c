@@ -13,13 +13,13 @@ new_hashtbl(int bucketsize)
 
   p = malloc(sizeof(struct hashtbl));
   if (!p)
-    exit_with_info("Failed alloc memory for hash table\n");
+    exit_with("Failed alloc memory for hash table\n");
 
   p->bucketsize = bucketsize;
 
   p->bucket = malloc(sizeof(struct hashnode *) * bucketsize);
   if (!p->bucket)
-    exit_with_info("Failed alloc memory for hash bucket\n");
+    exit_with("Failed alloc memory for hash bucket\n");
 
   for (i = 0; i < bucketsize; i++)
     *(p->bucket + i) = NULL;
@@ -35,7 +35,7 @@ new_hashnode(char *key, void *value)
 
   n = malloc(sizeof(struct hashnode));
   if (!n)
-    exit_with_info("Failed alloc memory for hash node\n");
+    exit_with("Failed alloc memory for hash node\n");
 
   n->key = key;
   n->value = value;

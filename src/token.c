@@ -11,7 +11,7 @@ new_token(int type, void *value)
   struct token *t;
   t = malloc(sizeof(struct token));
   if (!t)
-    exit_with_info("Failed alloc memory for token %d\n", type);
+    exit_with("Failed alloc memory for token %d\n", type);
 
   t->type = type;
   t->value = value;

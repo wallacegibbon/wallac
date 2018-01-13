@@ -30,7 +30,7 @@ void
 init_outputname(char *outname, char *inname);
 
 void
-exit_with_info(char *info, ...);
+exit_with(char *info, ...);
 
 
 #endif

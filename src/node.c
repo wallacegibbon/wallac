@@ -46,7 +46,7 @@ new_ctype(int type, int structidx, struct ctype *fnret, struct list *fnparams)
   struct ctype *t;
   t = malloc(sizeof(struct ctype));
   if (!t)
-    exit_with_info("Failed alloc memory for new c type\n");
+    exit_with("Failed alloc memory for new c type\n");
 
   t->type = type;
   t->structidx = structidx;
@@ -62,7 +62,7 @@ new_variable(char *name, struct ctype *type, int pdepth, int is_extern)
   struct cvar *v;
   v = malloc(sizeof(struct cvar));
   if (!v)
-    exit_with_info("Failed alloc memory for new c variable\n");
+    exit_with("Failed alloc memory for new c variable\n");
 
   v->name = name;
   v->type = type;
@@ -78,7 +78,7 @@ new_field(char *name, struct ctype *type, int pdepth)
   struct sfield *f;
   f = malloc(sizeof(struct sfield));
   if (!f)
-    exit_with_info("Failed alloc memory for new c struct field\n");
+    exit_with("Failed alloc memory for new c struct field\n");
 
   f->name = name;
   f->type = type;
@@ -93,7 +93,7 @@ new_struct(char *name)
   struct cstruct *s;
   s = malloc(sizeof(struct cstruct));
   if (!s)
-    exit_with_info("Failed alloc memory for new c struct\n");
+    exit_with("Failed alloc memory for new c struct\n");
 
   s->name = name;
   s->fields = NULL;
@@ -108,7 +108,7 @@ new_function(char *name, struct list *params, struct list *vars,
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
   if (!f)
-    exit_with_info("Failed alloc memory for new c function\n");
+    exit_with("Failed alloc memory for new c function\n");
 
   f->name = name;
   f->ret = ret;

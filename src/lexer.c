@@ -21,10 +21,10 @@ file_nextchar(struct lex *lx)
 
   ch = fgetc(lx->fp);
   if (ch == EOF && ferror(lx->fp))
-    exit_with_info("Failed reading %s(%d)\n", lx->fname, errno);
+    exit_with("Failed reading %s(%d)\n", lx->fname, errno);
 
   if (lx->line >= INT_MAX)
-    exit_with_info("File %s too long\n", lx->fname);
+    exit_with("File %s too long\n", lx->fname);
 
   if (ch == '\n')
     lx->line++;
@@ -62,7 +62,7 @@ nextchar(struct lex *lx)
   if (lx->str)
     return str_nextchar(lx);
 
-  exit_with_info("nextchar error\n");
+  exit_with("nextchar error\n");
 }
 
 
@@ -73,7 +73,7 @@ new_lexer_common(char *buff)
 
   lx = malloc(sizeof(struct lex));
   if (!lx)
-    exit_with_info("Failed alloc memory for lex\n");
+    exit_with("Failed alloc memory for lex\n");
 
   lx->tk_s = new_token(0, NULL);
   lx->tk_s->prev = NULL;
@@ -104,7 +104,7 @@ new_lexer_file(char *fname, char *buff)
   lx->fname = fname;
   lx->fp = fopen(fname, "r");
   if (!lx->fp)
-    exit_with_info("Failed opening %s\n", fname);
+    exit_with("Failed opening %s\n", fname);
 
   return lx;
 }
@@ -154,7 +154,7 @@ get_ellipsis(struct lex *lx, int line)
   assert_not_eof(lx, ch);
 
   if (ch != '.')
-    exit_with_info("%s:%d:[LEXER]Unsupported element \"..\"\n",
+    exit_with("%s:%d:[LEXER]Unsupported element \"..\"\n",
         lx->fname, line);
 
   join_token(lx, line, TK_ELLIPSIS, NULL);
@@ -176,7 +176,7 @@ get_dot_ellipsis(struct lex *lx)
     return get_ellipsis(lx, line);
 
   if (check_decimal(ch))
-    exit_with_info("%s:%d:[LEXER]Float literal is not supported\n",
+    exit_with("%s:%d:[LEXER]Float literal is not supported\n",
         lx->fname, line);
 
   return join_token(lx, line, TK_DOT, NULL);
@@ -386,7 +386,7 @@ get_numstr(struct lex *lx, int (*chkfn)(int), int line)
   *buffer = '\0';
 
   if (cnt > MAX_INT_LENGTH)
-    exit_with_info("%s:%d:[LEXER]Number too long\n",
+    exit_with("%s:%d:[LEXER]Number too long\n",
         lx->fname, line);
 
   return 1;
@@ -410,7 +410,7 @@ get_numval(struct lex *lx, int base, int (*cnvfn)(int), int line)
   j = slen(buffer);
   k = slen(cmpstr);
   if (j > k || (j == k && scmp(buffer, cmpstr) > 0))
-    exit_with_info("%s:%d:[LEXER]Number too big\n",
+    exit_with("%s:%d:[LEXER]Number too big\n",
         lx->fname, line);
 
   for (i = 0; *buffer; buffer++)
@@ -517,7 +517,7 @@ get_identifier(struct lex *lx)
   *buffer = '\0';
 
   if (cnt > MAX_IDENT_LENGTH)
-    exit_with_info("%s:%d:[LEXER]Identifier too long\n",
+    exit_with("%s:%d:[LEXER]Identifier too long\n",
         lx->fname, line);
 
   kw = try_get_keyword(lx->buff);
@@ -607,7 +607,7 @@ get_normal_escape(struct lex *lx, int ch)
   if (ch == '\n')
     return 0xff;
 
-  exit_with_info("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
+  exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
       lx->fname, line, ch);
 
   return ch;
@@ -641,7 +641,7 @@ get_character(struct lex *lx)
   assert_not_eof(lx, ch);
 
   if (ch == '\'')
-    exit_with_info("%s:%d:[LEXER]Empty character literal\n",
+    exit_with("%s:%d:[LEXER]Empty character literal\n",
         lx->fname, line);
 
   if (ch == '\\')
@@ -650,11 +650,11 @@ get_character(struct lex *lx)
     nextchar(lx);
 
   if (ch == '\n')
-    exit_with_info("%s:%d:[LEXER]Missing terminating \"'\"\n",
+    exit_with("%s:%d:[LEXER]Missing terminating \"'\"\n",
         lx->fname, line);
 
   if (ch == 0xff)
-    exit_with_info("%s:%d:[LEXER]Invalid character\n",
+    exit_with("%s:%d:[LEXER]Invalid character\n",
         lx->fname, line);
 
   assert_ch(lx, lx->ch, '\'');
@@ -675,7 +675,7 @@ get_strchar_sub(struct lex *lx)
   assert_not_eof(lx, ch);
 
   if (ch == '\n')
-    exit_with_info("%s:%d:[LEXER]Missing terminating '\"'\n",
+    exit_with("%s:%d:[LEXER]Missing terminating '\"'\n",
         lx->fname, lx->line - 1);
 
   if (ch == '"')
@@ -726,7 +726,7 @@ get_string(struct lex *lx)
   *buffer = '\0';
 
   if (cnt == MAX_CSTR_LENGTH)
-    exit_with_info("%s:%d:[LEXER]String too long\n",
+    exit_with("%s:%d:[LEXER]String too long\n",
         lx->fname, line);
 
   join_token(lx, line, TK_CSTR, copy_of_buffer(lx->buff));
@@ -744,7 +744,7 @@ header_filename(struct lex *lx, int line, char *s)
   for (a = s + 7; *a && check_space(*a); a++);
 
   if (!*a || *a != '"')
-    exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
+    exit_with("%s:%d:[LEXER]Invalid include directive\n",
         lx->fname, line);
   a++;
   b = s;
@@ -754,14 +754,14 @@ header_filename(struct lex *lx, int line, char *s)
   *b = '\0';
 
   if (*a != '"')
-    exit_with_info("%s:%d:[LEXER]Invalid include directive\n",
+    exit_with("%s:%d:[LEXER]Invalid include directive\n",
         lx->fname, line);
 
   a++;
   for (; *a && check_space(*a); a++);
 
   if (*a)
-    exit_with_info("%s:%d:[LEXER]Invalid content after include\n",
+    exit_with("%s:%d:[LEXER]Invalid content after include\n",
         lx->fname, line);
 
   return s;
@@ -805,14 +805,14 @@ preprocess_content(struct lex *lx)
   buffer = lx->buff;
 
   if ((lx->line == 1 && lx->pch != 0) || (lx->line != 1 && lx->pch != '\n'))
-    exit_with_info("%s:%d:[LEXER]\"#\" should be the 1st ch of a line\n",
+    exit_with("%s:%d:[LEXER]\"#\" should be the 1st ch of a line\n",
         lx->fname, line);
 
   ch = nextchar(lx);
   assert_not_eof(lx, ch);
 
   if (check_space(ch))
-    exit_with_info("%s:%d:[LEXER]Do not write space after \"#\"\n",
+    exit_with("%s:%d:[LEXER]Do not write space after \"#\"\n",
         lx->fname, line);
 
   for (; ch != '\n'; ch = nextchar(lx), assert_not_eof(lx, ch))
@@ -821,7 +821,7 @@ preprocess_content(struct lex *lx)
   *buffer = '\0';
 
   if (*(buffer - 1) == '\\')
-    exit_with_info("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
+    exit_with("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
         lx->fname, line);
 
   return lx->buff;
@@ -849,7 +849,7 @@ preprocess(struct lex *lx)
   if (!scmpn(buffer, "endif", 5))
     return 1;
 
-  exit_with_info("%s:%d:[LEXER]Preprocess directive error\n",
+  exit_with("%s:%d:[LEXER]Preprocess directive error\n",
       lx->fname, line);
 
   return 1;
@@ -922,7 +922,7 @@ get_token(struct lex *lx)
   if (check_decimal(lx->ch))
     return get_integer(lx);
 
-  exit_with_info("%s:%d:[LEXER]Unknown char (0x%x)\n",
+  exit_with("%s:%d:[LEXER]Unknown char (0x%x)\n",
       lx->fname, lx->line, lx->ch);
 
   return 1;
@@ -948,7 +948,7 @@ tokenize()
 
   buff = malloc(MAX_CSTR_LENGTH);
   if (!buff)
-    exit_with_info("Failed alloc memory for lex buffer\n");
+    exit_with("Failed alloc memory for lex buffer\n");
 
   macrotbl = new_hashtbl(20);
 
