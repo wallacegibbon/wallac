@@ -4,7 +4,7 @@
 int
 check_ident(int ch)
 {
-  return check_alpha(ch) || check_decimal(ch) || ch == '_';
+  return check_alpha(ch) || ch == '_' || check_decimal(ch);
 }
 
 

@@ -20,6 +20,37 @@ new_token(int type, void *value)
 }
 
 
+struct token *
+copy_token(struct token *chain, struct token *orig)
+{
+  struct token *t;
+
+  t = new_token(orig->type, orig->value);
+  t->line = orig->line;
+  chain->next = t;
+  t->prev = chain;
+
+  return chain->next;
+}
+
+
+struct token *
+copy_token_chain(struct token *orig)
+{
+  struct token *r, *t;
+
+  t = new_token(0, NULL);
+  r = t;
+  for (; orig; orig = orig->next)
+    r = copy_token(r, orig);
+
+  r = t->next;
+  free(t);
+
+  return r;
+}
+
+
 void
 print_token_value_as_int(void *raw)
 {

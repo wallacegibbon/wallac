@@ -45,7 +45,7 @@ new_hashnode(char *key, void *value)
 }
 
 
-int
+unsigned int
 strhash(char *str)
 {
   unsigned int i;
@@ -61,7 +61,7 @@ int
 hash_keyexist(struct hashtbl *h, char *key)
 {
   struct hashnode *p;
-  int i;
+  unsigned int i;
 
   i = strhash(key) % h->bucketsize;
   p = *(h->bucket + i);
@@ -104,7 +104,8 @@ int
 hash_put(struct hashtbl *h, char *key, void *value)
 {
   struct hashnode **p;
-  int i, r;
+  unsigned int i;
+  int r;
 
   i = strhash(key) % h->bucketsize;
   p = h->bucket + i;
@@ -123,7 +124,7 @@ struct hashnode *
 hash_get(struct hashtbl *h, char *key)
 {
   struct hashnode *p;
-  int i;
+  unsigned int i;
 
   i = strhash(key) % h->bucketsize;
   p = *(h->bucket + i);
