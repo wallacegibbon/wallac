@@ -1,8 +1,5 @@
 #ifndef _A_H_
 #define _A_H_
-
-#define AVAL 100
-
+#include "b.h"
+#define AVAL 0xa
 #endif
-
-

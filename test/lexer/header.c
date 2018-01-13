@@ -1,6 +1,9 @@
-//#include "a.h"
-//#include "a.h"
-//#include "b.h"
+
+
+#include "a.h"
+#include "a.h"
+#include "b.h"
+
 
 #define REGISTER_1 500
 #define REGISTER_2 (3 * REGISTER_1 + 3)
@@ -13,3 +16,5 @@ AVAL + BVAL * MYVAL + 2
   - MYVAL;
 
 #endif
+REGISTER_1 * REGISTER_2
+;

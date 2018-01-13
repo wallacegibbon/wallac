@@ -118,17 +118,37 @@ upper_case(char ch)
 }
 
 
-void
+int
 init_outputname(char *outname, char *inname)
 {
   scpy(outname, inname);
 
-  for (; *outname != '.' && *outname != '\0'; )
-    outname++;
+  for (; *outname != '.' && *outname != '\0'; outname++);
 
   *outname++ = '.';
   *outname++ = 's';
   *outname = '\0';
+
+  return 1;
+}
+
+
+int
+init_srcpath(char *filename)
+{
+  int i, j, l;
+
+  j = 0;
+  for (i = 0, l = slen(filename); i < l; i++)
+    if (*(filename + i) == '/')
+      j = i;
+
+  if (j)
+    scpyn(path_src, filename, j + 1);
+
+  printf("srcpath: %s\n", path_src);
+
+  return 1;
 }
 
 

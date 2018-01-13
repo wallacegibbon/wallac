@@ -15,6 +15,9 @@ new_token(int type, void *value)
 
   t->type = type;
   t->value = value;
+  t->prev = NULL;
+  t->next = NULL;
+  t->line = 0;
 
   return t;
 }
@@ -27,8 +30,8 @@ copy_token(struct token *chain, struct token *orig)
 
   t = new_token(orig->type, orig->value);
   t->line = orig->line;
-  chain->next = t;
   t->prev = chain;
+  chain->next = t;
 
   return chain->next;
 }
@@ -38,6 +41,9 @@ struct token *
 copy_token_chain(struct token *orig)
 {
   struct token *r, *t;
+
+  if (!orig)
+    return NULL;
 
   t = new_token(0, NULL);
   r = t;

@@ -7,8 +7,9 @@
 #include "cmdargs.h"
 
 
-char *filename_src, *filename_out;
+char *filename_src, *filename_out, *path_src;
 int verbose;
+int debug;
 
 
 int
@@ -20,6 +21,7 @@ main(int argc, char **argv)
     exit_with("Usage: wcc myfile.c [-o outputfile]\n");
 
   verbose = 0;
+  debug = 0;
 
   filename_src = malloc(MAX_FILENAME_SIZE);
   if (!filename_src)
@@ -29,6 +31,14 @@ main(int argc, char **argv)
   if (!filename_out)
     exit_with("Failed alloc memory for filename_out\n");
 
+  path_src = malloc(MAX_FILENAME_SIZE);
+  if (!path_src)
+    exit_with("Failed alloc memory for path_src\n");
+
+  *filename_src = '\0';
+  *filename_out = '\0';
+  *path_src = '\0';
+
   walk_arguments(argv + 1, argv + argc);
 
   if (*filename_src == '\0')
@@ -36,6 +46,8 @@ main(int argc, char **argv)
 
   if (*filename_out == '\0')
     init_outputname(filename_out, filename_src);
+
+  init_srcpath(filename_src);
 
   printf("Will compiling %s to %s\n", filename_src, filename_out);
 

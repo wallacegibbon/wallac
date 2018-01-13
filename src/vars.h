@@ -2,8 +2,9 @@
 #define __VARS_H__
 
 
-extern char *filename_src, *filename_out;
+extern char *filename_src, *filename_out, *path_src;
 extern int verbose;
+extern int debug;
 
 
 #endif

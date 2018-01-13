@@ -26,8 +26,11 @@ is_valid_filename(char *filename);
 int
 upper_case(char ch);
 
-void
+int
 init_outputname(char *outname, char *inname);
+
+int
+init_srcpath(char *filename);
 
 void
 exit_with(char *info, ...);

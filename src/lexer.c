@@ -32,6 +32,7 @@ file_nextchar(struct lex *lx)
   lx->pch = lx->ch;
   lx->ch = ch;
   lx->cursor++;
+
   return ch;
 }
 
@@ -122,9 +123,11 @@ new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 }
 
 
-int
-free_lexer_str(struct lex *lx)
+void
+free_lexer(struct lex *lx)
 {
+  if (lx->fname)
+    fclose(lx->fp);
   free(lx);
 }
 
@@ -136,7 +139,6 @@ join_token(struct lex *lx, int line, int type, void *p)
   t = new_token(type, p);
   t->line = line;
   t->prev = lx->tk_c;
-  t->next = NULL;
   lx->tk_c->next = t;
   lx->tk_c = t;
 
@@ -156,17 +158,21 @@ join_token_nchar(struct lex *lx, int line, int type)
 int
 join_chain(struct lex *lx, int line, struct token *orig)
 {
-  struct token *chain;
   struct token *p, *pp;
 
-  printf("******join_chain, line:%d\n", line);
-  chain = copy_token_chain(orig);
+  if (!orig)
+    return 1;
 
-  for (p = chain; p; pp = p, p = p->next)
+  p = copy_token_chain(orig);
+  if (!p)
+    return 1;
+
+  p->prev = lx->tk_c;
+  lx->tk_c->next = p;
+
+  for (; p; pp = p, p = p->next)
     p->line = line;
 
-  chain->prev = lx->tk_c;
-  lx->tk_c->next = chain;
   lx->tk_c = pp;
 
   return 1;
@@ -550,15 +556,17 @@ get_identifier(struct lex *lx)
     exit_with("%s:%d:[LEXER]Identifier too long\n",
         lx->fname, line);
 
-  kw = try_get_keyword(lx->buff);
+  buffer = lx->buff;
+
+  kw = try_get_keyword(buffer);
   if (kw)
     return join_token(lx, line, kw, NULL);
 
-  kv = hash_get(lx->mtbl, lx->buff);
+  kv = hash_get(lx->mtbl, buffer);
   if (kv)
     return join_chain(lx, line, (struct token *) kv->value);
 
-  return join_token(lx, line, TK_IDENT, copy_of_buffer(lx->buff));
+  return join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
 }
 
 
@@ -617,7 +625,6 @@ get_normal_escape(struct lex *lx, int ch)
 
   line = lx->line;
   nextchar(lx);
-
   if (ch == 'a')
     return 7;
   if (ch == 'b')
@@ -640,7 +647,6 @@ get_normal_escape(struct lex *lx, int ch)
     return '"';
   if (ch == '\n')
     return 0xff;
-
   exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
       lx->fname, line, ch);
 
@@ -806,13 +812,28 @@ handle_header(struct lex *lx, int line, char *s)
 {
   struct token *tks;
   struct lex *ilx;
-  char *fname;
+  char *fname, *p;
+  int i;
 
   fname = header_filename(lx, line, s + 7);
+  i = slen(path_src);
 
-  printf("will including file: %s...\n", fname);
-  //ilx = new_lexer_file(fname, lx->buff, lx->mtbl);
-  //tks = tokenize_base(ilx);
+  p = malloc(i + slen(fname));
+  if (!p)
+    exit_with("Failed alloc memory for new header file\n");
+
+  scpy(p, path_src);
+  scpy(p + i, fname);
+
+  if (debug)
+    printf("Including file %s...\n", p);
+
+  ilx = new_lexer_file(p, lx->buff, lx->mtbl);
+  tks = tokenize_base(ilx);
+  free_lexer(ilx);
+
+  if (tks)
+    join_chain(lx, line, tks->next);
 
   return 1;
 }
@@ -860,21 +881,17 @@ handle_define(struct lex *lx, int line, char *s)
   int i;
 
   name = shift_macroname(lx, line, s, 6);
+
   slx = new_lexer_str(s, lx->buff, lx->mtbl);
   slx->line = line;
 
   tks = tokenize_base(slx);
-  free_lexer_str(slx);
+  free_lexer(slx);
 
   i = hash_put(lx->mtbl, name, (void *) tks->next);
   if (!i)
     exit_with("%s:%d[LEXER]macro %s is already defined\n",
         lx->fname, line, name);
-
-  //printf("***\n");
-  //printf("Macro: key %s\n", name);
-  //print_token_list(tks);
-  //printf("***\n");
 
   return 1;
 }
@@ -886,17 +903,17 @@ skip_until_endif(struct lex *lx)
   char ch, *buffer;
   int i;
 
-  skip_line(lx);
   for (; ch = lx->ch, ch != '#'; skip_line(lx));
 
   buffer = lx->buff;
-  for (i = 0; i < 6; i++)
-   *buffer++ = nextchar(lx);
+  for (i = 0; ch = nextchar(lx), assert_not_eof(lx, ch) && i < 5; i++)
+   *buffer++ = ch;
+  *buffer = '\0';
 
-  if (!scmpn("#endif", lx->buff, 6))
-    return skip_until_endif(lx);
+  if (!scmp("endif", lx->buff))
+    return skip_line(lx);
   else
-    return 1;
+    return skip_until_endif(lx);
 }
 
 
@@ -906,10 +923,11 @@ handle_ifndef(struct lex *lx, int line, char *s)
   char *name;
 
   name = shift_macroname(lx, line, s, 6);
-  if (!hash_keyexist(lx->mtbl, name))
-    return skip_line(lx);
 
-  return skip_until_endif(lx);
+  if (hash_keyexist(lx->mtbl, name))
+    return skip_until_endif(lx);
+  else
+    return 1;
 }
 
 
@@ -942,6 +960,8 @@ preprocess_content(struct lex *lx)
     exit_with("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
         lx->fname, line);
 
+  nextchar(lx);
+
   return lx->buff;
 }
 
@@ -965,7 +985,7 @@ preprocess(struct lex *lx)
     return handle_ifndef(lx, line, buffer);
 
   if (!scmpn(buffer, "endif", 5))
-    return skip_line(lx);
+    return 1;
 
   exit_with("%s:%d:[LEXER]Preprocess directive error\n",
       lx->fname, line);
@@ -1070,7 +1090,6 @@ tokenize()
 
   macrotbl = new_hashtbl(20);
 
-  //lx = new_lexer_str("char *p; p = \"hello, world!\"", buff, macrotbl);
   lx = new_lexer_file(filename_src, buff, macrotbl);
 
   return tokenize_base(lx);
