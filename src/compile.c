@@ -8,8 +8,6 @@ compile()
 {
   struct token *tks;
 
-  init_lexers();
-
   tks = tokenize();
 
   if (verbose)

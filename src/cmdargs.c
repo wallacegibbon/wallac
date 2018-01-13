@@ -32,7 +32,7 @@ handle_infile_argument(char **argv, char **end)
   if (!is_valid_filename(*argv))
     exit_with_info("input filename invalid: \"%s\"\n", *argv);
 
-  scpy(filename, *argv);
+  scpy(filename_src, *argv);
   return walk_arguments(argv + 1, end);
 }
 

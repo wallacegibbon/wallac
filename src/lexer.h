@@ -1,11 +1,12 @@
 #ifndef __LEXER_H__
 #define __LEXER_H__
 
-struct lex { int (*nchar)(); int ch, pch; int line; char *fname;
+
+#include <stdio.h>
+
+struct lex { int ch, pch, line, cursor; char *fname; FILE *fp; char *str;
   struct token *tk_s, *tk_c; };
 
-int
-init_lexers();
 
 struct token *
 tokenize();
