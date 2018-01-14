@@ -303,6 +303,7 @@ get_ellipsis(struct lex *lx, int line)
 
   join_token(lx, line, TK_ELLIPSIS, NULL);
   nextchar(lx);
+
   return 1;
 }
 
@@ -323,7 +324,9 @@ get_dot_ellipsis(struct lex *lx)
     exit_with("%s:%d:[LEXER]Float literal is not supported\n",
         lx->fname, line);
 
-  return join_token(lx, line, TK_DOT, NULL);
+  join_token(lx, line, TK_DOT, NULL);
+
+  return 1;
 }
 
 
@@ -342,7 +345,9 @@ get_minus_dminus_pointsto(struct lex *lx)
   if (ch == '>')
     return join_token_nchar(lx, line, TK_POINTSTO);
 
-  return join_token(lx, line, TK_MINUS, NULL);
+  join_token(lx, line, TK_MINUS, NULL);
+
+  return 1;
 }
 
 
@@ -358,7 +363,9 @@ get_plus_dplus(struct lex *lx)
   if (ch == '+')
     return join_token_nchar(lx, line, TK_DPLUS);
 
-  return join_token(lx, line, TK_PLUS, NULL);
+  join_token(lx, line, TK_PLUS, NULL);
+
+  return 1;
 }
 
 
@@ -374,7 +381,9 @@ get_and_dand(struct lex *lx)
   if (ch == '&')
     return join_token_nchar(lx, line, TK_DAND);
 
-  return join_token(lx, line, TK_AND, NULL);
+  join_token(lx, line, TK_AND, NULL);
+
+  return 1;
 }
 
 
@@ -390,7 +399,9 @@ get_or_dor(struct lex *lx)
   if (ch == '|')
     return join_token_nchar(lx, line, TK_DOR);
 
-  return join_token(lx, line, TK_DOR, NULL);
+  join_token(lx, line, TK_DOR, NULL);
+
+  return 1;
 }
 
 
@@ -406,7 +417,9 @@ get_assign_eq(struct lex *lx)
   if (ch == '=')
     return join_token_nchar(lx, line, TK_EQ);
 
-  return join_token(lx, line, TK_ASSIGN, NULL);
+  join_token(lx, line, TK_ASSIGN, NULL);
+
+  return 1;
 }
 
 
@@ -422,7 +435,9 @@ get_gt_geq(struct lex *lx)
   if (ch == '=')
     return join_token_nchar(lx, line, TK_GEQ);
 
-  return join_token(lx, line, TK_GT, NULL);
+  join_token(lx, line, TK_GT, NULL);
+
+  return 1;
 }
 
 
@@ -438,7 +453,9 @@ get_lt_leq(struct lex *lx)
   if (ch == '=')
     return join_token_nchar(lx, line, TK_LEQ);
 
-  return join_token(lx, line, TK_LT, NULL);
+  join_token(lx, line, TK_LT, NULL);
+
+  return 1;
 }
 
 
@@ -454,7 +471,9 @@ get_exclamation_neq(struct lex *lx)
   if (ch == '=')
     return join_token_nchar(lx, line, TK_NEQ);
 
-  return join_token(lx, line, TK_EXCLAMATION, NULL);
+  join_token(lx, line, TK_EXCLAMATION, NULL);
+
+  return 1;
 }
 
 
@@ -482,6 +501,7 @@ jump_multi_comments(struct lex *lx)
 
   jump_multi_comments_recur(lx);
   nextchar(lx);
+
   return 1;
 }
 
@@ -495,6 +515,7 @@ skip_line(struct lex *lx)
     assert_not_eof(lx, ch);
 
   nextchar(lx);
+
   return 1;
 }
 
@@ -512,7 +533,10 @@ get_divide_or_jump_comments(struct lex *lx)
     return jump_multi_comments(lx);
   if (ch == '/')
     return skip_line(lx);
-  return join_token(lx, line, TK_DIVIDE, NULL);
+
+  join_token(lx, line, TK_DIVIDE, NULL);
+
+  return 1;
 }
 
 
@@ -591,7 +615,9 @@ get_octal(struct lex *lx, int line)
   get_numstr(lx, check_octal, line);
   i = get_numval(lx, 8, cnv_digit, line);
 
-  return join_token(lx, line, TK_CINT, (void *) i);
+  join_token(lx, line, TK_CINT, (void *) i);
+
+  return 1;
 }
 
 
@@ -603,7 +629,9 @@ get_decimal(struct lex *lx, int line)
   get_numstr(lx, check_decimal, line);
   i = get_numval(lx, 10, cnv_digit, line);
 
-  return join_token(lx, line, TK_CINT, (void *) i);
+  join_token(lx, line, TK_CINT, (void *) i);
+
+  return 1;
 }
 
 
@@ -618,7 +646,9 @@ get_hex(struct lex *lx, int line)
   get_numstr(lx, check_hex, line);
   i = get_numval(lx, 16, cnv_hexdigit, line);
 
-  return join_token(lx, line, TK_CINT, (void *) i);
+  join_token(lx, line, TK_CINT, (void *) i);
+
+  return 1;
 }
 
 
@@ -641,7 +671,9 @@ get_integer(struct lex *lx)
   if (ch == 'x' || ch == 'X')
     return get_hex(lx, line);
 
-  return join_token(lx, line, TK_CINT, (void *) 0);
+  join_token(lx, line, TK_CINT, (void *) 0);
+
+  return 1;
 }
 
 
@@ -676,7 +708,9 @@ get_identifier(struct lex *lx)
   if (kv)
     return join_chain(lx, line, (struct token *) kv->value);
 
-  return join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
+  join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
+
+  return 1;
 }
 
 
@@ -724,6 +758,7 @@ get_octal_escape(struct lex *lx)
   v += cnv_digit(ch);
 
   nextchar(lx);
+
   return v;
 }
 
@@ -812,6 +847,7 @@ get_character(struct lex *lx)
   join_token(lx, line, TK_CCHAR, (void *) ch);
 
   nextchar(lx);
+
   return 1;
 }
 
@@ -882,6 +918,7 @@ get_string(struct lex *lx)
   join_token(lx, line, TK_CSTR, copy_of_buffer(lx->buff));
 
   nextchar(lx);
+
   return 1;
 }
 
@@ -940,6 +977,7 @@ handle_header(struct lex *lx, int line, char *s)
 
   ilx = new_lexer_file(p, lx->buff, lx->mtbl);
   tks = tokenize_base(ilx);
+
   free_lexer(ilx);
 
   if (tks)
@@ -997,6 +1035,7 @@ handle_define(struct lex *lx, int line, char *s)
   slx->fname = lx->fname;
 
   tks = tokenize_base(slx);
+
   free_lexer(slx);
 
   i = hash_put(lx->mtbl, name, (void *) tks);
@@ -1022,10 +1061,10 @@ skip_until_endif(struct lex *lx)
 
   *buffer = '\0';
 
-  if (!scmp("endif", lx->buff))
-    return skip_line(lx);
-  else
+  if (scmp("endif", lx->buff))
     return skip_until_endif(lx);
+  else
+    return skip_line(lx);
 }
 
 
@@ -1197,6 +1236,7 @@ struct token *
 tokenize()
 {
   struct hashtbl *macrotbl;
+  struct token *tks;
   struct lex *lx;
   char *buff;
 
@@ -1207,8 +1247,11 @@ tokenize()
   macrotbl = new_hashtbl(20);
 
   lx = new_lexer_file(pathname_src, buff, macrotbl);
+  tks = tokenize_base(lx);
 
-  return tokenize_base(lx);
+  free_lexer(lx);
+
+  return tks;
 }
 
 
