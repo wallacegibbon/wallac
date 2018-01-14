@@ -6,7 +6,7 @@
 #define EOF -1
 #endif
 
-extern char *filename_src, *filename_out, *path_src;
+extern char *pathname_src, *pathname_out, *path_src;
 extern int verbose;
 extern int debug;
 

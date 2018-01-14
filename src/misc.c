@@ -105,7 +105,7 @@ is_valid_filename(char *filename)
 
   i = slen(filename);
   if (i == -1)
-    exit_with("is_valid_filename, filename too long\n");
+    exit_with("is_valid_filename, string(filename) too long\n");
 
   return i < MAX_FILENAME_SIZE - 3;
 }
@@ -119,34 +119,41 @@ upper_case(char ch)
 
 
 int
-init_outputname(char *outname, char *inname)
-{
-  scpy(outname, inname);
-
-  for (; *outname != '.' && *outname != '\0'; outname++);
-
-  *outname++ = '.';
-  *outname++ = 's';
-  *outname = '\0';
-
-  return 1;
-}
-
-
-int
-init_srcpath(char *filename)
+init_pathname_out(char *pathname, char *out)
 {
   int i, j, l;
 
   j = 0;
-  for (i = 0, l = slen(filename); i < l; i++)
-    if (*(filename + i) == '/')
+  for (i = 0, l = slen(pathname); i < l; i++)
+    if (*(pathname + i) == '/')
       j = i;
 
   if (j)
-    scpyn(path_src, filename, j + 1);
+    scpy(out, pathname + j + 1);
+  else
+    scpy(out, pathname);
 
-  printf("srcpath: %s\n", path_src);
+  for (; *out != '.' && *out; out++);
+
+  *out++ = '.';
+  *out++ = 's';
+  *out = '\0';
+
+  return 1;
+}
+
+int
+init_srcpath(char *pathname, char *srcpath)
+{
+  int i, j, l;
+
+  j = 0;
+  for (i = 0, l = slen(pathname); i < l; i++)
+    if (*(pathname + i) == '/')
+      j = i;
+
+  if (j)
+    scpyn(srcpath, pathname, j + 1);
 
   return 1;
 }

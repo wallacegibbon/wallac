@@ -13,7 +13,7 @@ handle_outfile(char **argv, char **end)
   if (!is_valid_filename(*argv))
     exit_with("output filename invalid:\"%s\"\n", *argv);
 
-  scpy(filename_out, *argv);
+  scpy(pathname_out, *argv);
   return walk_arguments(argv + 1, end);
 }
 
@@ -40,7 +40,7 @@ handle_infile(char **argv, char **end)
   if (!is_valid_filename(*argv))
     exit_with("input filename invalid: \"%s\"\n", *argv);
 
-  scpy(filename_src, *argv);
+  scpy(pathname_src, *argv);
   return walk_arguments(argv + 1, end);
 }
 

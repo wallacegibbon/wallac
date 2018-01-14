@@ -1206,7 +1206,7 @@ tokenize()
 
   macrotbl = new_hashtbl(20);
 
-  lx = new_lexer_file(filename_src, buff, macrotbl);
+  lx = new_lexer_file(pathname_src, buff, macrotbl);
 
   return tokenize_base(lx);
 }

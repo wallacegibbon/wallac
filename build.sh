@@ -1,9 +1,12 @@
 OUTDIR=./out
 TARGET=wcc
+
+CCPARAMS="-Wno-parentheses -Wno-int-to-pointer-cast -S"
 CC=cc
+#CC=wcc
+
 AS=as
 LD=cc
-CFLAGS="-Wno-parentheses -Wno-int-to-pointer-cast"
 
 mkdir -p $OUTDIR
 cd $OUTDIR
@@ -12,7 +15,7 @@ cp ../src/*.s .
 
 for i in ../src/*.c
 do echo Compiling $i...
-$CC $CFLAGS -S $i
+$CC $CCPARAMS $i
 done
 
 for i in ./*.s

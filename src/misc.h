@@ -27,10 +27,10 @@ int
 upper_case(char ch);
 
 int
-init_outputname(char *outname, char *inname);
+init_pathname_out(char *pathname, char *out);
 
 int
-init_srcpath(char *filename);
+init_srcpath(char *filename, char *srcpath);
 
 void
 exit_with(char *info, ...);
