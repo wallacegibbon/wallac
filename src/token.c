@@ -83,7 +83,8 @@ int
 print_token_list(struct token *start)
 {
   struct token *p;
-  for (p = start->next; p; p = p->next)
+
+  for (p = start; p; p = p->next)
     print_token(p);
 
   printf("\n");

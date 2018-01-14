@@ -104,24 +104,24 @@ new_lexer_common(char *buff, struct hashtbl *mtbl)
   if (!lx)
     exit_with("Failed alloc memory for lex\n");
 
-  lx->tk_s = new_token(0, NULL);
-  lx->tk_s->prev = NULL;
-  lx->tk_s->next = NULL;
-  lx->tk_c = lx->tk_s;
-
   lx->type = 0;
+
   lx->fname = NULL;
   lx->fd = 0;
   lx->eof = 0;
 
   lx->input = NULL;
   lx->buff = buff;
+
   lx->mtbl = mtbl;
 
   lx->line = 1;
   lx->ch = '\0';
   lx->pch = '\0';
   lx->cursor = 0;
+
+  lx->tk_s = NULL;
+  lx->tk_c = NULL;
 
   return lx;
 }
@@ -215,14 +215,39 @@ free_lexer(struct lex *lx)
 
 
 int
-join_token(struct lex *lx, int line, int type, void *p)
+join_token_nonempty(struct lex *lx, struct token *t)
 {
-  struct token *t;
-  t = new_token(type, p);
-  t->line = line;
   t->prev = lx->tk_c;
   lx->tk_c->next = t;
   lx->tk_c = t;
+
+  return 1;
+}
+
+
+int
+join_token_empty(struct lex *lx, struct token *t)
+{
+  t->prev = NULL;
+  lx->tk_c = t;
+  lx->tk_s = t;
+
+  return 1;
+}
+
+
+int
+join_token(struct lex *lx, int line, int type, void *p)
+{
+  struct token *t;
+
+  t = new_token(type, p);
+  t->line = line;
+
+  if (lx->tk_c)
+    join_token_nonempty(lx, t);
+  else
+    join_token_empty(lx, t);
 
   return 1;
 }
@@ -233,6 +258,7 @@ join_token_nchar(struct lex *lx, int line, int type)
 {
   join_token(lx, line, type, NULL);
   nextchar(lx);
+
   return 1;
 }
 
@@ -240,22 +266,24 @@ join_token_nchar(struct lex *lx, int line, int type)
 int
 join_chain(struct lex *lx, int line, struct token *orig)
 {
-  struct token *p, *pp;
+  struct token *t, *p;
 
   if (!orig)
     return 1;
 
-  p = copy_token_chain(orig);
-  if (!p)
+  t = copy_token_chain(orig);
+  if (!t)
     return 1;
 
-  p->prev = lx->tk_c;
-  lx->tk_c->next = p;
+  if (lx->tk_c)
+    join_token_nonempty(lx, t);
+  else
+    join_token_empty(lx, t);
 
-  for (; p; pp = p, p = p->next)
-    p->line = line;
+  for (; t; p = t, t = t->next)
+    t->line = line;
 
-  lx->tk_c = pp;
+  lx->tk_c = p;
 
   return 1;
 }
@@ -915,7 +943,7 @@ handle_header(struct lex *lx, int line, char *s)
   free_lexer(ilx);
 
   if (tks)
-    join_chain(lx, line, tks->next);
+    join_chain(lx, line, tks);
 
   return 1;
 }
@@ -971,7 +999,7 @@ handle_define(struct lex *lx, int line, char *s)
   tks = tokenize_base(slx);
   free_lexer(slx);
 
-  i = hash_put(lx->mtbl, name, (void *) tks->next);
+  i = hash_put(lx->mtbl, name, (void *) tks);
   if (!i)
     exit_with("%s:%d[LEXER]macro %s is already defined\n",
         lx->fname, line, name);
