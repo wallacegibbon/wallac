@@ -8,6 +8,8 @@ CFLAGS="-Wno-parentheses -Wno-int-to-pointer-cast"
 mkdir -p $OUTDIR
 cd $OUTDIR
 
+cp ../src/*.s .
+
 for i in ../src/*.c
 do echo Compiling $i...
 $CC $CFLAGS -S $i

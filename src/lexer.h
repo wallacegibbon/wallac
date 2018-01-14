@@ -2,11 +2,10 @@
 #define __LEXER_H__
 
 
-#include <stdio.h>
 #include "hashtbl.h"
 
-struct lex { int ch, pch, line, cursor; char *fname; FILE *fp; char *str;
-  char *buff; struct hashtbl *mtbl; struct token *tk_s, *tk_c; };
+struct lex { int ch, pch, line, cursor; int type; char *fname; int fd; int eof;
+  char *buff, *input; struct hashtbl *mtbl; struct token *tk_s, *tk_c; };
 
 
 struct token *

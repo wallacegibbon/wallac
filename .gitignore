@@ -1,6 +1,6 @@
 out/
 *.elf
 *.o
-*.s
+a.out
 *.swp
 *~

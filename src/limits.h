@@ -5,6 +5,9 @@
 #define MAX_STRUCT_NUMBER 0xff
 #define MAX_POINTER_DEPTH 0x7f
 
+
+#define BUFF_SIZE 500
+
 #define MAX_CSTR_LENGTH 256
 #define MAX_IDENT_LENGTH 64
 #define MAX_INT_LENGTH 20

@@ -10,8 +10,31 @@
 #include "token.h"
 #include "lexer.h"
 #include "hashtbl.h"
+#include "os.h"
 
 
+
+
+int
+lx_getmore_from_file(struct lex *lx)
+{
+  int i;
+
+  i = os_read(lx->fd, lx->input, BUFF_SIZE);
+  if (i < 0)
+    exit_with("Failed reading %s(%d)\n", lx->fname, i);
+
+  if (debug)
+    printf("Read %d bytes from %s\n", i, lx->fname);
+
+  if (i < BUFF_SIZE)
+    lx->eof = 1;
+
+  *(lx->input + i) = '\0';
+  lx->cursor = 0;
+
+  return 1;
+}
 
 
 int
@@ -19,15 +42,20 @@ file_nextchar(struct lex *lx)
 {
   int ch;
 
-  ch = fgetc(lx->fp);
-  if (ch == EOF && ferror(lx->fp))
-    exit_with("Failed reading %s(%d)\n", lx->fname, errno);
+  ch = *(lx->input + lx->cursor);
+  if (!ch && !lx->eof)
+    lx_getmore_from_file(lx);
 
-  if (lx->line >= INT_MAX)
-    exit_with("File %s too long\n", lx->fname);
+  ch = *(lx->input + lx->cursor);
+  if (!ch)
+    ch = EOF;
 
   if (ch == '\n')
     lx->line++;
+
+  if (lx->line >= INT_MAX)
+    exit_with("File %s too long(%d lines)\n",
+        lx->fname, lx->line);
 
   lx->pch = lx->ch;
   lx->ch = ch;
@@ -42,14 +70,13 @@ str_nextchar(struct lex *lx)
 {
   int ch;
 
-  ch = *(lx->str + lx->cursor);
-  if (ch)
-    lx->cursor++;
-  else
+  ch = *(lx->input + lx->cursor);
+  if (!ch)
     ch = EOF;
 
   lx->pch = lx->ch;
   lx->ch = ch;
+  lx->cursor++;
 
   return ch;
 }
@@ -58,12 +85,13 @@ str_nextchar(struct lex *lx)
 int
 nextchar(struct lex *lx)
 {
-  if (lx->fp)
+  if (lx->type == 1)
     return file_nextchar(lx);
-  if (lx->str)
+  if (lx->type == 2)
     return str_nextchar(lx);
 
-  exit_with("nextchar error\n");
+  exit_with("nextchar, Invalid lexer type: %d\n",
+      lx->type);
 }
 
 
@@ -81,10 +109,12 @@ new_lexer_common(char *buff, struct hashtbl *mtbl)
   lx->tk_s->next = NULL;
   lx->tk_c = lx->tk_s;
 
+  lx->type = 0;
   lx->fname = NULL;
-  lx->fp = NULL;
-  lx->str = NULL;
+  lx->fd = 0;
+  lx->eof = 0;
 
+  lx->input = NULL;
   lx->buff = buff;
   lx->mtbl = mtbl;
 
@@ -101,12 +131,35 @@ struct lex *
 new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 {
   struct lex *lx;
-  lx = new_lexer_common(buff, mtbl);
+  char *fbuff;
+  int i;
 
+  lx = new_lexer_common(buff, mtbl);
   lx->fname = fname;
-  lx->fp = fopen(fname, "r");
-  if (!lx->fp)
-    exit_with("Failed opening %s\n", fname);
+  lx->type = 1;
+
+  i = os_open_rd(fname);
+  if (i < 0)
+    exit_with("Failed opening %s(%d)\n", fname, i);
+
+  if (i < 3)
+    exit_with("Invalid fd(%d) for %s\n", i, fname);
+
+  lx->fd = i;
+
+  fbuff = malloc(BUFF_SIZE + 1);
+  if (!fbuff)
+    exit_with("Failed alloc buffer for %s\n", fname);
+
+  lx->input = fbuff;
+
+  lx_getmore_from_file(lx);
+
+  lx->ch = *lx->input;
+  if (lx->ch)
+    lx->cursor = 1;
+  else
+    lx->ch = EOF;
 
   return lx;
 }
@@ -117,18 +170,47 @@ new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 {
   struct lex *lx;
   lx = new_lexer_common(buff, mtbl);
+  lx->type = 2;
+  lx->input = str;
 
-  lx->str = str;
+  lx->ch = *str;
+  if (lx->ch)
+    lx->cursor = 1;
+  else
+    lx->ch = EOF;
+
   return lx;
 }
 
 
-void
+int
+free_lexer_file(struct lex *lx)
+{
+  os_close(lx->fd);
+  free(lx->input);
+  free(lx);
+  return 1;
+}
+
+
+int
+free_lexer_str(struct lex *lx)
+{
+  free(lx);
+  return 1;
+}
+
+
+int
 free_lexer(struct lex *lx)
 {
-  if (lx->fname)
-    fclose(lx->fp);
-  free(lx);
+  if (lx->type == 1)
+    return free_lexer_file(lx);
+  if (lx->type == 2)
+    return free_lexer_str(lx);
+
+  exit_with("free_lexer, Invalid lexer type: %d\n",
+      lx->type);
 }
 
 
@@ -415,7 +497,7 @@ get_numstr(struct lex *lx, int (*chkfn)(int), int line)
   buffer = lx->buff;
   *buffer++ = lx->ch;
 
-  for (cnt = 1; cnt < MAX_CSTR_LENGTH && chkfn(nextchar(lx)); cnt++)
+  for (cnt = 1; cnt < BUFF_SIZE && chkfn(nextchar(lx)); cnt++)
     *buffer++ = lx->ch;
 
   *buffer = '\0';
@@ -547,7 +629,7 @@ get_identifier(struct lex *lx)
   buffer = lx->buff;
   *buffer++ = lx->ch;
 
-  for (cnt = 1; cnt < MAX_CSTR_LENGTH && check_ident(nextchar(lx)); cnt++)
+  for (cnt = 1; cnt < BUFF_SIZE && check_ident(nextchar(lx)); cnt++)
     *buffer++ = lx->ch;
 
   *buffer = '\0';
@@ -760,7 +842,7 @@ get_string(struct lex *lx)
   ch = nextchar(lx);
   assert_not_eof(lx, ch);
 
-  for (cnt = 0; cnt < MAX_CSTR_LENGTH && get_strchar(lx, &ch); cnt++)
+  for (cnt = 0; cnt < BUFF_SIZE && get_strchar(lx, &ch); cnt++)
     *buffer++ = ch;
 
   *buffer = '\0';
@@ -884,6 +966,7 @@ handle_define(struct lex *lx, int line, char *s)
 
   slx = new_lexer_str(s, lx->buff, lx->mtbl);
   slx->line = line;
+  slx->fname = lx->fname;
 
   tks = tokenize_base(slx);
   free_lexer(slx);
@@ -907,7 +990,8 @@ skip_until_endif(struct lex *lx)
 
   buffer = lx->buff;
   for (i = 0; ch = nextchar(lx), assert_not_eof(lx, ch) && i < 5; i++)
-   *buffer++ = ch;
+    *buffer++ = ch;
+
   *buffer = '\0';
 
   if (!scmp("endif", lx->buff))
@@ -935,7 +1019,7 @@ char *
 preprocess_content(struct lex *lx)
 {
   char ch, *buffer;
-  int line;
+  int line, cnt;
 
   buffer = lx->buff;
   line = lx->line;
@@ -951,10 +1035,15 @@ preprocess_content(struct lex *lx)
     exit_with("%s:%d:[LEXER]Do not write space after \"#\"\n",
         lx->fname, line);
 
-  for (; ch != '\n'; ch = nextchar(lx), assert_not_eof(lx, ch))
+  for (cnt = 0; ch != '\n' && cnt < BUFF_SIZE;
+      ch = nextchar(lx), assert_not_eof(lx, ch), cnt++)
     *buffer++ = ch;
 
   *buffer = '\0';
+
+  if (cnt == BUFF_SIZE)
+    exit_with("%s:%d:[LEXER]line too long\n",
+        lx->fname, line);
 
   if (*(buffer - 1) == '\\')
     exit_with("%s:%d:[LEXER]Multiline in preprocess is invalid\n",
@@ -987,8 +1076,8 @@ preprocess(struct lex *lx)
   if (!scmpn(buffer, "endif", 5))
     return 1;
 
-  exit_with("%s:%d:[LEXER]Preprocess directive error\n",
-      lx->fname, line);
+  exit_with("%s:%d:[LEXER]Unknown preprocess directive %s\n",
+      lx->fname, line, buffer);
 
   return 1;
 }
@@ -1070,7 +1159,6 @@ get_token(struct lex *lx)
 struct token *
 tokenize_base(struct lex *lx)
 {
-  nextchar(lx);
   for (; get_token(lx); );
 
   return lx->tk_s;
@@ -1084,7 +1172,7 @@ tokenize()
   struct lex *lx;
   char *buff;
 
-  buff = malloc(MAX_CSTR_LENGTH);
+  buff = malloc(BUFF_SIZE + 1);
   if (!buff)
     exit_with("Failed alloc memory for lex buffer\n");
 
