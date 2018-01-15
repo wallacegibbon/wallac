@@ -1250,6 +1250,8 @@ tokenize()
   tks = tokenize_base(lx);
 
   free_lexer(lx);
+  free_hashtbl(macrotbl);
+  free(buff);
 
   return tks;
 }

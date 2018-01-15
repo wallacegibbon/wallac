@@ -45,6 +45,36 @@ new_hashnode(char *key, void *value)
 }
 
 
+int
+free_hashnode_chain(struct hashnode *s)
+{
+  struct hashnode *p;
+
+  for (; p = s->next, p; s = p)
+    free(s);
+
+  free(s);
+
+  return 1;
+}
+
+
+int
+free_hashtbl(struct hashtbl *h)
+{
+  struct hashnode *p;
+  int i;
+
+  for (i = 0; p = *(h->bucket + i), i < h->bucketsize; i++)
+    if (p)
+      free_hashnode_chain(p);
+
+  free(h);
+
+  return 1;
+}
+
+
 unsigned int
 strhash(char *str)
 {
@@ -134,10 +164,10 @@ hash_get(struct hashtbl *h, char *key)
 
   for (; p && scmp(p->key, key); p = p->next);
 
-  if (!p)
+  if (p)
+    return p;
+  else
     return NULL;
-
-  return p;
 }
 
 
@@ -150,6 +180,7 @@ print_node_chain(int idx, struct hashnode *p)
     printf("<%s|%d>--", p->key, (int) p->value);
 
   printf("\n");
+
   return 1;
 }
 
@@ -158,6 +189,7 @@ int
 hash_print(struct hashtbl *h)
 {
   int i;
+
   for (i = 0; i < h->bucketsize; i++)
     print_node_chain(i, *(h->bucket + i));
 

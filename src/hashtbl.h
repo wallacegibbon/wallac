@@ -10,6 +10,9 @@ struct hashtbl *
 new_hashtbl(int bucketsize);
 
 int
+free_hashtbl(struct hashtbl *h);
+
+int
 hash_keyexist(struct hashtbl *h, char *key);
 
 int
