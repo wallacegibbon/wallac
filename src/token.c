@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "token.h"
 #include "misc.h"
 #include "libc.h"
@@ -10,6 +9,7 @@ struct token *
 new_token(int type, void *value)
 {
   struct token *t;
+
   t = malloc(sizeof(struct token));
   if (!t)
     exit_with("Failed alloc memory for token %d\n", type);
@@ -63,18 +63,18 @@ print_token_value_as_int(void *raw)
 {
   int v;
   v = (int) raw;
-  printf("0x%x, 0o%o, %d\n", v, v, v);
+  pf("0x%x, 0o%o, %d\n", v, v, v);
 }
 
 
 int
 print_token(struct token *t)
 {
-  printf("(%d)%s ", t->line, token_type_str(t->type));
+  pf("(%d)%s ", t->line, token_type_str(t->type));
   if (t->type != TK_CSTR && t->type != TK_IDENT)
     print_token_value_as_int(t->value);
   else
-    printf("<%s>\n", (char *) t->value);
+    pf("<%s>\n", (char *) t->value);
 
   return 1;
 }
@@ -88,7 +88,7 @@ print_token_list(struct token *start)
   for (p = start; p; p = p->next)
     print_token(p);
 
-  printf("\n");
+  pf("\n");
   return 1;
 }
 

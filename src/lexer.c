@@ -1,7 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-
 #include "assertch.h"
 #include "checkch.h"
 #include "limits.h"
@@ -21,14 +18,14 @@ lx_getmore_from_file(struct lex *lx)
 {
   int i;
 
-  i = os_read(lx->fd, lx->input, BUFF_SIZE);
+  i = os_read(lx->fd, lx->input, FILE_BUFF_SIZE);
   if (i < 0)
     exit_with("Failed reading %s(%d)\n", lx->fname, i);
 
   if (debug)
-    printf("Read %d bytes from %s\n", i, lx->fname);
+    pf("Read %d bytes from %s\n", i, lx->fname);
 
-  if (i < BUFF_SIZE)
+  if (i < FILE_BUFF_SIZE)
     lx->eof = 1;
 
   *(lx->input + i) = '\0';
@@ -148,7 +145,7 @@ new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 
   lx->fd = i;
 
-  fbuff = malloc(BUFF_SIZE + 1);
+  fbuff = malloc(FILE_BUFF_SIZE + 1);
   if (!fbuff)
     exit_with("Failed alloc buffer for %s\n", fname);
 
@@ -478,29 +475,21 @@ get_exclamation_neq(struct lex *lx)
 }
 
 
-void
-jump_multi_comments_recur(struct lex *lx)
-{
-  int ch;
-
-  for (; ch = lx->ch, ch != '*'; nextchar(lx))
-    assert_not_eof(lx, ch);
-
-  ch = nextchar(lx);
-  if (ch != '/')
-    jump_multi_comments_recur(lx);
-}
-
-
 int
 jump_multi_comments(struct lex *lx)
 {
   int ch;
 
   ch = nextchar(lx);
-  assert_not_eof(lx, ch);
 
-  jump_multi_comments_recur(lx);
+loop:
+  for (; ch = lx->ch, ch != '*'; nextchar(lx))
+    assert_not_eof(lx, ch);
+
+  ch = nextchar(lx);
+  if (ch != '/')
+    goto loop;
+
   nextchar(lx);
 
   return 1;
@@ -960,23 +949,23 @@ handle_header(struct lex *lx, int line, char *s)
 {
   struct token *tks;
   struct lex *ilx;
-  char *fname, *p;
+  char *fname, *pname;
   int i;
 
   fname = header_filename(lx, line, s + 7);
   i = slen(path_src);
 
-  p = malloc(i + slen(fname));
-  if (!p)
-    exit_with("Failed alloc memory for new header file\n");
+  pname = malloc(i + slen(fname) + 1);
+  if (!pname)
+    exit_with("Failed alloc memory for new header file path\n");
 
-  scpy(p, path_src);
-  scpy(p + i, fname);
+  scpy(pname, path_src);
+  scpy(pname + i, fname);
 
   if (debug)
-    printf("Including file %s...\n", p);
+    pf("Including file %s...\n", pname);
 
-  ilx = new_lexer_file(p, lx->buff, lx->mtbl);
+  ilx = new_lexer_file(pname, lx->buff, lx->mtbl);
   tks = tokenize_base(ilx);
 
   free_lexer(ilx);
@@ -1227,6 +1216,7 @@ get_token(struct lex *lx)
 struct token *
 tokenize_base(struct lex *lx)
 {
+  pf("tokenize_base is called\n");
   for (; get_token(lx); );
 
   return lx->tk_s;
@@ -1251,7 +1241,6 @@ tokenize()
   tks = tokenize_base(lx);
 
   free_lexer(lx);
-  free_hashtbl(macrotbl);
   free(buff);
 
   return tks;

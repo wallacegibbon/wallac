@@ -6,6 +6,8 @@
 #define MAX_POINTER_DEPTH 0x7f
 
 
+#define FPCHAR_BUFF_SIZE 200
+#define FILE_BUFF_SIZE 500
 #define BUFF_SIZE 500
 
 #define MAX_CSTR_LENGTH 256

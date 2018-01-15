@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "vars.h"
 #include "limits.h"
 #include "misc.h"
@@ -96,7 +95,7 @@ exit_with(char *fmt, ...)
   i = sizeof(int) - 1;
   ap = (char *) &fmt + ((sizeof(fmt) + i) & ~i);
 
-  vprintf(fmt, ap);
+  vpf(fmt, ap);
 
   os_exit(1);
 }

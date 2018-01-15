@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "misc.h"
 #include "libc.h"
@@ -175,12 +174,12 @@ hash_get(struct hashtbl *h, char *key)
 int
 print_node_chain(int idx, struct hashnode *p)
 {
-  printf("%d)\t", idx);
+  pf("%d)\t", idx);
 
   for (; p; p = p->next)
-    printf("<%s|%d>--", p->key, (int) p->value);
+    pf("<%s|%d>--", p->key, (int) p->value);
 
-  printf("\n");
+  pf("\n");
 
   return 1;
 }

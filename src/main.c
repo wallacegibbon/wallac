@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "compile.h"
 #include "limits.h"
@@ -15,15 +14,10 @@ int debug;
 
 
 int
-main(int argc, char **argv)
+prepare_env(int argc, char **argv)
 {
-  char *p;
-
   if (argc == 1)
     exit_with("Usage: wcc myfile.c [-o outputfile]\n");
-
-  verbose = 0;
-  debug = 0;
 
   pathname_src = malloc(MAX_FILENAME_SIZE);
   if (!pathname_src)
@@ -51,10 +45,29 @@ main(int argc, char **argv)
 
   init_srcpath(pathname_src, path_src);
 
-  printf("Will compiling %s to %s\n", pathname_src, pathname_out);
-
   if (!scmp(pathname_src, pathname_out))
     exit_with("input and output file can't be the same\n");
+
+  return 1;
+}
+
+
+int
+main(int argc, char **argv)
+{
+  int i;
+
+  i = init_libc();
+  if (i < 0)
+    return i;
+
+  verbose = 0;
+  debug = 0;
+
+  prepare_env(argc, argv);
+
+  pf("Will compiling %s to %s\n",
+      pathname_src, pathname_out);
 
   compile();
 
