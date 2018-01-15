@@ -148,6 +148,8 @@ vfpf_p_int(int fd, char *ap, int base)
   int i, m, n;
 
   n = *((int *) ap);
+  if (n == 0)
+    goto p_0;
 
   buff = alloca(12);
 
@@ -156,6 +158,12 @@ vfpf_p_int(int fd, char *ap, int base)
 
   for (; i; i--)
     vfpchar(fd, *(buff + i - 1));
+
+  ap += sizeof(int);
+  return ap;
+
+p_0:
+  vfpchar(fd, '0');
 
   ap += sizeof(int);
   return ap;
