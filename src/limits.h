@@ -6,9 +6,9 @@
 #define MAX_POINTER_DEPTH 0x7f
 
 
-#define FPCHAR_BUFF_SIZE 200
+#define VFPF_BUFF_SIZE 100
 #define FILE_BUFF_SIZE 500
-#define BUFF_SIZE 500
+#define BUFF_SIZE 400
 
 #define MAX_CSTR_LENGTH 256
 #define MAX_IDENT_LENGTH 64

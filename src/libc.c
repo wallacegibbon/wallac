@@ -17,7 +17,7 @@ vfpf_flush(int fd, char *buff, int *idx)
 int
 vfpchar(int fd, char ch, char *buff, int *idx)
 {
-  if (*idx == FPCHAR_BUFF_SIZE)
+  if (*idx == VFPF_BUFF_SIZE)
     vfpf_flush(fd, buff, idx);
 
   *(buff + *idx) = ch;
@@ -129,7 +129,7 @@ vfpf(int fd, char *fmt, char *ap)
   char *buff;
   int idx, ch;
 
-  buff = alloca(FPCHAR_BUFF_SIZE);
+  buff = alloca(VFPF_BUFF_SIZE);
   idx = 0;
 
 start:
