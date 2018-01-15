@@ -2,6 +2,7 @@
 #include "misc.h"
 #include "vars.h"
 #include "cmdargs.h"
+#include "libc.h"
 
 
 int

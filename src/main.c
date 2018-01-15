@@ -5,6 +5,8 @@
 #include "limits.h"
 #include "misc.h"
 #include "cmdargs.h"
+#include "libc.h"
+
 
 
 char *pathname_src, *pathname_out, *path_src;

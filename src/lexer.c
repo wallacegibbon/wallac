@@ -4,12 +4,13 @@
 
 #include "assertch.h"
 #include "checkch.h"
-#include "misc.h"
 #include "limits.h"
 #include "vars.h"
 #include "token.h"
 #include "lexer.h"
 #include "hashtbl.h"
+#include "misc.h"
+#include "libc.h"
 #include "os.h"
 
 

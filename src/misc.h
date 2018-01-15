@@ -2,21 +2,6 @@
 #define __MISC_H__
 
 
-int
-scmpn(char *s1, char *s2, int n);
-
-int
-scmp(char *s1, char *s2);
-
-int
-scpyn(char *dst, char *src, int n);
-
-int
-scpy(char *dst, char *src);
-
-int
-slen(char *s);
-
 char *
 copy_of_buffer(char *buffer);
 

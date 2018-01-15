@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "token.h"
 #include "misc.h"
+#include "libc.h"
 
 
 

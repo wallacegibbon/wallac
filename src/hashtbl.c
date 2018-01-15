@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "misc.h"
+#include "libc.h"
 #include "hashtbl.h"
 
 
