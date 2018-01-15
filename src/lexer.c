@@ -1216,7 +1216,6 @@ get_token(struct lex *lx)
 struct token *
 tokenize_base(struct lex *lx)
 {
-  pf("tokenize_base is called\n");
   for (; get_token(lx); );
 
   return lx->tk_s;
