@@ -2,9 +2,6 @@
 #define __LIBC_H__
 
 int
-init_libc();
-
-int
 scmpn(char *s1, char *s2, int n);
 
 int

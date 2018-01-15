@@ -55,12 +55,6 @@ prepare_env(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-  int i;
-
-  i = init_libc();
-  if (i < 0)
-    return i;
-
   verbose = 0;
   debug = 0;
 
