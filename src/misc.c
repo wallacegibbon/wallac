@@ -4,6 +4,7 @@
 #include "limits.h"
 #include "misc.h"
 #include "libc.h"
+#include "os.h"
 
 
 char *
@@ -97,7 +98,7 @@ exit_with(char *fmt, ...)
 
   vprintf(fmt, ap);
 
-  exit(0);
+  os_exit(1);
 }
 
 
