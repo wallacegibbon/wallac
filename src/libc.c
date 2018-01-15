@@ -3,26 +3,28 @@
 #include "os.h"
 
 
+struct vfpf_buff { char *p; int idx; };
+
 
 int
-vfpf_flush(int fd, char *buff, int *idx)
+vfpf_flush(int fd, struct vfpf_buff *buff)
 {
-  os_write(fd, buff, *idx);
-  *idx = 0;
+  os_write(fd, buff->p, buff->idx);
+  buff->idx = 0;
 
   return 1;
 }
 
 
 int
-vfpchar(int fd, char ch, char *buff, int *idx)
+vfpchar(int fd, char ch, struct vfpf_buff *buff)
 {
-  if (*idx == VFPF_BUFF_SIZE)
-    vfpf_flush(fd, buff, idx);
+  if (buff->idx == VFPF_BUFF_SIZE)
+    vfpf_flush(fd, buff);
 
-  *(buff + *idx) = ch;
+  *(buff->p + buff->idx) = ch;
 
-  *idx += 1;
+  buff->idx += 1;
 
   return 1;
 }
@@ -49,7 +51,7 @@ fmt_digit(int num, int base)
 
 
 char *
-vfpf_p_int(int fd, char *ap, int base, char *buff, int *idx)
+vfpf_p_int(int fd, char *ap, int base, struct vfpf_buff *buff)
 {
   char *p, *b;
   int i, m, n;
@@ -64,27 +66,27 @@ vfpf_p_int(int fd, char *ap, int base, char *buff, int *idx)
     *p++ = fmt_digit(n % base, base);
 
   for (; i; i--)
-    vfpchar(fd, *(b + i - 1), buff, idx);
+    vfpchar(fd, *(b + i - 1), buff);
 
 end:
   ap += sizeof(int);
   return ap;
 
 p_0:
-  vfpchar(fd, '0', buff, idx);
+  vfpchar(fd, '0', buff);
   goto end;
 }
 
 
 char *
-vfpf_p_str(int fd, char *ap, char *buff, int *idx)
+vfpf_p_str(int fd, char *ap, struct vfpf_buff *buff)
 {
   char *s, ch;
 
   s = *((char **) ap);
 
   for (; ch = *s, ch; s++)
-    vfpchar(fd, ch, buff, idx);
+    vfpchar(fd, ch, buff);
 
   ap += sizeof(char **);
   return ap;
@@ -92,9 +94,9 @@ vfpf_p_str(int fd, char *ap, char *buff, int *idx)
 
 
 char *
-vfpf_p_ch(int fd, char *ap, char *buff, int *idx)
+vfpf_p_ch(int fd, char *ap, struct vfpf_buff *buff)
 {
-  vfpchar(fd, *ap, buff, idx);
+  vfpchar(fd, *ap, buff);
   ap += sizeof(int);
 
   return ap;
@@ -102,22 +104,22 @@ vfpf_p_ch(int fd, char *ap, char *buff, int *idx)
 
 
 char *
-vfpf_holder(int fd, int type, char *ap, char *buff, int *idx)
+vfpf_holder(int fd, int type, char *ap, struct vfpf_buff *buff)
 {
   if (type == 'x')
-    return vfpf_p_int(fd, ap, 16, buff, idx);
+    return vfpf_p_int(fd, ap, 16, buff);
 
   if (type == 'd')
-    return vfpf_p_int(fd, ap, 10, buff, idx);
+    return vfpf_p_int(fd, ap, 10, buff);
 
   if (type == 'o')
-    return vfpf_p_int(fd, ap, 8, buff, idx);
+    return vfpf_p_int(fd, ap, 8, buff);
 
   if (type == 's')
-    return vfpf_p_str(fd, ap, buff, idx);
+    return vfpf_p_str(fd, ap, buff);
 
   if (type == 'c')
-    return vfpf_p_ch(fd, ap, buff, idx);
+    return vfpf_p_ch(fd, ap, buff);
 
   return NULL;
 }
@@ -126,11 +128,11 @@ vfpf_holder(int fd, int type, char *ap, char *buff, int *idx)
 int
 vfpf(int fd, char *fmt, char *ap)
 {
-  char *buff;
-  int idx, ch;
+  struct vfpf_buff buff;
+  int ch;
 
-  buff = alloca(VFPF_BUFF_SIZE);
-  idx = 0;
+  buff.p = alloca(VFPF_BUFF_SIZE);
+  buff.idx = 0;
 
 start:
   ch = *fmt;
@@ -139,9 +141,9 @@ start:
     goto finish;
 
   if (ch == '%')
-    ap = vfpf_holder(fd, *(++fmt), ap, buff, &idx);
+    ap = vfpf_holder(fd, *(++fmt), ap, &buff);
   else
-    vfpchar(fd, ch, buff, &idx);
+    vfpchar(fd, ch, &buff);
 
   if (ap == NULL)
     goto error;
@@ -150,11 +152,11 @@ start:
   goto start;
 
 finish:
-  vfpf_flush(fd, buff, &idx);
+  vfpf_flush(fd, &buff);
   return 1;
 
 error:
-  vfpf_flush(fd, buff, &idx);
+  vfpf_flush(fd, &buff);
   return -1;
 }
 
