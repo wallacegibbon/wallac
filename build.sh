@@ -16,11 +16,13 @@ cp ../src/*.s .
 for i in ../src/*.c
 do echo Compiling $i...
 $CC $CCPARAMS $i
+if [ $? != 0 ]; then exit; fi
 done
 
 for i in ./*.s
 do echo Compiling $i...
 $AS -o $i.o $i
+if [ $? != 0 ]; then exit; fi
 done
 
 echo Generating the target file $TARGET...

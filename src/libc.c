@@ -50,78 +50,40 @@ fmt_digit(int num, int base)
 }
 
 
-char *
-vfpf_p_int(int fd, char *ap, int base, struct vfpf_buff *buff)
+int
+vfpinteger(int fd, int num, int base, struct vfpf_buff *buff)
 {
   char *p, *b;
-  int i, m, n;
+  int i;
 
-  n = *((int *) ap);
-  if (n == 0)
+  if (num == 0)
     goto p_0;
 
   b = alloca(12);
 
-  for (p = b, i = 0; n; n /= base, i++)
-    *p++ = fmt_digit(n % base, base);
+  for (p = b, i = 0; num; num /= base, i++)
+    *p++ = fmt_digit(num % base, base);
 
   for (; i; i--)
     vfpchar(fd, *(b + i - 1), buff);
 
-end:
-  ap += sizeof(int);
-  return ap;
+  return 1;
 
 p_0:
   vfpchar(fd, '0', buff);
-  goto end;
+  return 1;
 }
 
 
-char *
-vfpf_p_str(int fd, char *ap, struct vfpf_buff *buff)
+int
+vfpstring(int fd, char *s, struct vfpf_buff *buff)
 {
-  char *s, ch;
-
-  s = *((char **) ap);
+  char ch;
 
   for (; ch = *s, ch; s++)
     vfpchar(fd, ch, buff);
 
-  ap += sizeof(char **);
-  return ap;
-}
-
-
-char *
-vfpf_p_ch(int fd, char *ap, struct vfpf_buff *buff)
-{
-  vfpchar(fd, *ap, buff);
-  ap += sizeof(int);
-
-  return ap;
-}
-
-
-char *
-vfpf_holder(int fd, int type, char *ap, struct vfpf_buff *buff)
-{
-  if (type == 'x')
-    return vfpf_p_int(fd, ap, 16, buff);
-
-  if (type == 'd')
-    return vfpf_p_int(fd, ap, 10, buff);
-
-  if (type == 'o')
-    return vfpf_p_int(fd, ap, 8, buff);
-
-  if (type == 's')
-    return vfpf_p_str(fd, ap, buff);
-
-  if (type == 'c')
-    return vfpf_p_ch(fd, ap, buff);
-
-  return NULL;
+  return 1;
 }
 
 
@@ -139,16 +101,53 @@ start:
 
   if (!ch)
     goto finish;
-
   if (ch == '%')
-    ap = vfpf_holder(fd, *(++fmt), ap, &buff);
-  else
-    vfpchar(fd, ch, &buff);
+    goto dispatch;
 
-  if (ap == NULL)
-    goto error;
-
+  vfpchar(fd, ch, &buff);
   fmt++;
+  goto start;
+
+dispatch:
+  ch = *(++fmt);
+  fmt++;
+
+  if (ch == 'x')
+    goto f_x;
+  if (ch == 'd')
+    goto f_d;
+  if (ch == 'o')
+    goto f_o;
+  if (ch == 's')
+    goto f_s;
+  if (ch == 'c')
+    goto f_c;
+
+  goto error;
+
+f_x:
+  vfpinteger(fd, *((int *) ap), 16, &buff);
+  ap += sizeof(int);
+  goto start;
+
+f_d:
+  vfpinteger(fd, *((int *) ap), 10, &buff);
+  ap += sizeof(int);
+  goto start;
+
+f_o:
+  vfpinteger(fd, *((int *) ap), 8, &buff);
+  ap += sizeof(int);
+  goto start;
+
+f_s:
+  vfpstring(fd, *((char **) ap), &buff);
+  ap += sizeof(char **);
+  goto start;
+
+f_c:
+  vfpchar(fd, *ap, &buff);
+  ap += sizeof(int);
   goto start;
 
 finish:

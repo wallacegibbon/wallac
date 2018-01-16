@@ -24,10 +24,10 @@ struct cfunc { char *name; struct ctype *ret;
   struct list *params, *vars, *stmts; };
 
 struct cvar { char *name; struct ctype *type;
-  int pdepth, isarray; int is_extern; };
+  int pdepth; int is_extern; };
 
 struct sfield { char *name; struct ctype *type;
-  int pdepth, isarray; };
+  int pdepth; };
 
 struct cstruct { char *name; struct list *fields; };
 
