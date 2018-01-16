@@ -56,21 +56,15 @@ vfpinteger(int fd, int num, int base, struct vfpf_buff *buff)
   char *p, *b;
   int i;
 
-  if (num == 0)
-    goto p_0;
-
   b = alloca(12);
+  p = b;
 
-  for (p = b, i = 0; num; num /= base, i++)
+  for (i = 0; i == 0 || num; num /= base, i++)
     *p++ = fmt_digit(num % base, base);
 
   for (; i; i--)
     vfpchar(fd, *(b + i - 1), buff);
 
-  return 1;
-
-p_0:
-  vfpchar(fd, '0', buff);
   return 1;
 }
 
@@ -88,75 +82,97 @@ vfpstring(int fd, char *s, struct vfpf_buff *buff)
 
 
 int
+vfpf_integer(int fd, int base, char **pap, struct vfpf_buff *buff)
+{
+  int r;
+
+  r = vfpinteger(fd, *((int *) *pap), base, buff);
+  *pap += sizeof(int);
+  return r;
+}
+
+
+int
+vfpf_string(int fd, char **pap, struct vfpf_buff *buff)
+{
+  int r;
+
+  r = vfpstring(fd, *((char **) *pap), buff);
+  *pap += sizeof(char **);
+  return r;
+}
+
+
+int
+vfpf_char(int fd, char **pap, struct vfpf_buff *buff)
+{
+  int r;
+
+  r = vfpchar(fd, **pap, buff);
+  *pap += sizeof(int);
+  return r;
+}
+
+
+int
+vfpf_holder(int fd, char ch, char **pap, struct vfpf_buff *buff)
+{
+  if (ch == 'x')
+    return vfpf_integer(fd, 16, pap, buff);
+  if (ch == 'd')
+    return vfpf_integer(fd, 10, pap, buff);
+  if (ch == 'o')
+    return vfpf_integer(fd, 8, pap, buff);
+  if (ch == 's')
+    return vfpf_string(fd, pap, buff);
+  if (ch == 'c')
+    return vfpf_char(fd, pap, buff);
+  if (ch == '%')
+    return vfpchar(fd, '%', buff);
+  return -1;
+}
+
+
+int
+vfpf_recur(int fd, char *fmt, char *ap, struct vfpf_buff *buff)
+{
+  int ch, r;
+
+  ch = *fmt;
+
+  if (ch == '%')
+    r = vfpf_holder(fd, *(++fmt), &ap, buff);
+  else
+    r = vfpchar(fd, ch, buff);
+
+  if (r < 0)
+    return r;
+
+  fmt += 1;
+
+  if (*fmt)
+    return vfpf_recur(fd, fmt, ap, buff);
+  else
+    return 1;
+}
+
+
+int
 vfpf(int fd, char *fmt, char *ap)
 {
   struct vfpf_buff buff;
-  int ch;
+  int r;
+
+  if (!*fmt)
+    return 1;
 
   buff.p = alloca(VFPF_BUFF_SIZE);
   buff.idx = 0;
 
-start:
-  ch = *fmt;
-
-  if (!ch)
-    goto finish;
-  if (ch == '%')
-    goto dispatch;
-
-  vfpchar(fd, ch, &buff);
-  fmt++;
-  goto start;
-
-dispatch:
-  ch = *(++fmt);
-  fmt++;
-
-  if (ch == 'x')
-    goto f_x;
-  if (ch == 'd')
-    goto f_d;
-  if (ch == 'o')
-    goto f_o;
-  if (ch == 's')
-    goto f_s;
-  if (ch == 'c')
-    goto f_c;
-
-  goto error;
-
-f_x:
-  vfpinteger(fd, *((int *) ap), 16, &buff);
-  ap += sizeof(int);
-  goto start;
-
-f_d:
-  vfpinteger(fd, *((int *) ap), 10, &buff);
-  ap += sizeof(int);
-  goto start;
-
-f_o:
-  vfpinteger(fd, *((int *) ap), 8, &buff);
-  ap += sizeof(int);
-  goto start;
-
-f_s:
-  vfpstring(fd, *((char **) ap), &buff);
-  ap += sizeof(char **);
-  goto start;
-
-f_c:
-  vfpchar(fd, *ap, &buff);
-  ap += sizeof(int);
-  goto start;
-
-finish:
+  r = vfpf_recur(fd, fmt, ap, &buff);
   vfpf_flush(fd, &buff);
-  return 1;
 
-error:
-  vfpf_flush(fd, &buff);
-  return -1;
+  return r;
 }
 
 

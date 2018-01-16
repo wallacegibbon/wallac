@@ -476,20 +476,26 @@ get_exclamation_neq(struct lex *lx)
 
 
 int
-jump_multi_comments(struct lex *lx)
+jump_multi_comments_recur(struct lex *lx)
 {
   int ch;
 
-  ch = nextchar(lx);
-
-loop:
   for (; ch = lx->ch, ch != '*'; nextchar(lx))
     assert_not_eof(lx, ch);
 
   ch = nextchar(lx);
   if (ch != '/')
-    goto loop;
+    return jump_multi_comments_recur(lx);
+  else
+    return 1;
+}
 
+
+int
+jump_multi_comments(struct lex *lx)
+{
+  nextchar(lx);
+  jump_multi_comments_recur(lx);
   nextchar(lx);
 
   return 1;
