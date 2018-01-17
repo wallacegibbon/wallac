@@ -2,27 +2,32 @@
 #define __HASHTBL_H__
 
 
-struct hashnode { struct hashnode *next; char *key; void *value; };
-struct hashtbl { struct hashnode **bucket; int bucketsize; };
+#include "tblnode.h"
+
+
+struct hashtbl { struct tblnode **bucket; int bucketsize, size; };
 
 
 struct hashtbl *
 new_hashtbl(int bucketsize);
 
 int
-free_hashtbl(struct hashtbl *h);
+hashtbl_put(struct hashtbl *h, char *key, void *value);
+
+struct tblnode *
+hashtbl_get(struct hashtbl *h, char *key);
 
 int
-hash_keyexist(struct hashtbl *h, char *key);
+hashtbl_keyexist(struct hashtbl *h, char *key);
 
 int
-hash_put(struct hashtbl *h, char *key, void *value);
-
-struct hashnode *
-hash_get(struct hashtbl *h, char *key);
+hashtbl_size(struct hashtbl *h);
 
 int
-hash_print(struct hashtbl *h);
+hashtbl_print(struct hashtbl *h);
+
+int
+hashtbl_free(struct hashtbl *h);
 
 
 #endif

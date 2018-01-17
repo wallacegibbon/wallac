@@ -5,6 +5,7 @@
 #include "vars.h"
 #include "token.h"
 #include "lexer.h"
+#include "tblnode.h"
 #include "hashtbl.h"
 #include "misc.h"
 #include "libc.h"
@@ -676,7 +677,7 @@ get_integer(struct lex *lx)
 int
 get_identifier(struct lex *lx)
 {
-  struct hashnode *kv;
+  struct tblnode *kv;
   char *buffer;
   int line, cnt, kw;
 
@@ -700,7 +701,7 @@ get_identifier(struct lex *lx)
   if (kw)
     return join_token(lx, line, kw, NULL);
 
-  kv = hash_get(lx->mtbl, buffer);
+  kv = hashtbl_get(lx->mtbl, buffer);
   if (kv)
     return join_chain(lx, line, (struct token *) kv->value);
 
@@ -1034,7 +1035,7 @@ handle_define(struct lex *lx, int line, char *s)
 
   free_lexer(slx);
 
-  i = hash_put(lx->mtbl, name, (void *) tks);
+  i = hashtbl_put(lx->mtbl, name, (void *) tks);
   if (!i)
     exit_with("%s:%d[LEXER]macro %s is already defined\n",
         lx->fname, line, name);
@@ -1071,7 +1072,7 @@ handle_ifndef(struct lex *lx, int line, char *s)
 
   name = shift_macroname(lx, line, s, 6);
 
-  if (hash_keyexist(lx->mtbl, name))
+  if (hashtbl_keyexist(lx->mtbl, name))
     return skip_until_endif(lx);
   else
     return 1;
@@ -1247,6 +1248,8 @@ tokenize()
 
   free_lexer(lx);
   free(buff);
+
+  //hashtbl_print(macrotbl);
 
   return tks;
 }

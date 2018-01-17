@@ -60,8 +60,8 @@ main(int argc, char **argv)
 
   prepare_env(argc, argv);
 
-  pf("Will compiling %s to %s\n",
-      pathname_src, pathname_out);
+  if (debug)
+    pf("Compiling %s -> %s\n", pathname_src, pathname_out);
 
   compile();
 

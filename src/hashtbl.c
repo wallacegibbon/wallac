@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "misc.h"
 #include "libc.h"
+#include "limits.h"
 #include "hashtbl.h"
 
 
@@ -16,8 +17,9 @@ new_hashtbl(int bucketsize)
     exit_with("Failed alloc memory for hash table\n");
 
   p->bucketsize = bucketsize;
+  p->size = 0;
 
-  p->bucket = malloc(sizeof(struct hashnode *) * bucketsize);
+  p->bucket = malloc(sizeof(struct tblnode *) * bucketsize);
   if (!p->bucket)
     exit_with("Failed alloc memory for hash bucket\n");
 
@@ -25,53 +27,6 @@ new_hashtbl(int bucketsize)
     *(p->bucket + i) = NULL;
 
   return p;
-}
-
-
-struct hashnode *
-new_hashnode(char *key, void *value)
-{
-  struct hashnode *n;
-
-  n = malloc(sizeof(struct hashnode));
-  if (!n)
-    exit_with("Failed alloc memory for hash node\n");
-
-  n->key = key;
-  n->value = value;
-  n->next = NULL;
-
-  return n;
-}
-
-
-int
-free_hashnode_chain(struct hashnode *s)
-{
-  struct hashnode *p;
-
-  for (; p = s->next, p; s = p)
-    free(s);
-
-  free(s);
-
-  return 1;
-}
-
-
-int
-free_hashtbl(struct hashtbl *h)
-{
-  struct hashnode *p;
-  int i;
-
-  for (i = 0; p = *(h->bucket + i), i < h->bucketsize; i++)
-    if (p)
-      free_hashnode_chain(p);
-
-  free(h);
-
-  return 1;
 }
 
 
@@ -88,110 +43,105 @@ strhash(char *str)
 
 
 int
-hash_keyexist(struct hashtbl *h, char *key)
+hashtbl_increase_size(struct hashtbl *h)
 {
-  struct hashnode *p;
+  if (h->size == INT_MAX)
+    return -1;
+
+  h->size += 1;
+  return 1;
+}
+
+
+struct tblnode **
+hashtbl_getslot(struct hashtbl *h, char *key)
+{
   unsigned int i;
 
   i = strhash(key) % h->bucketsize;
-  p = *(h->bucket + i);
-
-  if (!p)
-    return 0;
-
-  for (; p && scmp(p->key, key) != 0; p = p->next);
-
-  if (p)
-    return 1;
-  else
-    return 0;
+  return h->bucket + i;
 }
 
 
 int
-append_hashnode(struct hashnode *p, char *key, void *value)
+hashtbl_put(struct hashtbl *h, char *key, void *value)
 {
-  struct hashnode *t;
+  struct tblnode **p;
   int r;
 
-  if (!p)
-    return 0;
-
-  for (; p && scmp(p->key, key); p = p->next)
-    t = p;
-
-  r = 1;
-  if (!p)
-    t->next = new_hashnode(key, value);
-  else
-    r = 0;
-
-  return r;
-}
-
-
-int
-hash_put(struct hashtbl *h, char *key, void *value)
-{
-  struct hashnode **p;
-  unsigned int i;
-  int r;
-
-  i = strhash(key) % h->bucketsize;
-  p = h->bucket + i;
+  p = hashtbl_getslot(h, key);
 
   r = 1;
   if (*p)
-    r = append_hashnode(*p, key, value);
+    r = tblnode_append(*p, key, value);
   else
-    *p = new_hashnode(key, value);
+    *p = new_tblnode(key, value);
+
+  if (r > 0)
+    hashtbl_increase_size(h);
 
   return r;
 }
 
 
-struct hashnode *
-hash_get(struct hashtbl *h, char *key)
+struct tblnode *
+hashtbl_get(struct hashtbl *h, char *key)
 {
-  struct hashnode *p;
-  unsigned int i;
+  struct tblnode *p;
 
-  i = strhash(key) % h->bucketsize;
-  p = *(h->bucket + i);
-
-  if (!p)
-    return NULL;
-
-  for (; p && scmp(p->key, key); p = p->next);
-
-  if (p)
-    return p;
-  else
-    return NULL;
+  p = *hashtbl_getslot(h, key);
+  return tblnode_get(p, key);
 }
 
 
 int
-print_node_chain(int idx, struct hashnode *p)
+hashtbl_keyexist(struct hashtbl *h, char *key)
+{
+  struct tblnode *p;
+
+  p = *hashtbl_getslot(h, key);
+  return tblnode_keyexist(p, key);
+}
+
+
+int
+hashtbl_print_slot(int idx, struct tblnode *chain)
 {
   pf("%d)\t", idx);
+  tblnode_print(chain);
+}
 
-  for (; p; p = p->next)
-    pf("<%s|%d>--", p->key, (int) p->value);
 
-  pf("\n");
+int
+hashtbl_print(struct hashtbl *h)
+{
+  int i;
+
+  for (i = 0; i < h->bucketsize; i++)
+    hashtbl_print_slot(i, *(h->bucket + i));
 
   return 1;
 }
 
 
 int
-hash_print(struct hashtbl *h)
+hashtbl_size(struct hashtbl *h)
 {
+  return h->size;
+}
+
+
+int
+hashtbl_free(struct hashtbl *h)
+{
+  struct tblnode *p;
   int i;
 
-  for (i = 0; i < h->bucketsize; i++)
-    print_node_chain(i, *(h->bucket + i));
+  for (i = 0; p = *(h->bucket + i), i < h->bucketsize; i++)
+    if (p)
+      tblnode_free(p);
+
+  free(h);
 
   return 1;
 }

@@ -1,37 +1,7 @@
 #include <stdlib.h>
 #include "misc.h"
+#include "node.h"
 
-
-struct listele { struct listele *next; void *value; };
-struct list { struct listele *ele; int size; };
-
-#define CT_CHAR 1
-#define CT_UCHAR 2
-#define CT_SHORT 3
-#define CT_USHORT 4
-#define CT_INT 5
-#define CT_UINT 6
-#define CT_LONG 7
-#define CT_ULONG 8
-#define CT_STRUCT 9
-#define CT_FUNC 9
-#define CT_VOID 10
-
-struct ctype { int type;
-  int structidx; struct ctype *fnret; struct list *fnparams; };
-
-struct cfunc { char *name; struct ctype *ret;
-  struct list *params, *vars, *stmts; };
-
-struct cvar { char *name; struct ctype *type;
-  int pdepth; int is_extern; };
-
-struct sfield { char *name; struct ctype *type;
-  int pdepth; };
-
-struct cstruct { char *name; struct list *fields; };
-
-struct stmt { int type; void *value; };
 
 
 struct list *struct_defs;
@@ -57,7 +27,7 @@ new_ctype(int type, int structidx, struct ctype *fnret, struct list *fnparams)
 
 
 struct cvar *
-new_variable(char *name, struct ctype *type, int pdepth, int is_extern)
+new_cvar(char *name, struct ctype *type, int pdepth, int is_extern)
 {
   struct cvar *v;
   v = malloc(sizeof(struct cvar));
@@ -72,23 +42,8 @@ new_variable(char *name, struct ctype *type, int pdepth, int is_extern)
 }
 
 
-struct sfield *
-new_field(char *name, struct ctype *type, int pdepth)
-{
-  struct sfield *f;
-  f = malloc(sizeof(struct sfield));
-  if (!f)
-    exit_with("Failed alloc memory for new c struct field\n");
-
-  f->name = name;
-  f->type = type;
-  f->pdepth = pdepth;
-  return f;
-}
-
-
 struct cstruct *
-new_struct(char *name)
+new_cstruct(char *name)
 {
   struct cstruct *s;
   s = malloc(sizeof(struct cstruct));
@@ -102,8 +57,7 @@ new_struct(char *name)
 
 
 struct cfunc *
-new_function(char *name, struct list *params, struct list *vars,
-    struct ctype *ret)
+new_cfunc(char *name, struct ctype *type, struct list *vars)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
@@ -111,8 +65,7 @@ new_function(char *name, struct list *params, struct list *vars,
     exit_with("Failed alloc memory for new c function\n");
 
   f->name = name;
-  f->ret = ret;
-  f->params = params;
+  f->type = type;
   f->vars = vars;
   f->stmts = NULL;
   return f;
