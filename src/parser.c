@@ -30,9 +30,45 @@ new_parser(struct token *tks)
 
 
 int
+struct_var(struct parser *psr, char *sname)
+{
+  return 1;
+}
+
+
+int
+struct_decl(struct parser *psr, char *sname)
+{
+  return 1;
+}
+
+
+int
 struct_def_or_var(struct parser *psr)
 {
-  pf("struct_def_or_var...\n");
+  struct token *tk;
+  char *sname;
+
+  tk = psr->tk;
+
+  tk = tk->next;
+  if (tk->type != TK_IDENT)
+    exit_with("%s:%d:[PARSER]Struct name expected\n",
+        tk->fname, tk->line);
+
+  sname = (char *) tk->value;
+
+  tk = tk->next;
+  psr->tk = tk;
+
+  if (tk->type == TK_IDENT)
+    return struct_var(psr, sname);
+
+  if (tk->type == TK_BEGIN)
+    return struct_decl(psr, sname);
+
+  exit_with("%s:%d:[PARSER]Invalid struct syntax\n",
+      tk->fname, tk->line);
 
   return 1;
 }
