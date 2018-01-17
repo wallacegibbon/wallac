@@ -49,6 +49,9 @@ file_nextchar(struct lexer *lx)
 {
   int ch;
 
+  if (lx->ch == EOF)
+    return EOF;
+
   ch = *(lx->input + lx->cursor);
   if (!ch && !lx->eof)
     lx_getmore_from_file(lx);
@@ -76,6 +79,9 @@ int
 str_nextchar(struct lexer *lx)
 {
   int ch;
+
+  if (lx->ch == EOF)
+    return EOF;
 
   ch = *(lx->input + lx->cursor);
   if (!ch)
@@ -162,14 +168,7 @@ new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 
   lx_getmore_from_file(lx);
 
-  lx->ch = *lx->input;
-  if (lx->ch)
-    lx->cursor = 1;
-  else
-    lx->ch = EOF;
-
-  if (lx->ch == '\n')
-    lx->line++;
+  nextchar(lx);
 
   return lx;
 }
@@ -183,11 +182,7 @@ new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
   lx->type = 2;
   lx->input = str;
 
-  lx->ch = *str;
-  if (lx->ch)
-    lx->cursor = 1;
-  else
-    lx->ch = EOF;
+  nextchar(lx);
 
   return lx;
 }
