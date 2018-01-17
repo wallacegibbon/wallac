@@ -4,8 +4,9 @@
 
 #include "hashtbl.h"
 
-struct lex { int ch, pch, line, cursor; int type; char *fname; int fd; int eof;
-  char *buff, *input; struct hashtbl *mtbl; struct token *tk_s, *tk_c; };
+struct lex { int ch, pch, line, cursor; int type; char *buff, *input;
+  char *fname; int fd; int eof;
+  struct hashtbl *mtbl; struct token *tk_s, *tk_c; };
 
 
 struct token *
