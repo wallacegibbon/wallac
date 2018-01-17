@@ -12,86 +12,18 @@
 
 
 
-
-int
-assert_ch(struct lex *lx, char ch, char expected_ch)
-{
-  if (ch != expected_ch)
-    exit_with("%s:%d:[LEXER]Expect char (0x%x), not (0x%x)\n",
-        lx->fname, lx->line, expected_ch, ch);
-
-  return ch;
-}
+struct lexer { int ch, pch, line, cursor; int type; char *buff, *input;
+  char *fname; int fd; int eof;
+  struct hashtbl *mtbl; struct token *tk_s, *tk_c; };
 
 
-int
-assert_not_ch(struct lex *lx, char ch, char unexpected_ch)
-{
-  if (ch == unexpected_ch)
-    exit_with("%s:%d:[LEXER]Unexpected char (0x%x)\n",
-        lx->fname, lx->line, ch);
+struct token *
+tokenize_lx(struct lexer *lx);
 
-  return ch;
-}
 
 
 int
-assert_octal(struct lex *lx, char ch)
-{
-  if (!check_decimal(ch))
-    exit_with("%s:%d:[LEXER]Expect octal char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_decimal(struct lex *lx, char ch)
-{
-  if (!check_decimal(ch))
-    exit_with("%s:%d:[LEXER]Expect decimal char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_hex(struct lex *lx, char ch)
-{
-  if (!check_hex(ch))
-    exit_with("%s:%d:[LEXER]Expect hex char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_ident(struct lex *lx, char ch)
-{
-  if (!check_ident(ch))
-    exit_with("%s:%d:[LEXER]Expect identifier\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_not_eof(struct lex *lx, char ch)
-{
-  if (ch == EOF)
-    exit_with("%f:%d:[LEXER]Unexpected EOF\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-lx_getmore_from_file(struct lex *lx)
+lx_getmore_from_file(struct lexer *lx)
 {
   int i;
 
@@ -113,7 +45,7 @@ lx_getmore_from_file(struct lex *lx)
 
 
 int
-file_nextchar(struct lex *lx)
+file_nextchar(struct lexer *lx)
 {
   int ch;
 
@@ -141,7 +73,7 @@ file_nextchar(struct lex *lx)
 
 
 int
-str_nextchar(struct lex *lx)
+str_nextchar(struct lexer *lx)
 {
   int ch;
 
@@ -158,7 +90,7 @@ str_nextchar(struct lex *lx)
 
 
 int
-nextchar(struct lex *lx)
+nextchar(struct lexer *lx)
 {
   if (lx->type == 1)
     return file_nextchar(lx);
@@ -170,14 +102,14 @@ nextchar(struct lex *lx)
 }
 
 
-struct lex *
+struct lexer *
 new_lexer_common(char *buff, struct hashtbl *mtbl)
 {
-  struct lex *lx;
+  struct lexer *lx;
 
-  lx = malloc(sizeof(struct lex));
+  lx = malloc(sizeof(struct lexer));
   if (!lx)
-    exit_with("Failed alloc memory for lex\n");
+    exit_with("Failed alloc memory for lexer\n");
 
   lx->type = 0;
 
@@ -202,10 +134,10 @@ new_lexer_common(char *buff, struct hashtbl *mtbl)
 }
 
 
-struct lex *
+struct lexer *
 new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 {
-  struct lex *lx;
+  struct lexer *lx;
   char *fbuff;
   int i;
 
@@ -236,14 +168,17 @@ new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
   else
     lx->ch = EOF;
 
+  if (lx->ch == '\n')
+    lx->line++;
+
   return lx;
 }
 
 
-struct lex *
+struct lexer *
 new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 {
-  struct lex *lx;
+  struct lexer *lx;
   lx = new_lexer_common(buff, mtbl);
   lx->type = 2;
   lx->input = str;
@@ -259,7 +194,7 @@ new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 
 
 int
-free_lexer_file(struct lex *lx)
+free_lexer_file(struct lexer *lx)
 {
   os_close(lx->fd);
   free(lx->input);
@@ -269,7 +204,7 @@ free_lexer_file(struct lex *lx)
 
 
 int
-free_lexer_str(struct lex *lx)
+free_lexer_str(struct lexer *lx)
 {
   free(lx);
   return 1;
@@ -277,7 +212,7 @@ free_lexer_str(struct lex *lx)
 
 
 int
-free_lexer(struct lex *lx)
+free_lexer(struct lexer *lx)
 {
   if (lx->type == 1)
     return free_lexer_file(lx);
@@ -290,7 +225,84 @@ free_lexer(struct lex *lx)
 
 
 int
-join_token_nonempty(struct lex *lx, struct token *t)
+assert_ch(struct lexer *lx, char ch, char expected_ch)
+{
+  if (ch != expected_ch)
+    exit_with("%s:%d:[LEXER]Expect char (0x%x), not (0x%x)\n",
+        lx->fname, lx->line, expected_ch, ch);
+
+  return ch;
+}
+
+
+int
+assert_not_ch(struct lexer *lx, char ch, char unexpected_ch)
+{
+  if (ch == unexpected_ch)
+    exit_with("%s:%d:[LEXER]Unexpected char (0x%x)\n",
+        lx->fname, lx->line, ch);
+
+  return ch;
+}
+
+
+int
+assert_octal(struct lexer *lx, char ch)
+{
+  if (!check_decimal(ch))
+    exit_with("%s:%d:[LEXER]Expect octal char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_decimal(struct lexer *lx, char ch)
+{
+  if (!check_decimal(ch))
+    exit_with("%s:%d:[LEXER]Expect decimal char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_hex(struct lexer *lx, char ch)
+{
+  if (!check_hex(ch))
+    exit_with("%s:%d:[LEXER]Expect hex char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_ident(struct lexer *lx, char ch)
+{
+  if (!check_ident(ch))
+    exit_with("%s:%d:[LEXER]Expect identifier\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_not_eof(struct lexer *lx, char ch)
+{
+  if (ch == EOF)
+    exit_with("%f:%d:[LEXER]Unexpected EOF\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+join_token_nonempty(struct lexer *lx, struct token *t)
 {
   t->prev = lx->tk_c;
   lx->tk_c->next = t;
@@ -301,7 +313,7 @@ join_token_nonempty(struct lex *lx, struct token *t)
 
 
 int
-join_token_empty(struct lex *lx, struct token *t)
+join_token_empty(struct lexer *lx, struct token *t)
 {
   t->prev = NULL;
   lx->tk_c = t;
@@ -312,11 +324,13 @@ join_token_empty(struct lex *lx, struct token *t)
 
 
 int
-join_token(struct lex *lx, int line, int type, void *p)
+join_token(struct lexer *lx, int line, int type, void *p)
 {
   struct token *t;
 
   t = new_token(type, p);
+
+  t->fname = lx->fname;
   t->line = line;
 
   if (lx->tk_c)
@@ -329,7 +343,7 @@ join_token(struct lex *lx, int line, int type, void *p)
 
 
 int
-join_token_nchar(struct lex *lx, int line, int type)
+join_token_nchar(struct lexer *lx, int line, int type)
 {
   join_token(lx, line, type, NULL);
   nextchar(lx);
@@ -339,7 +353,17 @@ join_token_nchar(struct lex *lx, int line, int type)
 
 
 int
-join_chain(struct lex *lx, int line, struct token *orig)
+fix_position(struct lexer *lx, struct token *t, int line)
+{
+  t->fname = lx->fname;
+  t->line = line;
+
+  return 1;
+}
+
+
+int
+join_chain(struct lexer *lx, int line, struct token *orig, int fixpos)
 {
   struct token *t, *p;
 
@@ -356,7 +380,8 @@ join_chain(struct lex *lx, int line, struct token *orig)
     join_token_empty(lx, t);
 
   for (; t; p = t, t = t->next)
-    t->line = line;
+    if (fixpos)
+      fix_position(lx, t, line);
 
   lx->tk_c = p;
 
@@ -365,7 +390,7 @@ join_chain(struct lex *lx, int line, struct token *orig)
 
 
 int
-get_ellipsis(struct lex *lx, int line)
+get_ellipsis(struct lexer *lx, int line)
 {
   int ch;
 
@@ -384,7 +409,7 @@ get_ellipsis(struct lex *lx, int line)
 
 
 int
-get_dot_ellipsis(struct lex *lx)
+get_dot_ellipsis(struct lexer *lx)
 {
   int line, ch; 
 
@@ -406,7 +431,7 @@ get_dot_ellipsis(struct lex *lx)
 
 
 int
-get_minus_dminus_pointsto(struct lex *lx)
+get_minus_dminus_pointsto(struct lexer *lx)
 {
   int line, ch;
 
@@ -427,7 +452,7 @@ get_minus_dminus_pointsto(struct lex *lx)
 
 
 int
-get_plus_dplus(struct lex *lx)
+get_plus_dplus(struct lexer *lx)
 {
   int line, ch;
 
@@ -445,7 +470,7 @@ get_plus_dplus(struct lex *lx)
 
 
 int
-get_and_dand(struct lex *lx)
+get_and_dand(struct lexer *lx)
 {
   int line, ch;
 
@@ -463,7 +488,7 @@ get_and_dand(struct lex *lx)
 
 
 int
-get_or_dor(struct lex *lx)
+get_or_dor(struct lexer *lx)
 {
   int line, ch;
 
@@ -481,7 +506,7 @@ get_or_dor(struct lex *lx)
 
 
 int
-get_assign_eq(struct lex *lx)
+get_assign_eq(struct lexer *lx)
 {
   int line, ch;
 
@@ -499,7 +524,7 @@ get_assign_eq(struct lex *lx)
 
 
 int
-get_gt_geq(struct lex *lx)
+get_gt_geq(struct lexer *lx)
 {
   int line, ch;
 
@@ -517,7 +542,7 @@ get_gt_geq(struct lex *lx)
 
 
 int
-get_lt_leq(struct lex *lx)
+get_lt_leq(struct lexer *lx)
 {
   int line, ch;
 
@@ -535,7 +560,7 @@ get_lt_leq(struct lex *lx)
 
 
 int
-get_exclamation_neq(struct lex *lx)
+get_exclamation_neq(struct lexer *lx)
 {
   int line, ch;
 
@@ -553,7 +578,7 @@ get_exclamation_neq(struct lex *lx)
 
 
 int
-jump_multi_comments_recur(struct lex *lx)
+jump_multi_comments_recur(struct lexer *lx)
 {
   int ch;
 
@@ -569,7 +594,7 @@ jump_multi_comments_recur(struct lex *lx)
 
 
 int
-jump_multi_comments(struct lex *lx)
+jump_multi_comments(struct lexer *lx)
 {
   nextchar(lx);
   jump_multi_comments_recur(lx);
@@ -580,7 +605,7 @@ jump_multi_comments(struct lex *lx)
 
 
 int
-skip_line(struct lex *lx)
+skip_line(struct lexer *lx)
 {
   int ch;
 
@@ -594,7 +619,7 @@ skip_line(struct lex *lx)
 
 
 int
-get_divide_or_jump_comments(struct lex *lx)
+get_divide_or_jump_comments(struct lexer *lx)
 {
   int line, ch;
 
@@ -614,7 +639,7 @@ get_divide_or_jump_comments(struct lex *lx)
 
 
 int
-get_numstr(struct lex *lx, int (*chkfn)(int), int line)
+get_numstr(struct lexer *lx, int (*chkfn)(int), int line)
 {
   char *buffer;
   int cnt;
@@ -636,7 +661,7 @@ get_numstr(struct lex *lx, int (*chkfn)(int), int line)
 
 
 int
-get_numval(struct lex *lx, int base, int (*cnvfn)(int), int line)
+get_numval(struct lexer *lx, int base, int (*cnvfn)(int), int line)
 {
   char *buffer, *cmpstr;
   long i, j, k;
@@ -681,7 +706,7 @@ cnv_digit(int ch)
 
 
 int
-get_octal(struct lex *lx, int line)
+get_octal(struct lexer *lx, int line)
 {
   long i;
 
@@ -695,7 +720,7 @@ get_octal(struct lex *lx, int line)
 
 
 int
-get_decimal(struct lex *lx, int line)
+get_decimal(struct lexer *lx, int line)
 {
   long i;
 
@@ -709,7 +734,7 @@ get_decimal(struct lex *lx, int line)
 
 
 int
-get_hex(struct lex *lx, int line)
+get_hex(struct lexer *lx, int line)
 {
   long i, ch;
 
@@ -726,7 +751,7 @@ get_hex(struct lex *lx, int line)
 
 
 int
-get_integer(struct lex *lx)
+get_integer(struct lexer *lx)
 {
   int line, ch;
 
@@ -751,7 +776,7 @@ get_integer(struct lex *lx)
 
 
 int
-get_identifier(struct lex *lx)
+get_identifier(struct lexer *lx)
 {
   struct tblnode *kv;
   char *buffer;
@@ -779,7 +804,7 @@ get_identifier(struct lex *lx)
 
   kv = hashtbl_get(lx->mtbl, buffer);
   if (kv)
-    return join_chain(lx, line, (struct token *) kv->value);
+    return join_chain(lx, line, (struct token *) kv->value, 1);
 
   join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
 
@@ -788,7 +813,7 @@ get_identifier(struct lex *lx)
 
 
 int
-get_hex_escape(struct lex *lx)
+get_hex_escape(struct lexer *lx)
 {
   int r, t;
 
@@ -809,7 +834,7 @@ get_hex_escape(struct lex *lx)
 
 
 int
-get_octal_escape(struct lex *lx)
+get_octal_escape(struct lexer *lx)
 {
   int ch, v;
   v = cnv_digit(lx->ch);
@@ -837,7 +862,7 @@ get_octal_escape(struct lex *lx)
 
 
 int
-get_normal_escape(struct lex *lx, int ch)
+get_normal_escape(struct lexer *lx, int ch)
 {
   int line;
 
@@ -873,7 +898,7 @@ get_normal_escape(struct lex *lx, int ch)
 
 
 int
-get_escape_seq(struct lex *lx)
+get_escape_seq(struct lexer *lx)
 {
   int ch;
   ch = nextchar(lx);
@@ -889,7 +914,7 @@ get_escape_seq(struct lex *lx)
 
 
 int
-get_character(struct lex *lx)
+get_character(struct lexer *lx)
 {
   int line, ch;
 
@@ -926,7 +951,7 @@ get_character(struct lex *lx)
 
 
 int
-get_strchar_sub(struct lex *lx)
+get_strchar_sub(struct lexer *lx)
 {
   char ch;
 
@@ -950,7 +975,7 @@ get_strchar_sub(struct lex *lx)
 
 
 int
-get_strchar(struct lex *lx, char *c)
+get_strchar(struct lexer *lx, char *c)
 {
   char ch;
 
@@ -968,7 +993,7 @@ get_strchar(struct lex *lx, char *c)
 
 
 int
-get_string(struct lex *lx)
+get_string(struct lexer *lx)
 {
   char *buffer, ch;
   int line, cnt;
@@ -997,7 +1022,7 @@ get_string(struct lex *lx)
 
 
 char *
-header_filename(struct lex *lx, int line, char *s)
+header_filename(struct lexer *lx, int line, char *s)
 {
   char ch, *a, *b;
 
@@ -1031,10 +1056,10 @@ header_filename(struct lex *lx, int line, char *s)
 
 
 int
-handle_header(struct lex *lx, int line, char *s)
+handle_header(struct lexer *lx, int line, char *s)
 {
   struct token *tks;
-  struct lex *ilx;
+  struct lexer *ilx;
   char *incname, *pname;
   int i;
 
@@ -1050,14 +1075,14 @@ handle_header(struct lex *lx, int line, char *s)
   free_lexer(ilx);
 
   if (tks)
-    join_chain(lx, line, tks);
+    join_chain(lx, line, tks, 0);
 
   return 1;
 }
 
 
 char *
-shift_macroname(struct lex *lx, int line, char *s, int offset)
+shift_macroname(struct lexer *lx, int line, char *s, int offset)
 {
   char *a, *b, *r;
   int i;
@@ -1090,10 +1115,10 @@ shift_macroname(struct lex *lx, int line, char *s, int offset)
 
 
 int
-handle_define(struct lex *lx, int line, char *s)
+handle_define(struct lexer *lx, int line, char *s)
 {
   struct token *tks;
-  struct lex *slx;
+  struct lexer *slx;
   char *name;
   int i;
 
@@ -1117,7 +1142,7 @@ handle_define(struct lex *lx, int line, char *s)
 
 
 int
-skip_until_endif(struct lex *lx)
+skip_until_endif(struct lexer *lx)
 {
   char ch, *buffer;
   int i;
@@ -1138,7 +1163,7 @@ skip_until_endif(struct lex *lx)
 
 
 int
-handle_ifndef(struct lex *lx, int line, char *s)
+handle_ifndef(struct lexer *lx, int line, char *s)
 {
   char *name;
 
@@ -1152,7 +1177,7 @@ handle_ifndef(struct lex *lx, int line, char *s)
 
 
 char *
-preprocess_content(struct lex *lx)
+preprocess_content(struct lexer *lx)
 {
   char ch, *buffer;
   int line, cnt;
@@ -1192,7 +1217,7 @@ preprocess_content(struct lex *lx)
 
 
 int
-preprocess(struct lex *lx)
+preprocess(struct lexer *lx)
 {
   char *buffer;
   int line;
@@ -1220,7 +1245,7 @@ preprocess(struct lex *lx)
 
 
 int
-get_token(struct lex *lx)
+get_token(struct lexer *lx)
 {
   for (; check_space(lx->ch); )
     nextchar(lx);
@@ -1293,7 +1318,7 @@ get_token(struct lex *lx)
 
 
 struct token *
-tokenize_lx(struct lex *lx)
+tokenize_lx(struct lexer *lx)
 {
   for (; get_token(lx); );
 
@@ -1306,14 +1331,14 @@ tokenize(char *filename)
 {
   struct hashtbl *macrotbl;
   struct token *tks;
-  struct lex *lx;
+  struct lexer *lx;
   char *buff;
 
   buff = malloc(BUFF_SIZE + 1);
   if (!buff)
-    exit_with("Failed alloc memory for lex buffer\n");
+    exit_with("Failed alloc memory for lexer buffer\n");
 
-  macrotbl = new_hashtbl(20);
+  macrotbl = new_hashtbl(40);
 
   lx = new_lexer_file(filename, buff, macrotbl);
   tks = tokenize_lx(lx);

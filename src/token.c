@@ -14,10 +14,13 @@ new_token(int type, void *value)
   if (!t)
     exit_with("Failed alloc memory for token %d\n", type);
 
-  t->type = type;
-  t->value = value;
   t->prev = NULL;
   t->next = NULL;
+
+  t->type = type;
+  t->value = value;
+
+  t->fname = NULL;
   t->line = 0;
 
   return t;
@@ -30,7 +33,10 @@ copy_token(struct token *chain, struct token *orig)
   struct token *t;
 
   t = new_token(orig->type, orig->value);
+
+  t->fname = orig->fname;
   t->line = orig->line;
+
   t->prev = chain;
   chain->next = t;
 
@@ -70,7 +76,7 @@ print_token_value_as_int(void *raw)
 int
 print_token(struct token *t)
 {
-  pf("(%d)%s ", t->line, token_type_str(t->type));
+  pf("(%s:%d)%s ", t->fname, t->line, token_type_str(t->type));
   if (t->type != TK_CSTR && t->type != TK_IDENT)
     print_token_value_as_int(t->value);
   else

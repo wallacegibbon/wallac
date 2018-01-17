@@ -95,7 +95,9 @@
 #define KW_REGISTER 11532
 
 
-struct token { struct token *next, *prev; int line; int type; void *value; };
+struct token { struct token *next, *prev; int type;
+  int line; char *fname; void *value; };
+
 
 struct token *
 new_token(int type, void *value);
