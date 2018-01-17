@@ -9,9 +9,9 @@ struct lex { int ch, pch, line, cursor; int type; char *fname; int fd; int eof;
 
 
 struct token *
-tokenize_base(struct lex *lx);
+tokenize_lx(struct lex *lx);
 
 struct token *
-tokenize();
+tokenize(char *filename);
 
 #endif

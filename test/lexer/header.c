@@ -2,7 +2,6 @@
 
 #include "a.h"
 #include "a.h"
-#include "b.h"
 
 
 #define REGISTER_1 500

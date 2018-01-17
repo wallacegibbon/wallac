@@ -923,15 +923,18 @@ get_string(struct lex *lx)
 char *
 header_filename(struct lex *lx, int line, char *s)
 {
-  char *a, *b;
+  char ch, *a, *b;
 
-  for (a = s; *a && check_space(*a); a++);
+  a = s;
+  for (; ch = *a, ch && check_space(ch); a++);
 
-  if (!*a || *a != '"')
-    exit_with("%s:%d:[LEXER]Invalid include directive\n",
+  if (!ch || ch != '"')
+    exit_with("%s:%d:[LEXER]Only support #include \"...\"\n",
         lx->fname, line);
+
   a++;
-  for (b = s; check_ident(*a) || *a == '.'; )
+  b = s;
+  for (; ch = *a, check_ident(ch) || ch == '.' || ch == '/'; )
     *b++ = *a++;
 
   *b = '\0';
@@ -956,24 +959,17 @@ handle_header(struct lex *lx, int line, char *s)
 {
   struct token *tks;
   struct lex *ilx;
-  char *fname, *pname;
+  char *incname, *pname;
   int i;
 
-  fname = header_filename(lx, line, s + 7);
-  i = slen(path_src);
-
-  pname = malloc(i + slen(fname) + 1);
-  if (!pname)
-    exit_with("Failed alloc memory for new header file path\n");
-
-  scpy(pname, path_src);
-  scpy(pname + i, fname);
+  incname = header_filename(lx, line, s + 7);
+  pname = mkpath_from(lx->fname, incname);
 
   if (debug)
-    pf("Including file %s...\n", pname);
+    pf("<%s> is including <%s>...\n", lx->fname, pname);
 
   ilx = new_lexer_file(pname, lx->buff, lx->mtbl);
-  tks = tokenize_base(ilx);
+  tks = tokenize_lx(ilx);
 
   free_lexer(ilx);
 
@@ -1031,7 +1027,7 @@ handle_define(struct lex *lx, int line, char *s)
   slx->line = line;
   slx->fname = lx->fname;
 
-  tks = tokenize_base(slx);
+  tks = tokenize_lx(slx);
 
   free_lexer(slx);
 
@@ -1221,7 +1217,7 @@ get_token(struct lex *lx)
 
 
 struct token *
-tokenize_base(struct lex *lx)
+tokenize_lx(struct lex *lx)
 {
   for (; get_token(lx); );
 
@@ -1230,7 +1226,7 @@ tokenize_base(struct lex *lx)
 
 
 struct token *
-tokenize()
+tokenize(char *filename)
 {
   struct hashtbl *macrotbl;
   struct token *tks;
@@ -1243,8 +1239,8 @@ tokenize()
 
   macrotbl = new_hashtbl(20);
 
-  lx = new_lexer_file(pathname_src, buff, macrotbl);
-  tks = tokenize_base(lx);
+  lx = new_lexer_file(filename, buff, macrotbl);
+  tks = tokenize_lx(lx);
 
   free_lexer(lx);
   free(buff);

@@ -3,7 +3,7 @@
 
 
 int
-compile();
+compile(char *filename);
 
 
 #endif

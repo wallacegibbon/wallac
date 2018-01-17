@@ -4,14 +4,9 @@
 
 
 
-struct list *struct_defs;
-struct list *global_vars;
-struct list *functions;
-
-
-
 struct ctype *
-new_ctype(int type, int structidx, struct ctype *fnret, struct list *fnparams)
+new_ctype(int type, int structidx, struct ctype *fnret,
+    struct linktbl *fnparams)
 {
   struct ctype *t;
   t = malloc(sizeof(struct ctype));
@@ -57,7 +52,7 @@ new_cstruct(char *name)
 
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *type, struct list *vars)
+new_cfunc(char *name, struct ctype *type, struct linktbl *vars)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));

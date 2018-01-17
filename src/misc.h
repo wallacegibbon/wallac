@@ -14,8 +14,8 @@ upper_case(char ch);
 int
 init_pathname_out(char *pathname, char *out);
 
-int
-init_srcpath(char *filename, char *srcpath);
+char *
+mkpath_from(char *origpath, char *newfile);
 
 void
 exit_with(char *info, ...);

@@ -1,5 +1,5 @@
 #ifndef _A_H_
 #define _A_H_
-#include "b.h"
+#include "./hfile/b.h"
 #define AVAL 0xa
 #endif

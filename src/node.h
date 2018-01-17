@@ -2,21 +2,22 @@
 #define __NODE_H__
 
 
-struct listele { struct listele *next; void *value; };
-struct list { struct listele *ele; int size; };
+#include "linktbl.h"
+
 
 struct ctype { int type;
-  int structidx; struct ctype *fnret; struct list *fnparams; };
+  int structidx; struct ctype *fnret; struct linktbl *fnparams; };
 
 struct cvar { char *name; struct ctype *type; int pdepth; int is_extern; };
-struct cstruct { char *name; struct list *fields; };
-struct cfunc { char *name; struct ctype *type; struct list *vars, *stmts; };
+struct cstruct { char *name; struct linktbl *fields; };
+struct cfunc { char *name; struct ctype *type; struct linktbl *vars, *stmts; };
 
 struct stmt { int type; void *value; };
 
 
 struct ctype *
-new_ctype(int type, int structidx, struct ctype *fnret, struct list *fnparams);
+new_ctype(int type, int structidx, struct ctype *fnret,
+    struct linktbl *fnparams);
 
 struct cvar *
 new_cvar(char *name, struct ctype *type, int pdepth, int is_extern);
@@ -25,6 +26,6 @@ struct cstruct *
 new_cstruct(char *name);
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *type, struct list *vars);
+new_cfunc(char *name, struct ctype *type, struct linktbl *vars);
 
 #endif

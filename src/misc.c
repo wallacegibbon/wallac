@@ -69,20 +69,44 @@ init_pathname_out(char *pathname, char *out)
   return 1;
 }
 
+
 int
-init_srcpath(char *pathname, char *srcpath)
+purepath_of(char *orig, char *out)
 {
   int i, j, l;
 
   j = 0;
-  for (i = 0, l = slen(pathname); i < l; i++)
-    if (*(pathname + i) == '/')
+  for (i = 0, l = slen(orig); i < l; i++)
+    if (*(orig + i) == '/')
       j = i;
 
   if (j)
-    scpyn(srcpath, pathname, j + 1);
+    scpyn(out, orig, j + 1);
+  else
+    scpy(out, "./");
 
   return 1;
+}
+
+
+char *
+mkpath_from(char *origpath, char *newfile)
+{
+  char *buff, *p;
+  int i;
+
+  buff = alloca(slen(origpath));
+  purepath_of(origpath, buff);
+
+  i = slen(buff);
+  p = malloc(i + slen(newfile) + 1);
+  if (!p)
+    exit_with("mkpath_from, failed on malloc\n");
+
+  scpy(p, buff);
+  scpy(p + i, newfile);
+
+  return p;
 }
 
 

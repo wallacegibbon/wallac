@@ -8,7 +8,7 @@
 
 
 
-char *pathname_src, *pathname_out, *path_src;
+char *pathname_src, *pathname_out;
 int verbose;
 int debug;
 
@@ -27,13 +27,8 @@ prepare_env(int argc, char **argv)
   if (!pathname_out)
     exit_with("Failed alloc memory for pathname_out\n");
 
-  path_src = malloc(MAX_FILENAME_SIZE);
-  if (!path_src)
-    exit_with("Failed alloc memory for path_src\n");
-
   *pathname_src = '\0';
   *pathname_out = '\0';
-  *path_src = '\0';
 
   walk_arguments(argv + 1, argv + argc);
 
@@ -42,8 +37,6 @@ prepare_env(int argc, char **argv)
 
   if (*pathname_out == '\0')
     init_pathname_out(pathname_src, pathname_out);
-
-  init_srcpath(pathname_src, path_src);
 
   if (!scmp(pathname_src, pathname_out))
     exit_with("input and output file can't be the same\n");
@@ -63,7 +56,7 @@ main(int argc, char **argv)
   if (debug)
     pf("Compiling %s -> %s\n", pathname_src, pathname_out);
 
-  compile();
+  compile(pathname_src);
 
   return 0;
 }
