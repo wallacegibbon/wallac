@@ -634,7 +634,21 @@ get_divide_or_jump_comments(struct lexer *lx)
 
 
 int
-collect_octal_chars(struct lexer *lx, int line)
+check_digit(char ch, int base)
+{
+  if (base == 16)
+    return check_hex(ch);
+  if (base == 10)
+    return check_decimal(ch);
+  if (base == 8)
+    return check_octal(ch);
+
+  return 0;
+}
+
+
+int
+collect_digit_chars(struct lexer *lx, int line, int base)
 {
   char *buffer;
   int cnt;
@@ -643,7 +657,7 @@ collect_octal_chars(struct lexer *lx, int line)
   *buffer++ = lx->ch;
 
   cnt = 1;
-  for (; cnt < BUFF_SIZE && check_octal(nextchar(lx)); cnt++)
+  for (; cnt < BUFF_SIZE && check_digit(nextchar(lx), base); cnt++)
     *buffer++ = lx->ch;
 
   *buffer = '\0';
@@ -653,45 +667,7 @@ collect_octal_chars(struct lexer *lx, int line)
 
 
 int
-collect_decimal_chars(struct lexer *lx, int line)
-{
-  char *buffer;
-  int cnt;
-
-  buffer = lx->buff;
-  *buffer++ = lx->ch;
-
-  cnt = 1;
-  for (; cnt < BUFF_SIZE && check_decimal(nextchar(lx)); cnt++)
-    *buffer++ = lx->ch;
-
-  *buffer = '\0';
-
-  return cnt;
-}
-
-
-int
-collect_hex_chars(struct lexer *lx, int line)
-{
-  char *buffer;
-  int cnt;
-
-  buffer = lx->buff;
-  *buffer++ = lx->ch;
-
-  cnt = 1;
-  for (; cnt < BUFF_SIZE && check_hex(nextchar(lx)); cnt++)
-    *buffer++ = lx->ch;
-
-  *buffer = '\0';
-
-  return cnt;
-}
-
-
-int
-cnv_hexdigit(int ch)
+cnv_digit(int ch)
 {
   if (ch >= 'a' && ch <= 'f')
     return ch - 'a' + 10;
@@ -702,16 +678,17 @@ cnv_hexdigit(int ch)
 
 
 int
-cnv_digit(int ch)
+check_overflow(char *numstr, int base)
 {
-  return ch - '0';
-}
-
-
-int
-check_overflow(char *numstr, char *maxstr)
-{
+  char *maxstr;
   int n, m;
+
+  if (base == 16)
+    maxstr = MAX_HEX_STRING;
+  if (base == 10)
+    maxstr = MAX_DECIMAL_STRING;
+  if (base == 8)
+    maxstr = MAX_OCTAL_STRING;
 
   n = slen(numstr);
   m = slen(maxstr);
@@ -724,16 +701,17 @@ check_overflow(char *numstr, char *maxstr)
 
 
 int
-get_octal(struct lexer *lx, int line)
+get_integer_num(struct lexer *lx, int line, int base)
 {
   char *buffer;
   long i;
 
-  collect_octal_chars(lx, line);
+  collect_digit_chars(lx, line, base);
 
   buffer = lx->buff;
-  if (check_overflow(buffer, MAX_OCTAL_STRING))
-    exit_with("%s:%d:[LEXER]Octal number too big\n",
+
+  if (check_overflow(buffer, base))
+    exit_with("%s:%d:[LEXER]Integer literal too big\n",
         lx->fname, line);
 
   for (i = 0; *buffer; buffer++)
@@ -746,49 +724,10 @@ get_octal(struct lexer *lx, int line)
 
 
 int
-get_decimal(struct lexer *lx, int line)
+get_integer_hex(struct lexer *lx, int line)
 {
-  char *buffer;
-  long i;
-
-  collect_decimal_chars(lx, line);
-
-  buffer = lx->buff;
-  if (check_overflow(buffer, MAX_DECIMAL_STRING))
-    exit_with("%s:%d:[LEXER]Decimal number too big\n",
-        lx->fname, line);
-
-  for (i = 0; *buffer; buffer++)
-    i = i * 10 + cnv_digit(*buffer);
-
-  join_token(lx, line, TK_CINT, (void *) i);
-
-  return 1;
-}
-
-
-int
-get_hex(struct lexer *lx, int line)
-{
-  char *buffer, ch;
-  long i;
-
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
-
-  collect_hex_chars(lx, line);
-
-  buffer = lx->buff;
-  if (check_overflow(buffer, MAX_HEX_STRING))
-    exit_with("%s:%d:[LEXER]Hex number too big\n",
-        lx->fname, line);
-
-  for (i = 0; *buffer; buffer++)
-    i = i * 16 + cnv_hexdigit(*buffer);
-
-  join_token(lx, line, TK_CINT, (void *) i);
-
-  return 1;
+  assert_not_eof(lx, nextchar(lx));
+  return get_integer_num(lx, line, 16);
 }
 
 
@@ -802,14 +741,14 @@ get_integer(struct lexer *lx)
   assert_not_eof(lx, ch);
 
   if (ch != '0')
-    return get_decimal(lx, line);
+    return get_integer_num(lx, line, 10);
 
   ch = nextchar(lx);
   if (check_octal(ch))
-    return get_octal(lx, line);
+    return get_integer_num(lx, line, 8);
 
   if (ch == 'x' || ch == 'X')
-    return get_hex(lx, line);
+    return get_integer_hex(lx, line);
 
   join_token(lx, line, TK_CINT, (void *) 0);
 
@@ -862,12 +801,12 @@ get_hex_escape(struct lexer *lx)
   t = nextchar(lx);
   assert_not_eof(lx, t);
   assert_hex(lx, t);
-  r = cnv_hexdigit(t) * 16;
+  r = cnv_digit(t) * 16;
 
   t = nextchar(lx);
   assert_not_eof(lx, t);
   assert_hex(lx, t);
-  r += cnv_hexdigit(t);
+  r += cnv_digit(t);
 
   nextchar(lx);
 
