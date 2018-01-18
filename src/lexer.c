@@ -634,7 +634,7 @@ get_divide_or_jump_comments(struct lexer *lx)
 
 
 int
-get_numstr(struct lexer *lx, int (*chkfn)(int), int line)
+collect_octal_chars(struct lexer *lx, int line)
 {
   char *buffer;
   int cnt;
@@ -642,43 +642,51 @@ get_numstr(struct lexer *lx, int (*chkfn)(int), int line)
   buffer = lx->buff;
   *buffer++ = lx->ch;
 
-  for (cnt = 1; cnt < BUFF_SIZE && chkfn(nextchar(lx)); cnt++)
+  cnt = 1;
+  for (; cnt < BUFF_SIZE && check_octal(nextchar(lx)); cnt++)
     *buffer++ = lx->ch;
 
   *buffer = '\0';
 
-  if (cnt > MAX_INT_LENGTH)
-    exit_with("%s:%d:[LEXER]Number too long\n",
-        lx->fname, line);
-
-  return 1;
+  return cnt;
 }
 
 
 int
-get_numval(struct lexer *lx, int base, int (*cnvfn)(int), int line)
+collect_decimal_chars(struct lexer *lx, int line)
 {
-  char *buffer, *cmpstr;
-  long i, j, k;
+  char *buffer;
+  int cnt;
 
   buffer = lx->buff;
+  *buffer++ = lx->ch;
 
-  cmpstr = MAX_DECIMAL_STRING;
-  if (base == 8)
-    cmpstr = MAX_OCTAL_STRING;
-  if (base == 16)
-    cmpstr = MAX_HEX_STRING;
+  cnt = 1;
+  for (; cnt < BUFF_SIZE && check_decimal(nextchar(lx)); cnt++)
+    *buffer++ = lx->ch;
 
-  j = slen(buffer);
-  k = slen(cmpstr);
-  if (j > k || (j == k && scmp(buffer, cmpstr) > 0))
-    exit_with("%s:%d:[LEXER]Number too big\n",
-        lx->fname, line);
+  *buffer = '\0';
 
-  for (i = 0; *buffer; buffer++)
-    i = i * base + cnvfn(*buffer);
+  return cnt;
+}
 
-  return i;
+
+int
+collect_hex_chars(struct lexer *lx, int line)
+{
+  char *buffer;
+  int cnt;
+
+  buffer = lx->buff;
+  *buffer++ = lx->ch;
+
+  cnt = 1;
+  for (; cnt < BUFF_SIZE && check_hex(nextchar(lx)); cnt++)
+    *buffer++ = lx->ch;
+
+  *buffer = '\0';
+
+  return cnt;
 }
 
 
@@ -701,12 +709,35 @@ cnv_digit(int ch)
 
 
 int
+check_overflow(char *numstr, char *maxstr)
+{
+  int n, m;
+
+  n = slen(numstr);
+  m = slen(maxstr);
+
+  if (n > m || (n == m && scmp(numstr, maxstr) > 0))
+    return 1;
+  else
+    return 0;
+}
+
+
+int
 get_octal(struct lexer *lx, int line)
 {
+  char *buffer;
   long i;
 
-  get_numstr(lx, check_octal, line);
-  i = get_numval(lx, 8, cnv_digit, line);
+  collect_octal_chars(lx, line);
+
+  buffer = lx->buff;
+  if (check_overflow(buffer, MAX_OCTAL_STRING))
+    exit_with("%s:%d:[LEXER]Octal number too big\n",
+        lx->fname, line);
+
+  for (i = 0; *buffer; buffer++)
+    i = i * 8 + cnv_digit(*buffer);
 
   join_token(lx, line, TK_CINT, (void *) i);
 
@@ -717,10 +748,18 @@ get_octal(struct lexer *lx, int line)
 int
 get_decimal(struct lexer *lx, int line)
 {
+  char *buffer;
   long i;
 
-  get_numstr(lx, check_decimal, line);
-  i = get_numval(lx, 10, cnv_digit, line);
+  collect_decimal_chars(lx, line);
+
+  buffer = lx->buff;
+  if (check_overflow(buffer, MAX_DECIMAL_STRING))
+    exit_with("%s:%d:[LEXER]Decimal number too big\n",
+        lx->fname, line);
+
+  for (i = 0; *buffer; buffer++)
+    i = i * 10 + cnv_digit(*buffer);
 
   join_token(lx, line, TK_CINT, (void *) i);
 
@@ -731,13 +770,21 @@ get_decimal(struct lexer *lx, int line)
 int
 get_hex(struct lexer *lx, int line)
 {
-  long i, ch;
+  char *buffer, ch;
+  long i;
 
   ch = nextchar(lx);
   assert_not_eof(lx, ch);
 
-  get_numstr(lx, check_hex, line);
-  i = get_numval(lx, 16, cnv_hexdigit, line);
+  collect_hex_chars(lx, line);
+
+  buffer = lx->buff;
+  if (check_overflow(buffer, MAX_HEX_STRING))
+    exit_with("%s:%d:[LEXER]Hex number too big\n",
+        lx->fname, line);
+
+  for (i = 0; *buffer; buffer++)
+    i = i * 16 + cnv_hexdigit(*buffer);
 
   join_token(lx, line, TK_CINT, (void *) i);
 

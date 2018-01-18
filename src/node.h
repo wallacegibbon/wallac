@@ -28,4 +28,5 @@ new_cstruct(char *name);
 struct cfunc *
 new_cfunc(char *name, struct ctype *type, struct linktbl *vars);
 
+
 #endif

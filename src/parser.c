@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include "libc.h"
 #include "misc.h"
+#include "linktbl.h"
 #include "token.h"
-#include "hashtbl.h"
+#include "node.h"
+#include "ctypes.h"
 
 
 
-struct parser { struct token *tk;
-  struct hashtbl *sdefs, *gvars, *funcs; };
+struct parser { struct token *tk; struct linktbl *sdefs, *gvars, *funcs; };
 
 
 
@@ -15,13 +16,14 @@ struct parser *
 new_parser(struct token *tks)
 {
   struct parser *p;
+
   p = malloc(sizeof(struct parser));
   if (!p)
     exit_with("Failed alloc memory for parser\n");
 
-  p->funcs = new_hashtbl(40);
-  p->gvars = new_hashtbl(20);
-  p->sdefs = new_hashtbl(20);
+  p->funcs = new_linktbl();
+  p->gvars = new_linktbl();
+  p->sdefs = new_linktbl();
 
   p->tk = tks;
 
@@ -29,17 +31,40 @@ new_parser(struct token *tks)
 }
 
 
-int
-struct_var(struct parser *psr, char *sname)
+struct token *
+nexttoken(struct parser *psr)
 {
-  return 1;
+  struct token *tk;
+  if (!psr->tk)
+    return NULL;
+
+  psr->tk = psr->tk->next;
+  return psr->tk;
 }
 
 
 int
-struct_decl(struct parser *psr, char *sname)
+assert_notlast_tk(struct parser *psr)
 {
-  return 1;
+  if (!psr->tk)
+    exit_with("UNKNOWN:UNKNOWN:[PARSER]Unexpected end of file\n");
+
+  if (!psr->tk->next)
+    exit_with("%s:%d:[PARSER]Unexpected end of file\n",
+        psr->tk->fname, psr->tk->line);
+}
+
+
+int
+analysis_type(struct parser *psr)
+{
+  struct token *tk;
+  struct ctype *ct;
+
+  //ct = new_ctype();
+ // new_ctype(int type, int structidx, struct ctype *fnret,
+ //   struct linktbl *fnparams)
+  tk = psr->tk;
 }
 
 
@@ -49,23 +74,23 @@ struct_def_or_var(struct parser *psr)
   struct token *tk;
   char *sname;
 
-  tk = psr->tk;
+  nexttoken(psr);
+  assert_notlast_tk(psr);
 
-  tk = tk->next;
-  if (tk->type != TK_IDENT)
+  if (psr->tk->type != TK_IDENT)
     exit_with("%s:%d:[PARSER]Struct name expected\n",
-        tk->fname, tk->line);
+        psr->tk->fname, psr->tk->line);
 
-  sname = (char *) tk->value;
+  sname = (char *) psr->tk->value;
 
-  tk = tk->next;
-  psr->tk = tk;
+  nexttoken(psr);
+  assert_notlast_tk(psr);
 
-  if (tk->type == TK_IDENT)
-    return struct_var(psr, sname);
+  //if (tk->type == TK_BEGIN)
+  //  return struct_def(psr, sname);
 
-  if (tk->type == TK_BEGIN)
-    return struct_decl(psr, sname);
+  //if (tk->type == TK_IDENT)
+  //  return struct_var_decl(psr, sname);
 
   exit_with("%s:%d:[PARSER]Invalid struct syntax\n",
       tk->fname, tk->line);

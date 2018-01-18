@@ -119,7 +119,7 @@ exit_with(char *fmt, ...)
   i = sizeof(int) - 1;
   ap = (char *) &fmt + ((sizeof(fmt) + i) & ~i);
 
-  vpf(fmt, ap);
+  vfpf(2, fmt, ap);
 
   os_exit(1);
 }
