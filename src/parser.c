@@ -12,36 +12,13 @@ struct parser { struct token *tk; struct linktbl *sdefs, *gvars, *funcs; };
 
 
 
-struct parser *
-new_parser(struct token *tks)
-{
-  struct parser *p;
-
-  p = malloc(sizeof(struct parser));
-  if (!p)
-    exit_with("Failed alloc memory for parser\n");
-
-  p->funcs = new_linktbl();
-  p->gvars = new_linktbl();
-  p->sdefs = new_linktbl();
-
-  p->tk = tks;
-
-  return p;
-}
-
-
 int
 check_unsupported_keyword(int type)
 {
-  return
+  return type == KW_REGISTER || type == KW_AUTO || type == KW_CONST ||
     type == KW_VOLATILE ||
-    type == KW_CONST ||
-    type == KW_AUTO ||
     type == KW_STATIC ||
-    type == KW_REGISTER ||
-    type == KW_FLOAT ||
-    type == KW_DOUBLE ||
+    type == KW_FLOAT || type == KW_DOUBLE ||
     type == KW_SWITCH ||
     type == KW_CASE ||
     type == KW_CONTINUE ||
@@ -55,7 +32,7 @@ int
 filter_unsupported_tk(struct token *tk)
 {
   if (tk->type == TK_OPENBR || tk->type == TK_CLOSEBR)
-    exit_with("%s:%d:[PARSER]C array is not supported\n",
+    exit_with("%s:%d:[PARSER]Original C array is not supported by wcc\n",
         tk->fname, tk->line);
 
   if (check_unsupported_keyword(tk->type))
@@ -127,22 +104,17 @@ get_int_width(struct parser *psr)
 
   tk = psr->tk;
   type = tk->type;
-
   adjust_int_extra(psr);
   nexttoken_notend(psr);
 
   if (type == KW_CHAR)
     return CT_CHAR;
-
   if (type == KW_SHORT)
     return CT_SHORT;
-
   if (type == KW_INT)
     return CT_INT;
-
   if (type == KW_LONG)
     return CT_LONG;
-
   exit_with("%s:%d:[PARSER]Invalid int variable declaration\n",
       tk->fname, tk->line);
 
@@ -150,49 +122,75 @@ get_int_width(struct parser *psr)
 }
 
 
-int
+struct ctype *
 get_unsigned_type(struct parser *psr)
 {
+  struct ctype *ct;
   int type;
 
   nexttoken_notend(psr);
   type = get_int_width(psr);
   type |= 0x10;
 
-  return type;
+  ct = new_ctype(type, NULL);
+  return ct;
 }
 
 
-int
+struct ctype *
 get_signed_type(struct parser *psr)
 {
+  struct ctype *ct;
   int type;
 
   nexttoken_notend(psr);
   type = get_int_width(psr);
 
-  return type;
+  ct = new_ctype(type, NULL);
+  return ct;
 }
 
 
-int
+struct ctype *
 get_void_type(struct parser *psr)
 {
+  struct ctype *ct;
+
   nexttoken_notend(psr);
-  return CT_VOID;
+  ct = new_ctype(CT_VOID, NULL);
+
+  return ct;
 }
 
 
-int
+struct ctype *
 get_struct_type(struct parser *psr)
 {
+  struct ctype *ct;
+  struct token *tk;
+  char *name;
+
+  tk = nexttoken_notend(psr);
+  if (tk->type != TK_IDENT)
+    exit_with("%s:%d:[PARSER]Syntax error near struct\n",
+        tk->fname, tk->line);
+
+  name = (void *) tk->value;
+
+  nexttoken_notend(psr);
+
+  ct = new_ctype(CT_STRUCT, name);
+
+  return ct;
 }
 
 
-int
+struct ctype *
 get_basic_type(struct parser *psr)
 {
   struct token *tk;
+  struct ctype *ct;
+  int type;
 
   tk = psr->tk;
 
@@ -208,7 +206,10 @@ get_basic_type(struct parser *psr)
   if (tk->type == KW_VIOD)
     return get_void_type(psr);
 
-  return get_int_width(psr);
+  type = get_int_width(psr);
+  ct = new_ctype(type, NULL);
+
+  return ct;
 }
 
 
@@ -216,6 +217,7 @@ int
 get_ctype(struct parser *psr, int is_global)
 {
   struct token *tk;
+  struct ctype *ct;
   int is_extern, pdepth, type;
   char *name;
 
@@ -236,7 +238,8 @@ get_ctype(struct parser *psr, int is_global)
   if (is_extern)
     tk = nexttoken_notend(psr);
 
-  type = get_basic_type(psr);
+  ct = get_basic_type(psr);
+  ctype_print(ct);
 
   pdepth = 0;
   for (; psr->tk->type == TK_ASTERISK; nexttoken_notend(psr))
@@ -250,10 +253,29 @@ get_ctype(struct parser *psr, int is_global)
 
   name = (char *) tk->value;
 
-  pf("is_extern: %d, type: %x, pdepth: %d, name: %s\n",
-      is_extern, type, pdepth, name);
+  pf("is_extern: %d, pdepth: %d, name: %s\n",
+      is_extern, pdepth, name);
 
   return 1;
+}
+
+
+struct parser *
+new_parser(struct token *tks)
+{
+  struct parser *p;
+
+  p = malloc(sizeof(struct parser));
+  if (!p)
+    exit_with("Failed alloc memory for parser\n");
+
+  p->funcs = new_linktbl();
+  p->gvars = new_linktbl();
+  p->sdefs = new_linktbl();
+
+  p->tk = tks;
+
+  return p;
 }
 
 

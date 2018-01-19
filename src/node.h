@@ -18,6 +18,9 @@ struct stmt { int type; void *value; };
 struct ctype *
 new_ctype(int type, char *struct_name);
 
+int
+ctype_print(struct ctype *ct);
+
 struct cvar *
 new_cvar(char *name, struct ctype *type, int pdepth, int is_extern);
 

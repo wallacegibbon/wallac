@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "misc.h"
 #include "node.h"
+#include "ctypes.h"
+#include "libc.h"
 
 
 
@@ -15,6 +17,18 @@ new_ctype(int type, char *struct_name)
   t->type = type;
   t->struct_name = struct_name;
   return t;
+}
+
+
+int
+ctype_print(struct ctype *ct)
+{
+  if (ct->type == CT_STRUCT)
+    pf("struct %s\n", ct->struct_name);
+  else
+    pf("int type: %x\n", ct->type);
+
+  return 1;
 }
 
 
