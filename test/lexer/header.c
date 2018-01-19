@@ -2,6 +2,7 @@
 #include "a.h"
 
 
+//#define if "abc"
 #define REGISTER_1 500
 #define REGISTER_2 (2*REGISTER_1+4)
 

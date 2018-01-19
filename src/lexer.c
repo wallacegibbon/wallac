@@ -1104,6 +1104,9 @@ handle_define(struct lexer *lx, int line, char *s)
   int i;
 
   name = shift_macroname(lx, line, s, 6);
+  if (try_get_keyword(name))
+    exit_with("%s:%d:[LEXER]keywords can not be macro name\n",
+        lx->fname, line);
 
   slx = new_lexer_str(s, lx->buff, lx->mtbl);
   slx->line = line;
