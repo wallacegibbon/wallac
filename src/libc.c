@@ -82,6 +82,13 @@ vfpstring(int fd, char *s, struct vfpf_buff *buff)
 
 
 int
+vfpstring_empty(int fd, struct vfpf_buff *buff)
+{
+  return vfpstring(fd, "null", buff);
+}
+
+
+int
 vfpf_integer(int fd, int base, char **pap, struct vfpf_buff *buff)
 {
   int r;
@@ -95,9 +102,15 @@ vfpf_integer(int fd, int base, char **pap, struct vfpf_buff *buff)
 int
 vfpf_string(int fd, char **pap, struct vfpf_buff *buff)
 {
+  char *s;
   int r;
 
-  r = vfpstring(fd, *((char **) *pap), buff);
+  s = *((char **) *pap);
+  if (!s)
+    r = vfpstring_empty(fd, buff);
+  else
+    r = vfpstring(fd, s, buff);
+
   *pap += sizeof(char **);
   return r;
 }
