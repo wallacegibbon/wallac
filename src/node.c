@@ -5,7 +5,7 @@
 
 
 struct ctype *
-new_ctype(int type, int structidx)
+new_ctype(int type, char *struct_name)
 {
   struct ctype *t;
   t = malloc(sizeof(struct ctype));
@@ -13,7 +13,7 @@ new_ctype(int type, int structidx)
     exit_with("Failed alloc memory for new c type\n");
 
   t->type = type;
-  t->structidx = structidx;
+  t->struct_name = struct_name;
   return t;
 }
 

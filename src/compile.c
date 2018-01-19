@@ -14,7 +14,7 @@ compile(char *filename)
   if (verbose)
     print_token_list(tks);
 
-  //parse(tks);
+  parse(tks);
 
   return 0;
 }

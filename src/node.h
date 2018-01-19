@@ -5,7 +5,7 @@
 #include "linktbl.h"
 
 
-struct ctype { int type; int structidx; };
+struct ctype { int type; char *struct_name; };
 
 struct cvar { char *name; struct ctype *type; int pdepth; int is_extern; };
 struct cstruct { char *name; struct linktbl *fields; };
@@ -16,7 +16,7 @@ struct stmt { int type; void *value; };
 
 
 struct ctype *
-new_ctype(int type, int structidx);
+new_ctype(int type, char *struct_name);
 
 struct cvar *
 new_cvar(char *name, struct ctype *type, int pdepth, int is_extern);

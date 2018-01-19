@@ -66,6 +66,15 @@ filter_unsupported_tk(struct token *tk)
 }
 
 
+int
+assert_ntk_notnull(struct parser *psr)
+{
+  if (!psr->tk->next)
+    exit_with("%s:%d:[PARSER]Unexpected end of file\n",
+        psr->tk->fname, psr->tk->line);
+}
+
+
 struct token *
 nexttoken(struct parser *psr)
 {
@@ -75,63 +84,66 @@ nexttoken(struct parser *psr)
     return NULL;
 
   tk = psr->tk->next;
-  filter_unsupported_tk(tk);
+
+  if (tk)
+    filter_unsupported_tk(tk);
 
   psr->tk = tk;
   return tk;
 }
 
 
-int
-assert_notlast_tk(struct parser *psr)
+struct token *
+nexttoken_notend(struct parser *psr)
 {
-  if (!psr->tk)
-    exit_with("UNKNOWN:UNKNOWN:[PARSER]Unexpected end of file\n");
+  struct token *tk;
 
-  if (!psr->tk->next)
-    exit_with("%s:%d:[PARSER]Unexpected end of file\n",
-        psr->tk->fname, psr->tk->line);
+  tk = nexttoken(psr);
+  assert_ntk_notnull(psr);
+
+  return tk;
 }
 
 
 int
-analysis_type(struct parser *psr)
+adjust_int_extra(struct parser *psr)
 {
   struct token *tk;
-  struct ctype *ct;
 
-  //ct = new_ctype();
- // new_ctype(int type, int structidx, struct ctype *fnret,
- //   struct linktbl *fnparams)
   tk = psr->tk;
+  if ((tk->type == KW_SHORT || tk->type == KW_LONG) &&
+      tk->next->type == KW_INT)
+    nexttoken_notend(psr);
+
+  return 1;
 }
 
 
 int
-struct_def_or_var(struct parser *psr)
+get_int_width(struct parser *psr)
 {
   struct token *tk;
-  char *sname;
+  int type;
 
-  nexttoken(psr);
-  assert_notlast_tk(psr);
+  tk = psr->tk;
+  type = tk->type;
 
-  if (psr->tk->type != TK_IDENT)
-    exit_with("%s:%d:[PARSER]Struct name expected\n",
-        psr->tk->fname, psr->tk->line);
+  adjust_int_extra(psr);
+  nexttoken_notend(psr);
 
-  sname = (char *) psr->tk->value;
+  if (type == KW_CHAR)
+    return CT_CHAR;
 
-  nexttoken(psr);
-  assert_notlast_tk(psr);
+  if (type == KW_SHORT)
+    return CT_SHORT;
 
-  //if (tk->type == TK_BEGIN)
-  //  return struct_def(psr, sname);
+  if (type == KW_INT)
+    return CT_INT;
 
-  //if (tk->type == TK_IDENT)
-  //  return struct_var_decl(psr, sname);
+  if (type == KW_LONG)
+    return CT_LONG;
 
-  exit_with("%s:%d:[PARSER]Invalid struct syntax\n",
+  exit_with("%s:%d:[PARSER]Invalid int variable declaration\n",
       tk->fname, tk->line);
 
   return 1;
@@ -139,27 +151,109 @@ struct_def_or_var(struct parser *psr)
 
 
 int
-extern_var_decl(struct parser *psr)
+get_unsigned_type(struct parser *psr)
 {
-  pf("extern_var_decl...\n");
+  int type;
 
-  return 1;
+  nexttoken_notend(psr);
+  type = get_int_width(psr);
+  type |= 0x10;
+
+  return type;
 }
 
 
 int
-decl_or_def(struct parser *psr)
+get_signed_type(struct parser *psr)
+{
+  int type;
+
+  nexttoken_notend(psr);
+  type = get_int_width(psr);
+
+  return type;
+}
+
+
+int
+get_void_type(struct parser *psr)
+{
+  nexttoken_notend(psr);
+  return CT_VOID;
+}
+
+
+int
+get_struct_type(struct parser *psr)
+{
+}
+
+
+int
+get_basic_type(struct parser *psr)
 {
   struct token *tk;
 
   tk = psr->tk;
-  if (tk->type == KW_STRUCT)
-    return struct_def_or_var(psr);
-  if (tk->type == KW_EXTERN)
-    return extern_var_decl(psr);
 
-  exit_with("%s:%d:[PARSER]Unexpected token %d\n",
-      tk->fname, tk->line, tk->type);
+  if (tk->type == KW_STRUCT)
+    return get_struct_type(psr);
+
+  if (tk->type == KW_UNSIGNED)
+    return get_unsigned_type(psr);
+
+  if (tk->type == KW_SIGNED)
+    return get_signed_type(psr);
+
+  if (tk->type == KW_VIOD)
+    return get_void_type(psr);
+
+  return get_int_width(psr);
+}
+
+
+int
+get_ctype(struct parser *psr, int is_global)
+{
+  struct token *tk;
+  int is_extern, pdepth, type;
+  char *name;
+
+  if (!psr->tk)
+    return 0;
+
+  assert_ntk_notnull(psr);
+  tk = psr->tk;
+  if (tk->type == KW_EXTERN)
+    is_extern = 1;
+  else
+    is_extern = 0;
+
+  if (is_extern && !is_global)
+    exit_with("%s:%d:[SEMANTIC]Only global variable can be extern\n",
+        tk->fname, tk->line);
+
+  if (is_extern)
+    tk = nexttoken_notend(psr);
+
+  type = get_basic_type(psr);
+
+  pdepth = 0;
+  for (; psr->tk->type == TK_ASTERISK; nexttoken_notend(psr))
+    pdepth++;
+
+  tk = psr->tk;
+
+  if (tk->type != TK_IDENT)
+    exit_with("%s:%d:[PARSER]Invalid variable declaration\n",
+        tk->fname, tk->line);
+
+  name = (char *) tk->value;
+
+  pf("is_extern: %d, type: %x, pdepth: %d, name: %s\n",
+      is_extern, type, pdepth, name);
+
+  return 1;
 }
 
 
@@ -170,7 +264,7 @@ parse(struct token *tks)
 
   psr = new_parser(tks);
 
-  decl_or_def(psr);
+  get_ctype(psr, 1);
 
   return 1;
 }

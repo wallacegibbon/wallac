@@ -1,6 +1,8 @@
+//extern int ***pa;
+extern unsigned short int ***hello;
 
-struct a {};
-struct a { int *x, *y; char *name; };
+//struct a {};
+//struct a { int *x, *y; char *name; };
 //struct a b;
 //extern struct a b;
 //long int v
