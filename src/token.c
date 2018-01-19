@@ -179,69 +179,69 @@ token_type_str(int type)
   if (type == TK_IDENT)
     return "TK_IDENT";
   if (type == KW_IF)
-    return "KW_IF";
+    return "if";
   if (type == KW_ELSE)
-    return "KW_ELSE";
+    return "else";
   if (type == KW_WHILE)
-    return "KW_WHILE";
+    return "while";
   if (type == KW_SWITCH)
-    return "KW_SWITCH";
+    return "switch";
   if (type == KW_CASE)
-    return "KW_CASE";
+    return "case";
   if (type == KW_DEFAULT)
-    return "KW_DEFAULT";
+    return "default";
   if (type == KW_FOR)
-    return "KW_FOR";
+    return "for";
   if (type == KW_DO)
-    return "KW_DO";
+    return "do";
   if (type == KW_RETURN)
-    return "KW_RETURN";
+    return "return";
   if (type == KW_GOTO)
-    return "KW_GOTO";
+    return "goto";
   if (type == KW_CONTINUE)
-    return "KW_CONTINUE";
+    return "continue";
   if (type == KW_BREAK)
-    return "KW_BREAK";
+    return "break";
   if (type == KW_VIOD)
-    return "KW_VIOD";
+    return "void";
   if (type == KW_CHAR)
-    return "KW_CHAR";
+    return "char";
   if (type == KW_INT)
-    return "KW_INT";
+    return "int";
   if (type == KW_FLOAT)
-    return "KW_FLOAT";
+    return "float";
   if (type == KW_DOUBLE)
-    return "KW_DOUBLE";
+    return "double";
   if (type == KW_SHORT)
-    return "KW_SHORT";
+    return "short";
   if (type == KW_LONG)
-    return "KW_LONG";
+    return "long";
   if (type == KW_SIGNED)
-    return "KW_SIGNED";
+    return "signed";
   if (type == KW_UNSIGNED)
-    return "KW_UNSIGNED";
+    return "unsigned";
   if (type == KW_STRUCT)
-    return "KW_STRUCT";
+    return "struct";
   if (type == KW_UNION)
-    return "KW_UNION";
+    return "union";
   if (type == KW_ENUM)
-    return "KW_ENUM";
+    return "enum";
   if (type == KW_TYPEDEF)
-    return "KW_TYPEDEF";
+    return "typedef";
   if (type == KW_SIZEOF)
-    return "KW_SIZEOF";
+    return "sizeof";
   if (type == KW_EXTERN)
-    return "KW_EXTERN";
+    return "extern";
   if (type == KW_VOLATILE)
-    return "KW_VOLATILE";
+    return "volatile";
   if (type == KW_CONST)
-    return "KW_CONST";
+    return "const";
   if (type == KW_AUTO)
-    return "KW_AUTO";
+    return "auto";
   if (type == KW_STATIC)
-    return "KW_STATIC";
+    return "static";
   if (type == KW_REGISTER)
-    return "KW_REGISTER";
+    return "register";
 
   return "TK_UNKNOWN";
 }

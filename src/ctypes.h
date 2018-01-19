@@ -10,7 +10,6 @@
 #define CT_LONG 7
 #define CT_ULONG 8
 #define CT_STRUCT 9
-#define CT_FUNC 9
 #define CT_VOID 10
 
 

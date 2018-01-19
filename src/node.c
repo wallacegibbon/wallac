@@ -5,8 +5,7 @@
 
 
 struct ctype *
-new_ctype(int type, int structidx, struct ctype *fnret,
-    struct linktbl *fnparams)
+new_ctype(int type, int structidx)
 {
   struct ctype *t;
   t = malloc(sizeof(struct ctype));
@@ -15,8 +14,6 @@ new_ctype(int type, int structidx, struct ctype *fnret,
 
   t->type = type;
   t->structidx = structidx;
-  t->fnret = fnret;
-  t->fnparams = fnparams;
   return t;
 }
 
@@ -52,7 +49,7 @@ new_cstruct(char *name)
 
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *type, struct linktbl *vars)
+new_cfunc(char *name, struct ctype *ret)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
@@ -60,8 +57,8 @@ new_cfunc(char *name, struct ctype *type, struct linktbl *vars)
     exit_with("Failed alloc memory for new c function\n");
 
   f->name = name;
-  f->type = type;
-  f->vars = vars;
+  f->ret = ret;
+  f->vars = NULL;
   f->stmts = NULL;
   return f;
 }
