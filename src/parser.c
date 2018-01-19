@@ -31,27 +31,21 @@ new_parser(struct token *tks)
 }
 
 
-struct token *
-nexttoken(struct parser *psr)
-{
-  struct token *tk;
-  if (!psr->tk)
-    return NULL;
-
-  psr->tk = psr->tk->next;
-  return psr->tk;
-}
-
-
 int
 check_unsupported_keyword(int type)
 {
-  return type == KW_VOLATILE || type == KW_CONST || type == KW_AUTO ||
-    type == KW_STATIC || type == KW_REGISTER ||
-    type == KW_FLOAT || type == KW_DOUBLE ||
-    type == KW_SWITCH || type == KW_CASE ||
-    type == KW_BREAK ||
+  return
+    type == KW_VOLATILE ||
+    type == KW_CONST ||
+    type == KW_AUTO ||
+    type == KW_STATIC ||
+    type == KW_REGISTER ||
+    type == KW_FLOAT ||
+    type == KW_DOUBLE ||
+    type == KW_SWITCH ||
+    type == KW_CASE ||
     type == KW_CONTINUE ||
+    type == KW_BREAK ||
     type == KW_GOTO ||
     type == KW_TYPEDEF;
 }
@@ -61,7 +55,7 @@ int
 filter_unsupported_tk(struct token *tk)
 {
   if (tk->type == TK_OPENBR || tk->type == TK_CLOSEBR)
-    exit_with("%s:%d:[PARSER]Original C array is not supported\n",
+    exit_with("%s:%d:[PARSER]C array is not supported\n",
         tk->fname, tk->line);
 
   if (check_unsupported_keyword(tk->type))
@@ -69,6 +63,22 @@ filter_unsupported_tk(struct token *tk)
         tk->fname, tk->line, token_type_str(tk->type));
 
   return 1;
+}
+
+
+struct token *
+nexttoken(struct parser *psr)
+{
+  struct token *tk;
+
+  if (!psr->tk)
+    return NULL;
+
+  tk = psr->tk->next;
+  filter_unsupported_tk(tk);
+
+  psr->tk = tk;
+  return tk;
 }
 
 
