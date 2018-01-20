@@ -23,6 +23,83 @@ tokenize_lx(struct lexer *lx);
 
 
 int
+assert_ch(struct lexer *lx, char ch, char expected_ch)
+{
+  if (ch != expected_ch)
+    exit_with("%s:%d:[LEXER]Expect char (0x%x), not (0x%x)\n",
+        lx->fname, lx->line, expected_ch, ch);
+
+  return ch;
+}
+
+
+int
+assert_not_ch(struct lexer *lx, char ch, char unexpected_ch)
+{
+  if (ch == unexpected_ch)
+    exit_with("%s:%d:[LEXER]Unexpected char (0x%x)\n",
+        lx->fname, lx->line, ch);
+
+  return ch;
+}
+
+
+int
+assert_octal(struct lexer *lx, char ch)
+{
+  if (!check_decimal(ch))
+    exit_with("%s:%d:[LEXER]Expect octal char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_decimal(struct lexer *lx, char ch)
+{
+  if (!check_decimal(ch))
+    exit_with("%s:%d:[LEXER]Expect decimal char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_hex(struct lexer *lx, char ch)
+{
+  if (!check_hex(ch))
+    exit_with("%s:%d:[LEXER]Expect hex char\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_ident(struct lexer *lx, char ch)
+{
+  if (!check_ident(ch))
+    exit_with("%s:%d:[LEXER]Expect identifier\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
+assert_not_eof(struct lexer *lx, char ch)
+{
+  if (ch == EOF)
+    exit_with("%f:%d:[LEXER]Unexpected EOF\n",
+        lx->fname, lx->line);
+
+  return ch;
+}
+
+
+int
 lx_getmore_from_file(struct lexer *lx)
 {
   int i;
@@ -105,6 +182,17 @@ nextchar(struct lexer *lx)
 
   exit_with("nextchar, Invalid lexer type: %d\n",
       lx->type);
+}
+
+
+int
+nextchar_noteof(struct lexer *lx)
+{
+  int ch;
+
+  ch = nextchar(lx);
+  assert_not_eof(lx, ch);
+  return ch;
 }
 
 
@@ -220,83 +308,6 @@ free_lexer(struct lexer *lx)
 
 
 int
-assert_ch(struct lexer *lx, char ch, char expected_ch)
-{
-  if (ch != expected_ch)
-    exit_with("%s:%d:[LEXER]Expect char (0x%x), not (0x%x)\n",
-        lx->fname, lx->line, expected_ch, ch);
-
-  return ch;
-}
-
-
-int
-assert_not_ch(struct lexer *lx, char ch, char unexpected_ch)
-{
-  if (ch == unexpected_ch)
-    exit_with("%s:%d:[LEXER]Unexpected char (0x%x)\n",
-        lx->fname, lx->line, ch);
-
-  return ch;
-}
-
-
-int
-assert_octal(struct lexer *lx, char ch)
-{
-  if (!check_decimal(ch))
-    exit_with("%s:%d:[LEXER]Expect octal char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_decimal(struct lexer *lx, char ch)
-{
-  if (!check_decimal(ch))
-    exit_with("%s:%d:[LEXER]Expect decimal char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_hex(struct lexer *lx, char ch)
-{
-  if (!check_hex(ch))
-    exit_with("%s:%d:[LEXER]Expect hex char\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_ident(struct lexer *lx, char ch)
-{
-  if (!check_ident(ch))
-    exit_with("%s:%d:[LEXER]Expect identifier\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
-assert_not_eof(struct lexer *lx, char ch)
-{
-  if (ch == EOF)
-    exit_with("%f:%d:[LEXER]Unexpected EOF\n",
-        lx->fname, lx->line);
-
-  return ch;
-}
-
-
-int
 join_token_nonempty(struct lexer *lx, struct token *t)
 {
   t->prev = lx->tk_c;
@@ -389,8 +400,7 @@ get_ellipsis(struct lexer *lx, int line)
 {
   int ch;
 
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch != '.')
     exit_with("%s:%d:[LEXER]Unsupported element \"..\"\n",
@@ -409,8 +419,7 @@ get_dot_ellipsis(struct lexer *lx)
   int line, ch; 
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '.')
     return get_ellipsis(lx, line);
@@ -431,8 +440,7 @@ get_minus_dminus_pointsto(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '-')
     return join_token_nchar(lx, line, TK_DMINUS);
@@ -452,8 +460,7 @@ get_plus_dplus(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '+')
     return join_token_nchar(lx, line, TK_DPLUS);
@@ -470,8 +477,7 @@ get_and_dand(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '&')
     return join_token_nchar(lx, line, TK_DAND);
@@ -488,8 +494,7 @@ get_or_dor(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '|')
     return join_token_nchar(lx, line, TK_DOR);
@@ -506,8 +511,7 @@ get_assign_eq(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '=')
     return join_token_nchar(lx, line, TK_EQ);
@@ -524,8 +528,7 @@ get_gt_geq(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '=')
     return join_token_nchar(lx, line, TK_GEQ);
@@ -542,8 +545,7 @@ get_lt_leq(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '=')
     return join_token_nchar(lx, line, TK_LEQ);
@@ -560,8 +562,7 @@ get_exclamation_neq(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '=')
     return join_token_nchar(lx, line, TK_NEQ);
@@ -577,10 +578,9 @@ jump_multi_comments_recur(struct lexer *lx)
 {
   int ch;
 
-  for (; ch = lx->ch, ch != '*'; nextchar(lx))
-    assert_not_eof(lx, ch);
+  for (; ch = lx->ch, ch != '*'; nextchar_noteof(lx));
 
-  ch = nextchar(lx);
+  ch = nextchar_noteof(lx);
   if (ch != '/')
     return jump_multi_comments_recur(lx);
   else
@@ -591,7 +591,7 @@ jump_multi_comments_recur(struct lexer *lx)
 int
 jump_multi_comments(struct lexer *lx)
 {
-  nextchar(lx);
+  nextchar_noteof(lx);
   jump_multi_comments_recur(lx);
   nextchar(lx);
 
@@ -604,8 +604,7 @@ skip_line(struct lexer *lx)
 {
   int ch;
 
-  for (; ch = lx->ch, ch != '\n'; nextchar(lx))
-    assert_not_eof(lx, ch);
+  for (; ch = lx->ch, ch != EOF && ch != '\n'; nextchar(lx));
 
   nextchar(lx);
 
@@ -619,8 +618,7 @@ get_divide_or_jump_comments(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '*')
     return jump_multi_comments(lx);
@@ -726,7 +724,7 @@ get_integer_num(struct lexer *lx, int line, int base)
 int
 get_integer_hex(struct lexer *lx, int line)
 {
-  assert_not_eof(lx, nextchar(lx));
+  nextchar_noteof(lx);
   return get_integer_num(lx, line, 16);
 }
 
@@ -738,12 +736,11 @@ get_integer(struct lexer *lx)
 
   line = lx->line;
   ch = lx->ch;
-  assert_not_eof(lx, ch);
 
   if (ch != '0')
     return get_integer_num(lx, line, 10);
 
-  ch = nextchar(lx);
+  ch = nextchar_noteof(lx);
   if (check_octal(ch))
     return get_integer_num(lx, line, 8);
 
@@ -798,17 +795,15 @@ get_hex_escape(struct lexer *lx)
 {
   int r, t;
 
-  t = nextchar(lx);
-  assert_not_eof(lx, t);
+  t = nextchar_noteof(lx);
   assert_hex(lx, t);
   r = cnv_digit(t) * 16;
 
-  t = nextchar(lx);
-  assert_not_eof(lx, t);
+  t = nextchar_noteof(lx);
   assert_hex(lx, t);
   r += cnv_digit(t);
 
-  nextchar(lx);
+  nextchar_noteof(lx);
 
   return r;
 }
@@ -820,23 +815,21 @@ get_octal_escape(struct lexer *lx)
   int ch, v;
   v = cnv_digit(lx->ch);
 
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (!check_octal(ch))
     return v;
   v *= 8;
   v += cnv_digit(ch);
 
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (!check_octal(ch))
     return v;
   v *= 8;
   v += cnv_digit(ch);
 
-  nextchar(lx);
+  nextchar_noteof(lx);
 
   return v;
 }
@@ -848,7 +841,7 @@ get_normal_escape(struct lexer *lx, int ch)
   int line;
 
   line = lx->line;
-  nextchar(lx);
+  nextchar_noteof(lx);
   if (ch == 'a')
     return 7;
   if (ch == 'b')
@@ -882,8 +875,7 @@ int
 get_escape_seq(struct lexer *lx)
 {
   int ch;
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (check_octal(ch))
     return get_octal_escape(lx);
@@ -900,9 +892,7 @@ get_character(struct lexer *lx)
   int line, ch;
 
   line = lx->line;
-  ch = nextchar(lx);
-
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (ch == '\'')
     exit_with("%s:%d:[LEXER]Empty character literal\n",
@@ -911,7 +901,7 @@ get_character(struct lexer *lx)
   if (ch == '\\')
     ch = get_escape_seq(lx);
   else
-    nextchar(lx);
+    nextchar_noteof(lx);
 
   if (ch == '\n')
     exit_with("%s:%d:[LEXER]Missing terminating \"'\"\n",
@@ -937,8 +927,6 @@ get_strchar_sub(struct lexer *lx)
   char ch;
 
   ch = lx->ch;
-  assert_not_eof(lx, ch);
-
   if (ch == '\n')
     exit_with("%s:%d:[LEXER]Missing terminating '\"'\n",
         lx->fname, lx->line - 1);
@@ -949,7 +937,7 @@ get_strchar_sub(struct lexer *lx)
   if (ch == '\\')
     ch = get_escape_seq(lx);
   else
-    nextchar(lx);
+    nextchar_noteof(lx);
 
   return ch;
 }
@@ -982,8 +970,7 @@ get_string(struct lexer *lx)
   line = lx->line;
   buffer = lx->buff;
 
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   for (cnt = 0; cnt < BUFF_SIZE && get_strchar(lx, &ch); cnt++)
     *buffer++ = ch;
@@ -1134,8 +1121,8 @@ skip_until_endif(struct lexer *lx)
   for (; ch = lx->ch, ch != '#'; skip_line(lx));
 
   buffer = lx->buff;
-  for (i = 0; ch = nextchar(lx), assert_not_eof(lx, ch) && i < 5; i++)
-    *buffer++ = ch;
+  for (i = 0; i < 5; i++)
+    *buffer++ = nextchar_noteof(lx);
 
   *buffer = '\0';
 
@@ -1173,15 +1160,14 @@ preprocess_content(struct lexer *lx)
     exit_with("%s:%d:[LEXER]\"#\" should be the 1st ch of a line\n",
         lx->fname, line);
 
-  ch = nextchar(lx);
-  assert_not_eof(lx, ch);
+  ch = nextchar_noteof(lx);
 
   if (check_space(ch))
     exit_with("%s:%d:[LEXER]Do not write space after \"#\"\n",
         lx->fname, line);
 
-  for (cnt = 0; ch != '\n' && cnt < BUFF_SIZE;
-      ch = nextchar(lx), assert_not_eof(lx, ch), cnt++)
+  for (cnt = 0; ch != '\n' && ch != EOF && cnt < BUFF_SIZE;
+      ch = nextchar(lx), cnt++)
     *buffer++ = ch;
 
   *buffer = '\0';

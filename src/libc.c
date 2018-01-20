@@ -84,7 +84,7 @@ vfpstring(int fd, char *s, struct vfpf_buff *buff)
 int
 vfpstring_empty(int fd, struct vfpf_buff *buff)
 {
-  return vfpstring(fd, "null", buff);
+  return vfpstring(fd, "<NULL>", buff);
 }
 
 
