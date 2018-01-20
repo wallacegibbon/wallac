@@ -16,15 +16,26 @@ int
 check_unsupported_keyword(int type)
 {
   return type == KW_REGISTER || type == KW_AUTO || type == KW_CONST ||
-    type == KW_VOLATILE ||
-    type == KW_STATIC ||
+    type == KW_VOLATILE || type == KW_STATIC ||
     type == KW_FLOAT || type == KW_DOUBLE ||
     type == KW_SWITCH ||
     type == KW_CASE ||
+    type == KW_WHILE ||
+    type == KW_DO ||
     type == KW_CONTINUE ||
     type == KW_BREAK ||
     type == KW_GOTO ||
     type == KW_TYPEDEF;
+}
+
+int
+is_typetoken(int type)
+{
+  return type == KW_STRUCT || type == KW_INT || type == KW_CHAR ||
+    type == KW_UNSIGNED || type == KW_SIGNED ||
+    type == KW_SHORT ||
+    type == KW_LONG ||
+    type == KW_EXTERN;
 }
 
 
@@ -285,6 +296,35 @@ structlist_print(struct linktbl *sl)
 
 
 int
+funct_print(struct cfunc *cf)
+{
+  pf("FUNCTION %s -> ", cf->name);
+  ctype_print(cf->ret);
+  pf("\nPARAMETERS:\n");
+  if (cf->params);
+    varlist_print(cf->params, 2);
+  pf("ARGUMENTS:\n");
+  if (cf->vars)
+    varlist_print(cf->vars, 2);
+  pf("STATEMENTS:\n");
+  pf("  ...\n");
+}
+
+
+int
+funclist_print(struct linktbl *fl)
+{
+  struct tblnode *n;
+
+  n = fl->chain;
+  for (; n; n = n->next)
+    funct_print((struct cfunc *) n->value);
+
+  return 1;
+}
+
+
+int
 fill_ct_pdepth(struct parser *psr, struct ctype *ct)
 {
   struct token *tk;
@@ -342,7 +382,7 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
 
 
 int
-get_parameters(struct parser *psr, struct linktbl *params)
+get_func_params(struct parser *psr, struct linktbl *params)
 {
   struct token *tk;
   struct ctype *ct;
@@ -377,14 +417,34 @@ get_parameters(struct parser *psr, struct linktbl *params)
     exit_with("%s:%d:[PARSER]Missing ')' after parameters\n",
         tk->fname, tk->line);
 
-  return get_parameters(psr, params);
+  return get_func_params(psr, params);
 }
 
 
 int
-get_function_body(struct parser *psr, struct cfunc *fn)
+get_func_vars(struct parser *psr, struct cfunc *fn)
 {
-  for (; psr->tk->type != TK_END; nexttoken_notend(psr));
+  struct token *tk;
+  struct ctype *ct;
+
+  ct = get_basic_type(psr);
+  get_varlist(psr, fn->vars, ct);
+
+  if (is_typetoken(psr->tk->type))
+    return get_func_vars(psr, fn);
+  else
+    return 1;
+}
+
+
+int
+get_func_body(struct parser *psr, struct cfunc *fn)
+{
+  if (is_typetoken(psr->tk->type))
+    get_func_vars(psr, fn);
+
+  for (; psr->tk->type != TK_END; )
+    nexttoken_notend(psr);
 
   nexttoken_notend(psr);
   return 1;
@@ -408,12 +468,15 @@ get_function(struct parser *psr, struct ctype *ret)
   nexttoken_notend(psr);
 
   params = new_linktbl();
-  get_parameters(psr, params);
+  get_func_params(psr, params);
 
   n = linktbl_get(psr->funcs, name);
   //check function re-definition
 
   fn = new_cfunc(name, ret, params);
+  fn->vars = new_linktbl();
+  fn->stmts = new_linktbl();
+
   linktbl_put(psr->funcs, name, (void *) fn);
 
   tk = psr->tk;
@@ -422,8 +485,8 @@ get_function(struct parser *psr, struct ctype *ret)
   if (tk->type == TK_SEMICOLON)
     return 1;
 
-  if (tk->type != TK_BEGIN)
-    return get_function_body(psr, fn);
+  if (tk->type == TK_BEGIN)
+    return get_func_body(psr, fn);
 
   exit_with("%s:%d:[PARSER]Missing '{' after parameters\n",
       tk->fname, tk->line);
@@ -437,7 +500,8 @@ is_function_or_var(struct parser *psr)
 {
   struct token *tk;
 
-  for (tk = psr->tk; tk && tk->type == TK_ASTERISK; tk = tk->next);
+  for (tk = psr->tk; tk && tk->type == TK_ASTERISK; )
+    tk = tk->next;
 
   if (tk && tk->next && tk->next->type == TK_OPENPA)
     return 1;
@@ -461,16 +525,16 @@ is_struct_definition(struct parser *psr)
 
 
 int
-get_struct_fields(struct parser *psr, struct linktbl *fields)
+get_struct_fields(struct parser *psr, struct cstruct *cs)
 {
   struct token *tk;
   struct ctype *ct;
 
   ct = get_basic_type(psr);
-  get_varlist(psr, fields, ct);
+  get_varlist(psr, cs->fields, ct);
 
   if (psr->tk->type != TK_END)
-    return get_struct_fields(psr, fields);
+    return get_struct_fields(psr, cs);
   else
     return 1;
 }
@@ -487,11 +551,14 @@ get_struct_definition(struct parser *psr)
   tk = nexttoken_notend(psr);
   name = (char *) tk->value;
 
+  fields = new_linktbl();
+  cs = new_cstruct(name, fields);
+  linktbl_put(psr->sdefs, name, (void *) cs);
+
   nexttoken_notend(psr);
   nexttoken_notend(psr);
 
-  fields = new_linktbl();
-  get_struct_fields(psr, fields);
+  get_struct_fields(psr, cs);
 
   tk = psr->tk;
   nexttoken_notend(psr);
@@ -502,9 +569,6 @@ get_struct_definition(struct parser *psr)
 
   nexttoken_notend(psr);
 
-  cs = new_cstruct(name, fields);
-
-  linktbl_put(psr->sdefs, name, (void *) cs);
 
   return 1;
 }
@@ -559,6 +623,10 @@ int
 parse_recur(struct parser *psr)
 {
   struct token *tk;
+
+  for (; psr->tk && psr->tk->type == TK_SEMICOLON; )
+    nexttoken(psr);
+
   if (!psr->tk)
     return 1;
 
@@ -583,6 +651,7 @@ parse(struct token *tks)
   pf("Global variables:\n");
   varlist_print(psr->gvars, 2);
   structlist_print(psr->sdefs);
+  funclist_print(psr->funcs);
 
   return 1;
 }

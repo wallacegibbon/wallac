@@ -578,7 +578,8 @@ jump_multi_comments_recur(struct lexer *lx)
 {
   int ch;
 
-  for (; ch = lx->ch, ch != '*'; nextchar_noteof(lx));
+  for (; ch = lx->ch, ch != '*'; )
+    nextchar_noteof(lx);
 
   ch = nextchar_noteof(lx);
   if (ch != '/')
@@ -604,7 +605,8 @@ skip_line(struct lexer *lx)
 {
   int ch;
 
-  for (; ch = lx->ch, ch != EOF && ch != '\n'; nextchar(lx));
+  for (; ch = lx->ch, ch != EOF && ch != '\n'; )
+    nextchar(lx);
 
   nextchar(lx);
 
@@ -1000,7 +1002,8 @@ header_filename(struct lexer *lx, int line, char *s)
   char ch, *a, *b;
 
   a = s;
-  for (; ch = *a, ch && check_space(ch); a++);
+  for (; ch = *a, ch && check_space(ch); )
+    a++;
 
   if (!ch || ch != '"')
     exit_with("%s:%d:[LEXER]Only support #include \"...\"\n",
@@ -1018,7 +1021,8 @@ header_filename(struct lexer *lx, int line, char *s)
         lx->fname, line);
 
   a++;
-  for (; *a && check_space(*a); a++);
+  for (; *a && check_space(*a); )
+    a++;
 
   if (*a)
     exit_with("%s:%d:[LEXER]Invalid content after include\n",
@@ -1065,7 +1069,8 @@ shift_macroname(struct lexer *lx, int line, char *s, int offset)
     exit_with("%s:%d:[LEXER]Invalid define directive\n",
         lx->fname, line);
 
-  for (; *a && check_space(*a); a++);
+  for (; *a && check_space(*a); )
+    a++;
 
   if (!check_ident_start(*a))
     exit_with("%s:%d:[LEXER]Invalid macro name\n",
@@ -1124,7 +1129,8 @@ skip_until_endif(struct lexer *lx)
   char ch, *buffer;
   int i;
 
-  for (; ch = lx->ch, ch != '#'; skip_line(lx));
+  for (; ch = lx->ch, ch != '#'; )
+    skip_line(lx);
 
   buffer = lx->buff;
 

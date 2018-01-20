@@ -60,7 +60,8 @@ init_pathname_out(char *pathname, char *out)
   else
     scpy(out, pathname);
 
-  for (; *out != '.' && *out; out++);
+  for (; *out != '.' && *out; )
+    out++;
 
   *out++ = '.';
   *out++ = 's';

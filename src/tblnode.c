@@ -49,7 +49,8 @@ tblnode_get(struct tblnode *n, char *key)
   if (!n)
     return NULL;
 
-  for (; n && scmp(n->key, key); n = n->next);
+  for (; n && scmp(n->key, key); )
+    n = n->next;
 
   return n;
 }
