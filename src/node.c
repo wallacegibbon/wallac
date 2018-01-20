@@ -53,6 +53,9 @@ new_cstruct(char *name, struct linktbl *fields)
   if (!s)
     exit_with("Failed alloc memory for new c struct\n");
 
+  if (!fields)
+    fields = new_linktbl();
+
   s->name = name;
   s->fields = fields;
   return s;
@@ -60,19 +63,28 @@ new_cstruct(char *name, struct linktbl *fields)
 
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *ret, struct linktbl *params)
+new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
+    struct linktbl *vars, struct linktbl *stmts)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
   if (!f)
     exit_with("Failed alloc memory for new c function\n");
 
+  if (!params)
+    params = new_linktbl();
+
+  if (!vars)
+    vars = new_linktbl();
+
+  if (!stmts)
+    stmts = new_linktbl();
+
   f->name = name;
   f->ret = ret;
   f->params = params;
-  f->vars = NULL;
-  f->stmts = NULL;
-  f->defined = 0;
+  f->vars = vars;
+  f->stmts = stmts;
   return f;
 }
 

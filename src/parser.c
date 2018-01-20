@@ -194,28 +194,23 @@ get_struct_type(struct parser *psr)
 struct ctype *
 get_basic_type(struct parser *psr)
 {
-  struct token *tk;
-  struct ctype *ct;
   int type;
 
-  tk = psr->tk;
-
-  if (tk->type == KW_STRUCT)
+  type = psr->tk->type;
+  if (type == KW_STRUCT)
     return get_struct_type(psr);
 
-  if (tk->type == KW_VIOD)
+  if (type == KW_VIOD)
     return get_void_type(psr);
 
-  if (tk->type == KW_UNSIGNED)
+  if (type == KW_UNSIGNED)
     return get_unsigned_type(psr);
 
-  if (tk->type == KW_SIGNED)
+  if (type == KW_SIGNED)
     return get_signed_type(psr);
 
   type = get_int_basic(psr);
-  ct = new_ctype(type, 0, NULL, 0);
-
-  return ct;
+  return new_ctype(type, 0, NULL, 0);
 }
 
 
@@ -232,7 +227,6 @@ ctype_print(struct ctype *ct)
 {
   char *tstr;
   int i;
-
 
   if (ct->is_extern)
     pf("extern ");
@@ -300,12 +294,15 @@ funct_print(struct cfunc *cf)
 {
   pf("FUNCTION %s -> ", cf->name);
   ctype_print(cf->ret);
+
   pf("\nPARAMETERS:\n");
   if (cf->params);
     varlist_print(cf->params, 2);
+
   pf("ARGUMENTS:\n");
   if (cf->vars)
     varlist_print(cf->vars, 2);
+
   pf("STATEMENTS:\n");
   pf("  ...\n");
 }
@@ -325,7 +322,7 @@ funclist_print(struct linktbl *fl)
 
 
 int
-fill_ct_pdepth(struct parser *psr, struct ctype *ct)
+fill_pdepth(struct parser *psr, struct ctype *ct)
 {
   struct token *tk;
   int pdepth;
@@ -354,7 +351,7 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
   int i;
   char *name;
 
-  fill_ct_pdepth(psr, ct);
+  fill_pdepth(psr, ct);
 
   name = (char *) psr->tk->value;
   cv = new_cvar(name, ct);
@@ -382,7 +379,7 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
 
 
 int
-get_func_params(struct parser *psr, struct linktbl *params)
+get_funcparams(struct parser *psr, struct linktbl *params)
 {
   struct token *tk;
   struct ctype *ct;
@@ -391,7 +388,7 @@ get_func_params(struct parser *psr, struct linktbl *params)
   int i;
 
   ct = get_basic_type(psr);
-  fill_ct_pdepth(psr, ct);
+  fill_pdepth(psr, ct);
 
   name = (char *) psr->tk->value;
   cv = new_cvar(name, ct);
@@ -417,12 +414,12 @@ get_func_params(struct parser *psr, struct linktbl *params)
     exit_with("%s:%d:[PARSER]Missing ')' after parameters\n",
         tk->fname, tk->line);
 
-  return get_func_params(psr, params);
+  return get_funcparams(psr, params);
 }
 
 
 int
-get_func_vars(struct parser *psr, struct cfunc *fn)
+get_funcvars(struct parser *psr, struct cfunc *fn)
 {
   struct token *tk;
   struct ctype *ct;
@@ -431,17 +428,17 @@ get_func_vars(struct parser *psr, struct cfunc *fn)
   get_varlist(psr, fn->vars, ct);
 
   if (is_typetoken(psr->tk->type))
-    return get_func_vars(psr, fn);
+    return get_funcvars(psr, fn);
   else
     return 1;
 }
 
 
 int
-get_func_body(struct parser *psr, struct cfunc *fn)
+get_funcbody(struct parser *psr, struct cfunc *fn)
 {
   if (is_typetoken(psr->tk->type))
-    get_func_vars(psr, fn);
+    get_funcvars(psr, fn);
 
   for (; psr->tk->type != TK_END; )
     nexttoken_notend(psr);
@@ -454,28 +451,23 @@ get_func_body(struct parser *psr, struct cfunc *fn)
 int
 get_function(struct parser *psr, struct ctype *ret)
 {
-  struct token *tk;
-  struct cfunc *fn;
-  struct linktbl *params;
   struct tblnode *n;
+  struct cfunc *fn;
+  struct token *tk;
   char *name;
 
-  fill_ct_pdepth(psr, ret);
+  fill_pdepth(psr, ret);
 
   name = (char *) psr->tk->value;
+  fn = new_cfunc(name, ret, NULL, NULL, NULL);
 
   nexttoken_notend(psr);
   nexttoken_notend(psr);
 
-  params = new_linktbl();
-  get_func_params(psr, params);
+  get_funcparams(psr, fn->params);
 
   n = linktbl_get(psr->funcs, name);
   //check function re-definition
-
-  fn = new_cfunc(name, ret, params);
-  fn->vars = new_linktbl();
-  fn->stmts = new_linktbl();
 
   linktbl_put(psr->funcs, name, (void *) fn);
 
@@ -486,7 +478,7 @@ get_function(struct parser *psr, struct ctype *ret)
     return 1;
 
   if (tk->type == TK_BEGIN)
-    return get_func_body(psr, fn);
+    return get_funcbody(psr, fn);
 
   exit_with("%s:%d:[PARSER]Missing '{' after parameters\n",
       tk->fname, tk->line);
@@ -543,16 +535,14 @@ get_struct_fields(struct parser *psr, struct cstruct *cs)
 int
 get_struct_definition(struct parser *psr)
 {
-  struct linktbl *fields;
-  struct token *tk;
   struct cstruct *cs;
+  struct token *tk;
   char *name;
 
   tk = nexttoken_notend(psr);
   name = (char *) tk->value;
 
-  fields = new_linktbl();
-  cs = new_cstruct(name, fields);
+  cs = new_cstruct(name, NULL);
   linktbl_put(psr->sdefs, name, (void *) cs);
 
   nexttoken_notend(psr);
@@ -568,7 +558,6 @@ get_struct_definition(struct parser *psr)
         tk->fname, tk->line);
 
   nexttoken_notend(psr);
-
 
   return 1;
 }

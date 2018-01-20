@@ -6,11 +6,11 @@
 
 
 struct ctype { int type, pdepth; char *struct_name; int is_extern; };
-
 struct cvar { char *name; struct ctype *type; };
+
 struct cstruct { char *name; struct linktbl *fields; };
 struct cfunc { char *name; struct ctype *ret;
-  struct linktbl *params, *vars, *stmts; int defined; };
+  struct linktbl *params, *vars, *stmts; };
 
 struct stmt { int type; void *value; };
 
@@ -28,7 +28,8 @@ struct cstruct *
 new_cstruct(char *name, struct linktbl *fields);
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *ret, struct linktbl *params);
+new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
+    struct linktbl *vars, struct linktbl *stmts);
 
 
 #endif
