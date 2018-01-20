@@ -7,7 +7,7 @@
 
 
 struct ctype *
-new_ctype(int type, char *struct_name)
+new_ctype(int type, int pdepth, char *struct_name, int is_extern)
 {
   struct ctype *t;
   t = malloc(sizeof(struct ctype));
@@ -15,25 +15,24 @@ new_ctype(int type, char *struct_name)
     exit_with("Failed alloc memory for new c type\n");
 
   t->type = type;
+  t->pdepth = pdepth;
   t->struct_name = struct_name;
+  t->is_extern = is_extern;
   return t;
 }
 
 
-int
-ctype_print(struct ctype *ct)
+struct ctype *
+ctype_copy(struct ctype *ct)
 {
-  if (ct->type == CT_STRUCT)
-    pf("struct %s\n", ct->struct_name);
-  else
-    pf("int type: %x\n", ct->type);
-
-  return 1;
+  struct ctype *t;
+  t = new_ctype(ct->type, ct->pdepth, ct->struct_name, ct->is_extern);
+  return t;
 }
 
 
 struct cvar *
-new_cvar(char *name, struct ctype *type, int pdepth, int is_extern)
+new_cvar(char *name, struct ctype *type)
 {
   struct cvar *v;
   v = malloc(sizeof(struct cvar));
@@ -42,14 +41,12 @@ new_cvar(char *name, struct ctype *type, int pdepth, int is_extern)
 
   v->name = name;
   v->type = type;
-  v->pdepth = pdepth;
-  v->is_extern = is_extern;
   return v;
 }
 
 
 struct cstruct *
-new_cstruct(char *name)
+new_cstruct(char *name, struct linktbl *fields)
 {
   struct cstruct *s;
   s = malloc(sizeof(struct cstruct));
@@ -57,13 +54,13 @@ new_cstruct(char *name)
     exit_with("Failed alloc memory for new c struct\n");
 
   s->name = name;
-  s->fields = NULL;
+  s->fields = fields;
   return s;
 }
 
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *ret)
+new_cfunc(char *name, struct ctype *ret, struct linktbl *params)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
@@ -72,8 +69,10 @@ new_cfunc(char *name, struct ctype *ret)
 
   f->name = name;
   f->ret = ret;
+  f->params = params;
   f->vars = NULL;
   f->stmts = NULL;
+  f->defined = 0;
   return f;
 }
 

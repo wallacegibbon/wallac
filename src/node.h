@@ -5,30 +5,30 @@
 #include "linktbl.h"
 
 
-struct ctype { int type; char *struct_name; };
+struct ctype { int type, pdepth; char *struct_name; int is_extern; };
 
-struct cvar { char *name; struct ctype *type; int pdepth; int is_extern; };
+struct cvar { char *name; struct ctype *type; };
 struct cstruct { char *name; struct linktbl *fields; };
 struct cfunc { char *name; struct ctype *ret;
-  struct linktbl *params, *vars, *stmts; };
+  struct linktbl *params, *vars, *stmts; int defined; };
 
 struct stmt { int type; void *value; };
 
 
 struct ctype *
-new_ctype(int type, char *struct_name);
+new_ctype(int type, int pdepth, char *struct_name, int is_extern);
 
-int
-ctype_print(struct ctype *ct);
+struct ctype *
+ctype_copy(struct ctype *ct);
 
 struct cvar *
-new_cvar(char *name, struct ctype *type, int pdepth, int is_extern);
+new_cvar(char *name, struct ctype *type);
 
 struct cstruct *
-new_cstruct(char *name);
+new_cstruct(char *name, struct linktbl *fields);
 
 struct cfunc *
-new_cfunc(char *name, struct ctype *ret);
+new_cfunc(char *name, struct ctype *ret, struct linktbl *params);
 
 
 #endif

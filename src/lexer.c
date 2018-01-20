@@ -669,8 +669,10 @@ cnv_digit(int ch)
 {
   if (ch >= 'a' && ch <= 'f')
     return ch - 'a' + 10;
+
   if (ch >= 'A' && ch <= 'F')
     return ch - 'A' + 10;
+
   return ch - '0';
 }
 
@@ -683,8 +685,10 @@ check_overflow(char *numstr, int base)
 
   if (base == 16)
     maxstr = MAX_HEX_STRING;
+
   if (base == 10)
     maxstr = MAX_DECIMAL_STRING;
+
   if (base == 8)
     maxstr = MAX_OCTAL_STRING;
 
@@ -713,7 +717,7 @@ get_integer_num(struct lexer *lx, int line, int base)
         lx->fname, line);
 
   for (i = 0; *buffer; buffer++)
-    i = i * 8 + cnv_digit(*buffer);
+    i = i * base + cnv_digit(*buffer);
 
   join_token(lx, line, TK_CINT, (void *) i);
 
@@ -741,6 +745,7 @@ get_integer(struct lexer *lx)
     return get_integer_num(lx, line, 10);
 
   ch = nextchar_noteof(lx);
+
   if (check_octal(ch))
     return get_integer_num(lx, line, 8);
 
@@ -1091,6 +1096,7 @@ handle_define(struct lexer *lx, int line, char *s)
   int i;
 
   name = shift_macroname(lx, line, s, 6);
+
   if (try_get_keyword(name))
     exit_with("%s:%d:[LEXER]keywords can not be macro name\n",
         lx->fname, line);
@@ -1121,6 +1127,7 @@ skip_until_endif(struct lexer *lx)
   for (; ch = lx->ch, ch != '#'; skip_line(lx));
 
   buffer = lx->buff;
+
   for (i = 0; i < 5; i++)
     *buffer++ = nextchar_noteof(lx);
 

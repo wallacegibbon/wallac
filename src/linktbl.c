@@ -2,6 +2,7 @@
 #include "misc.h"
 #include "limits.h"
 #include "linktbl.h"
+#include "libc.h"
 
 
 
@@ -54,6 +55,41 @@ struct tblnode *
 linktbl_get(struct linktbl *l, char *key)
 {
   return tblnode_get(l->chain, key);
+}
+
+
+struct tblnode *
+linktbl_getidx(struct linktbl *l, int idx)
+{
+  struct tblnode *n;
+  int cnt;
+
+  if (idx >= l->size)
+    return NULL;
+
+  n = l->chain;
+  for (cnt = 0; cnt < idx; cnt++)
+    n = n->next;
+
+  return n;
+}
+
+
+int
+linktbl_idxof(struct linktbl *l, char *key)
+{
+  struct tblnode *n;
+  int idx;
+
+  n = l->chain;
+  idx = 0;
+  for (; n && scmp(n->key, key); n = n->next)
+    idx++;
+
+  if (n)
+    return idx;
+  else
+    return -1;
 }
 
 

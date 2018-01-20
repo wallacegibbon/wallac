@@ -17,6 +17,12 @@ linktbl_put(struct linktbl *l, char *key, void *value);
 struct tblnode *
 linktbl_get(struct linktbl *l, char *key);
 
+struct tblnode *
+linktbl_getidx(struct linktbl *l, int idx);
+
+int
+linktbl_idxof(struct linktbl *l, char *key);
+
 int
 linktbl_keyexist(struct linktbl *l, char *key);
 
