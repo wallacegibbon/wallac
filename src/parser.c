@@ -19,6 +19,7 @@ check_unsupported_keyword(int type)
   return type == KW_REGISTER || type == KW_AUTO || type == KW_CONST ||
     type == KW_VOLATILE || type == KW_STATIC ||
     type == KW_FLOAT || type == KW_DOUBLE ||
+    type == KW_ENUM || type == KW_UNION ||
     type == KW_SWITCH ||
     type == KW_CASE ||
     type == KW_WHILE ||
@@ -48,7 +49,7 @@ filter_unsupported_tk(struct token *tk)
         tk->fname, tk->line);
 
   if (check_unsupported_keyword(tk->type))
-    exit_with("%s:%d:[PARSER]Unsupported keyword: %s\n",
+    exit_with("%s:%d:[PARSER]Unsupported keyword: \"%s\"\n",
         tk->fname, tk->line, token_type_str(tk->type));
 
   return 1;
@@ -87,7 +88,7 @@ nexttoken_notend(struct parser *psr)
 
 
 int
-adjust_int_extra(struct parser *psr)
+get_int_basic(struct parser *psr)
 {
   struct token *tk;
 
@@ -95,18 +96,6 @@ adjust_int_extra(struct parser *psr)
   if ((tk->type == KW_SHORT || tk->type == KW_LONG) &&
       tk->next->type == KW_INT)
     nexttoken_notend(psr);
-
-  return 1;
-}
-
-
-int
-get_int_basic(struct parser *psr)
-{
-  struct token *tk;
-
-  tk = psr->tk;
-  adjust_int_extra(psr);
 
   nexttoken_notend(psr);
 
@@ -122,7 +111,7 @@ get_int_basic(struct parser *psr)
   if (tk->type == KW_LONG)
     return CT_LONG;
 
-  exit_with("%s:%d:[PARSER]Invalid int variable declaration(%d)\n",
+  exit_with("%s:%d:[PARSER]Invalid keyword(%d) usage\n",
       tk->fname, tk->line, tk->type);
 
   return 1;
@@ -183,7 +172,6 @@ get_struct_type(struct parser *psr)
         tk->fname, tk->line);
 
   name = (void *) tk->value;
-
   nexttoken_notend(psr);
 
   ct = new_ctype(CT_STRUCT, 0, name, 0);
@@ -198,6 +186,7 @@ get_basic_type(struct parser *psr)
   int type;
 
   type = psr->tk->type;
+
   if (type == KW_STRUCT)
     return get_struct_type(psr);
 
@@ -332,6 +321,7 @@ fill_pdepth(struct parser *psr, struct ctype *ct)
   int pdepth;
 
   pdepth = 0;
+
   for (; psr->tk->type == TK_ASTERISK; nexttoken_notend(psr))
     pdepth++;
 
