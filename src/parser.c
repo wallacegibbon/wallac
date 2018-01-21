@@ -271,7 +271,7 @@ varlist_print(struct linktbl *vl, int offset)
 int
 struct_print(struct cstruct *cs)
 {
-  pf("STRUCT %s:\n", cs->name);
+  pf("\nSTRUCT %s:\n", cs->name);
   return varlist_print(cs->fields, 2);
 }
 
@@ -292,19 +292,22 @@ structlist_print(struct linktbl *sl)
 int
 funct_print(struct cfunc *cf)
 {
-  pf("FUNCTION %s -> ", cf->name);
+  pf("\nFUNCTION %s -> ", cf->name);
   ctype_print(cf->ret);
 
   pf("\nPARAMETERS:\n");
-  if (cf->params);
+  if (cf->params)
     varlist_print(cf->params, 2);
+
+  if (cf->var_arg)
+    pf("  ...\n");
 
   pf("ARGUMENTS:\n");
   if (cf->vars)
     varlist_print(cf->vars, 2);
 
   pf("STATEMENTS:\n");
-  pf("  ...\n");
+  pf("\n");
 }
 
 
@@ -379,7 +382,7 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
 
 
 int
-get_funcparams(struct parser *psr, struct linktbl *params)
+get_funcparam_normal(struct parser *psr, struct cfunc *fn)
 {
   struct token *tk;
   struct ctype *ct;
@@ -390,15 +393,57 @@ get_funcparams(struct parser *psr, struct linktbl *params)
   ct = get_basic_type(psr);
   fill_pdepth(psr, ct);
 
-  name = (char *) psr->tk->value;
+  tk = psr->tk;
+  name = (char *) tk->value;
   cv = new_cvar(name, ct);
 
-  i = linktbl_put(params, name, (void *) cv);
+  i = linktbl_put(fn->params, name, (void *) cv);
   if (!i)
     exit_with("%s:%d:[PARSER]<%s> has been defined\n",
         tk->fname, tk->line, name);
 
   nexttoken_notend(psr);
+
+  return 1;
+}
+
+
+int
+get_funcparam_vararg(struct parser *psr, struct cfunc *fn)
+{
+  struct token *tk;
+
+  tk = psr->tk;
+
+  if (fn->params->size == 0)
+    exit_with("%s:%d:[PARSER]\"...\" can not be the first parameter\n",
+        tk->fname, tk->line);
+
+  if (tk->next->type != TK_CLOSEPA)
+    exit_with("%s:%d:[PARSER]\"...\" should be the last parameter\n",
+        tk->fname, tk->line);
+
+  fn->var_arg = 1;
+
+  nexttoken_notend(psr);
+  nexttoken_notend(psr);
+
+  return 1;
+}
+
+
+int
+get_funcparams(struct parser *psr, struct cfunc *fn)
+{
+  struct token *tk;
+
+  tk = psr->tk;
+
+  if (tk->type == TK_ELLIPSIS)
+    return get_funcparam_vararg(psr, fn);
+
+  get_funcparam_normal(psr, fn);
+
   tk = psr->tk;
 
   nexttoken_notend(psr);
@@ -414,7 +459,7 @@ get_funcparams(struct parser *psr, struct linktbl *params)
     exit_with("%s:%d:[PARSER]Missing ')' after parameters\n",
         tk->fname, tk->line);
 
-  return get_funcparams(psr, params);
+  return get_funcparams(psr, fn);
 }
 
 
@@ -443,7 +488,7 @@ get_funcbody(struct parser *psr, struct cfunc *fn)
   for (; psr->tk->type != TK_END; )
     nexttoken_notend(psr);
 
-  nexttoken_notend(psr);
+  nexttoken(psr);
   return 1;
 }
 
@@ -455,16 +500,17 @@ get_function(struct parser *psr, struct ctype *ret)
   struct cfunc *fn;
   struct token *tk;
   char *name;
+  int i;
 
   fill_pdepth(psr, ret);
 
   name = (char *) psr->tk->value;
-  fn = new_cfunc(name, ret, NULL, NULL, NULL);
+  fn = new_cfunc(name, ret, NULL, NULL, NULL, 0);
 
   nexttoken_notend(psr);
   nexttoken_notend(psr);
 
-  get_funcparams(psr, fn->params);
+  get_funcparams(psr, fn);
 
   n = linktbl_get(psr->funcs, name);
   //check function re-definition

@@ -10,7 +10,7 @@ struct cvar { char *name; struct ctype *type; };
 
 struct cstruct { char *name; struct linktbl *fields; };
 struct cfunc { char *name; struct ctype *ret;
-  struct linktbl *params, *vars, *stmts; };
+  struct linktbl *params, *vars, *stmts; int var_arg; };
 
 struct stmt { int type; void *value; };
 
@@ -29,7 +29,7 @@ new_cstruct(char *name, struct linktbl *fields);
 
 struct cfunc *
 new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
-    struct linktbl *vars, struct linktbl *stmts);
+    struct linktbl *vars, struct linktbl *stmts, int var_arg);
 
 
 #endif
