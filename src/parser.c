@@ -5,10 +5,11 @@
 #include "token.h"
 #include "node.h"
 #include "ctypes.h"
+#include "parser.h"
 
 
 
-struct parser { struct token *tk; struct linktbl *sdefs, *gvars, *funcs; };
+struct parser { struct token *tk; struct ast *ast; };
 
 
 
@@ -512,10 +513,10 @@ get_function(struct parser *psr, struct ctype *ret)
 
   get_funcparams(psr, fn);
 
-  n = linktbl_get(psr->funcs, name);
+  n = linktbl_get(psr->ast->funcs, name);
   //check function re-definition
 
-  linktbl_put(psr->funcs, name, (void *) fn);
+  linktbl_put(psr->ast->funcs, name, (void *) fn);
 
   tk = psr->tk;
   nexttoken_notend(psr);
@@ -589,7 +590,7 @@ get_struct_definition(struct parser *psr)
   name = (char *) tk->value;
 
   cs = new_cstruct(name, NULL);
-  linktbl_put(psr->sdefs, name, (void *) cs);
+  linktbl_put(psr->ast->sdefs, name, (void *) cs);
 
   nexttoken_notend(psr);
   nexttoken_notend(psr);
@@ -631,7 +632,24 @@ get_variables_or_func(struct parser *psr)
   if (is_function_or_var(psr))
     return get_function(psr, ct);
   else
-    return get_varlist(psr, psr->gvars, ct);
+    return get_varlist(psr, psr->ast->gvars, ct);
+}
+
+
+struct ast *
+new_ast()
+{
+  struct ast *p;
+
+  p = malloc(sizeof(struct ast));
+  if (!p)
+    exit_with("Failed alloc memory for ast\n");
+
+  p->funcs = new_linktbl();
+  p->gvars = new_linktbl();
+  p->sdefs = new_linktbl();
+
+  return p;
 }
 
 
@@ -644,13 +662,18 @@ new_parser(struct token *tks)
   if (!p)
     exit_with("Failed alloc memory for parser\n");
 
-  p->funcs = new_linktbl();
-  p->gvars = new_linktbl();
-  p->sdefs = new_linktbl();
-
+  p->ast = new_ast();
   p->tk = tks;
 
   return p;
+}
+
+
+int
+free_parser(struct parser *psr)
+{
+  //free_token(psr->tk);
+  free(psr);
 }
 
 
@@ -674,21 +697,25 @@ parse_recur(struct parser *psr)
 }
 
 
-int
+struct ast *
 parse(struct token *tks)
 {
   struct parser *psr;
+  struct ast *r;
 
   psr = new_parser(tks);
 
   parse_recur(psr);
+  r = psr->ast;
 
   pf("Global variables:\n");
-  varlist_print(psr->gvars, 2);
-  structlist_print(psr->sdefs);
-  funclist_print(psr->funcs);
+  varlist_print(r->gvars, 2);
+  structlist_print(r->sdefs);
+  funclist_print(r->funcs);
 
-  return 1;
+  free_parser(psr);
+
+  return r;
 }
 
 
