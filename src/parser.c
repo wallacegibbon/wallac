@@ -5,6 +5,7 @@
 #include "token.h"
 #include "node.h"
 #include "ctypes.h"
+#include "limits.h"
 #include "parser.h"
 
 
@@ -327,10 +328,16 @@ fill_pdepth(struct parser *psr, struct ctype *ct)
 
   pdepth = 0;
 
-  for (; psr->tk->type == TK_ASTERISK; nexttoken_notend(psr))
+  for (; psr->tk->type == TK_ASTERISK && pdepth < INT_MAX;
+      nexttoken_notend(psr))
     pdepth++;
 
   tk = psr->tk;
+
+  if (pdepth == INT_MAX)
+    exit_with("%s:%d:[PARSER]Pointer depth overflow\n",
+        tk->fname, tk->line);
+
   if (tk->type != TK_IDENT)
     exit_with("%s:%d:[PARSER]Missing identifer after type\n",
         tk->fname, tk->line);
