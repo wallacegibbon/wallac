@@ -19,10 +19,10 @@ struct abc d, *e;
 unsigned long int m;
 
 int
-x(int a, struct abc **d);
+x(int a, struct abc **d, char c);
 
 int
-x(int a, struct abc **d)
+x(int a, struct abc **d, char c)
 {
   int b, **c, *d;
   struct abc ***x;

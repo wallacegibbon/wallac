@@ -50,12 +50,6 @@ compare_struct_name(char *n1, char *n2)
 int
 ctype_cmp(struct ctype *ct1, struct ctype *ct2)
 {
-  pf("-----------------\n");
-  pf("t1: %d, t2: %d\n", ct1->type, ct2->type);
-  pf("t1: %d, t2: %d\n", ct1->pdepth, ct2->pdepth);
-  pf("t1: %d, t2: %d\n", ct1->is_extern, ct2->is_extern);
-  pf("t1: %s, t2: %s\n", ct1->struct_name, ct2->struct_name);
-  pf("-----------------\n");
   return ct1->type == ct2->type && ct1->pdepth == ct2->pdepth &&
     ct1->is_extern == ct2->is_extern &&
     !compare_struct_name(ct1->struct_name, ct2->struct_name);

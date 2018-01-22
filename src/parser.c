@@ -544,13 +544,17 @@ join_function(struct parser *psr, struct cfunc *fn, int line)
   oldfn->is_declare = 0;
 
   if (!ctype_cmp(oldfn->ret, fn->ret))
-    exit_with("%s:%d:[PARSER]Function \"%s\" return type mismatch\n",
+    exit_with("%s:%d:[PARSER]Return type of \"%s\" conflict\n",
         psr->tk->fname, line, name);
 
   i = cmp_params(oldfn->params, fn->params);
+  if (i < 0)
+    exit_with("%s:%d:[PARSER]Parameter number of \"%s\" conflict\n",
+        psr->tk->fname, line, name);
+
   if (i > 0)
-    exit_with("%s:%d:[PARSER]Function \"%s\" parameter %d mismatch\n",
-        psr->tk->fname, line, name, i);
+    exit_with("%s:%d:[PARSER]Parameter %d of \"%s\" type conflict\n",
+        psr->tk->fname, line, i, name);
 
   //TODO:free fn?
   return 1;
