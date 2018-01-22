@@ -1,3 +1,4 @@
+struct abc { int a, *b, ***c; };
 struct abc *
 hello(int a, char *b, struct abc *m);
 
@@ -10,10 +11,6 @@ pf(char *fmt, ...);
 ;
 ;
 ;
-
-struct mm { int *x, *y; char *name; };
-
-struct nn { unsigned int *base; struct mm *a, b, **c; };
 
 struct abc d, *e;
 unsigned long int m;

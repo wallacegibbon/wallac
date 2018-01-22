@@ -172,6 +172,11 @@ get_struct_type(struct parser *psr)
         tk->fname, tk->line);
 
   name = (void *) tk->value;
+
+  if (!linktbl_keyexist(psr->ast->sdefs, name))
+    exit_with("%s:%d:[PARSER]Undefined struct \"%s\"\n",
+        tk->fname, tk->line, name);
+
   nexttoken_notend(psr);
 
   ct = new_ctype(CT_STRUCT, 0, name, 0);
