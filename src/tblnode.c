@@ -25,7 +25,6 @@ int
 tblnode_append(struct tblnode *n, char *key, void *value)
 {
   struct tblnode *t;
-  int r;
 
   if (!n)
     return 0;
@@ -33,13 +32,12 @@ tblnode_append(struct tblnode *n, char *key, void *value)
   for (; n && scmp(n->key, key); n = n->next)
     t = n;
 
-  r = 1;
-  if (!n)
-    t->next = new_tblnode(key, value);
-  else
-    r = 0;
+  if (n)
+    return 0;
 
-  return r;
+  t->next = new_tblnode(key, value);
+
+  return 1;
 }
 
 

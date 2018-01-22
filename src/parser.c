@@ -111,7 +111,7 @@ get_int_basic(struct parser *psr)
   if (tk->type == KW_LONG)
     return CT_LONG;
 
-  exit_with("%s:%d:[PARSER]Invalid keyword(%d) usage\n",
+  exit_with("%s:%d:[PARSER]Invalid type token(%d)\n",
       tk->fname, tk->line, tk->type);
 
   return 1;
@@ -342,17 +342,18 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
   struct token *tk;
   struct ctype *nct;
   struct cvar *cv;
-  int i;
   char *name;
+  int i;
 
   fill_pdepth(psr, ct);
 
-  name = (char *) psr->tk->value;
+  tk = psr->tk;
+  name = (char *) tk->value;
   cv = new_cvar(name, ct);
 
   i = linktbl_put(vars, name, (void *) cv);
   if (!i)
-    exit_with("%s:%d:[PARSER]<%s> has been defined\n",
+    exit_with("%s:%d:[PARSER]variable \"%s\" redefine\n",
         tk->fname, tk->line, name);
 
   nexttoken_notend(psr);
@@ -390,7 +391,7 @@ get_funcparam_normal(struct parser *psr, struct cfunc *fn)
 
   i = linktbl_put(fn->params, name, (void *) cv);
   if (!i)
-    exit_with("%s:%d:[PARSER]<%s> has been defined\n",
+    exit_with("%s:%d:[PARSER]parameter \"%s\" redefine\n",
         tk->fname, tk->line, name);
 
   nexttoken_notend(psr);
@@ -428,15 +429,12 @@ get_funcparams(struct parser *psr, struct cfunc *fn)
 {
   struct token *tk;
 
-  tk = psr->tk;
-
-  if (tk->type == TK_ELLIPSIS)
+  if (psr->tk->type == TK_ELLIPSIS)
     return get_funcparam_vararg(psr, fn);
 
   get_funcparam_normal(psr, fn);
 
   tk = psr->tk;
-
   nexttoken_notend(psr);
 
   if (tk->type == TK_CLOSEPA)
@@ -485,47 +483,127 @@ get_funcbody(struct parser *psr, struct cfunc *fn)
 
 
 int
-get_function(struct parser *psr, struct ctype *ret)
+cmp_params(struct linktbl *oldparams, struct linktbl *params)
 {
-  struct tblnode *n;
-  struct cfunc *fn;
-  struct token *tk;
-  char *name;
+  struct tblnode *c1, *c2;
   int i;
 
-  fill_pdepth(psr, ret);
+  if (oldparams->size != params->size)
+    return -1;
 
-  name = (char *) psr->tk->value;
-  fn = new_cfunc(name, ret, NULL, NULL, NULL, 0);
+  c1 = oldparams->chain;
+  c2 = params->chain;
 
-  nexttoken_notend(psr);
-  nexttoken_notend(psr);
+  for (i = 1; c1 && c2; c1 = c1->next, c2 = c2->next, i++)
+    if (!ctype_cmp(((struct cvar *) c1->value)->type,
+          ((struct cvar *)c2->value)->type))
+      return i;
 
-  get_funcparams(psr, fn);
+  return 0;
+}
 
-  n = linktbl_get(psr->ast->funcs, name);
-  //check function re-definition
 
-  linktbl_put(psr->ast->funcs, name, (void *) fn);
+int
+free_params(struct linktbl *params)
+{
+  struct tblnode *p;
 
-  tk = psr->tk;
-  nexttoken_notend(psr);
-
-  if (tk->type == TK_SEMICOLON)
-    return 1;
-
-  if (tk->type == TK_BEGIN)
-    return get_funcbody(psr, fn);
-
-  exit_with("%s:%d:[PARSER]Missing '{' after parameters\n",
-      tk->fname, tk->line);
+  p = params->chain;
+  for (; p; p = p->next)
+    cvar_free((struct cvar *) p->value);
 
   return 1;
 }
 
 
 int
-is_function_or_var(struct parser *psr)
+join_function(struct parser *psr, struct cfunc *fn, int line)
+{
+  struct linktbl *funclist;
+  struct tblnode *n;
+  struct cfunc *oldfn;
+  char *name;
+  int i;
+
+  funclist = psr->ast->funcs;
+  name = fn->name;
+
+  n = linktbl_get(funclist, name);
+  if (n)
+    oldfn = (struct cfunc *) n->value;
+  else
+    oldfn = NULL;
+
+  if (!oldfn)
+    return linktbl_put(funclist, name, (void *) fn);
+
+  if (!oldfn->is_declare)
+    exit_with("%s:%d:[PARSER]Function \"%s\" redefine\n",
+        psr->tk->fname, line, name);
+
+  oldfn->is_declare = 0;
+
+  if (!ctype_cmp(oldfn->ret, fn->ret))
+    exit_with("%s:%d:[PARSER]Function \"%s\" return type mismatch\n",
+        psr->tk->fname, line, name);
+
+  i = cmp_params(oldfn->params, fn->params);
+  if (i > 0)
+    exit_with("%s:%d:[PARSER]Function \"%s\" parameter %d mismatch\n",
+        psr->tk->fname, line, name, i);
+
+  //TODO:free fn?
+  return 1;
+}
+
+
+int
+get_function(struct parser *psr, struct ctype *ret)
+{
+  struct tblnode *n;
+  struct cfunc *fn;
+  struct token *tk;
+  char *name;
+  int line;
+
+  fill_pdepth(psr, ret);
+
+  tk = psr->tk;
+  name = (char *) tk->value;
+  line = tk->line;
+
+  fn = new_cfunc(name, ret, NULL, NULL, NULL, 0);
+
+  nexttoken_notend(psr);
+  nexttoken_notend(psr);
+
+  if (psr->tk->type != TK_CLOSEPA)
+    get_funcparams(psr, fn);
+  else
+    nexttoken_notend(psr);
+
+  join_function(psr, fn, line);
+
+  n = linktbl_get(psr->ast->funcs, name);
+  fn = (struct cfunc *) n->value;
+
+  tk = psr->tk;
+  nexttoken_notend(psr);
+
+  if (tk->type == TK_BEGIN)
+    return get_funcbody(psr, fn);
+
+  if (tk->type != TK_SEMICOLON)
+    exit_with("%s:%d:[PARSER]Missing function body\n",
+        tk->fname, tk->line);
+
+  fn->is_declare = 1;
+  return 1;
+}
+
+
+int
+is_gvar_definition(struct parser *psr)
 {
   struct token *tk;
 
@@ -533,9 +611,9 @@ is_function_or_var(struct parser *psr)
     tk = tk->next;
 
   if (tk && tk->next && tk->next->type == TK_OPENPA)
-    return 1;
-  else
     return 0;
+  else
+    return 1;
 }
 
 
@@ -603,26 +681,24 @@ get_struct_definition(struct parser *psr)
 int
 get_variables_or_func(struct parser *psr)
 {
-  struct token *tk;
   struct ctype *ct;
   int is_extern;
 
-  tk = psr->tk;
-  if (tk->type == KW_EXTERN)
+  if (psr->tk->type == KW_EXTERN)
     is_extern = 1;
   else
     is_extern = 0;
 
   if (is_extern)
-    tk = nexttoken_notend(psr);
+    nexttoken_notend(psr);
 
   ct = get_basic_type(psr);
   ct->is_extern = is_extern;
 
-  if (is_function_or_var(psr))
-    return get_function(psr, ct);
-  else
+  if (is_gvar_definition(psr))
     return get_varlist(psr, psr->ast->gvars, ct);
+  else
+    return get_function(psr, ct);
 }
 
 

@@ -31,6 +31,45 @@ ctype_copy(struct ctype *ct)
 }
 
 
+int
+compare_struct_name(char *n1, char *n2)
+{
+  if (!n1 && !n2)
+    return 0;
+
+  if (n1 && !n2)
+    return 1;
+
+  if (!n1 && n2)
+    return -1;
+
+  return scmp(n1, n2);
+}
+
+
+int
+ctype_cmp(struct ctype *ct1, struct ctype *ct2)
+{
+  pf("-----------------\n");
+  pf("t1: %d, t2: %d\n", ct1->type, ct2->type);
+  pf("t1: %d, t2: %d\n", ct1->pdepth, ct2->pdepth);
+  pf("t1: %d, t2: %d\n", ct1->is_extern, ct2->is_extern);
+  pf("t1: %s, t2: %s\n", ct1->struct_name, ct2->struct_name);
+  pf("-----------------\n");
+  return ct1->type == ct2->type && ct1->pdepth == ct2->pdepth &&
+    ct1->is_extern == ct2->is_extern &&
+    !compare_struct_name(ct1->struct_name, ct2->struct_name);
+}
+
+
+int
+ctype_free(struct ctype *ct)
+{
+  free(ct);
+  return 1;
+}
+
+
 struct cvar *
 new_cvar(char *name, struct ctype *type)
 {
@@ -42,6 +81,16 @@ new_cvar(char *name, struct ctype *type)
   v->name = name;
   v->type = type;
   return v;
+}
+
+
+int
+cvar_free(struct cvar *cv)
+{
+  ctype_free(cv->type);
+  free(cv);
+
+  return 1;
 }
 
 
@@ -86,6 +135,7 @@ new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
   f->vars = vars;
   f->stmts = stmts;
   f->var_arg = var_arg;
+  f->is_declare = 0;
   return f;
 }
 
