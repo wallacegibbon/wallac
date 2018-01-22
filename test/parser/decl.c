@@ -1,4 +1,6 @@
-struct abc { int a, *b, ***c; };
+
+struct abc { int a, *b, ***c; struct abc *next; };
+
 struct abc *
 hello(int a, char *b, struct abc *m);
 

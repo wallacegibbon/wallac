@@ -676,6 +676,35 @@ get_struct_fields(struct parser *psr, struct cstruct *cs)
 
 
 int
+check_type_struct(struct ctype *ct, char *sname)
+{
+  if (ct->type == CT_STRUCT && !scmp(ct->struct_name, sname) &&
+      ct->pdepth == 0)
+    return 1;
+  else
+    return 0;
+}
+
+
+int
+check_recursive_struct(struct cstruct *cs)
+{
+  struct tblnode *p;
+  struct ctype *ct;
+  char *name;
+
+  name = cs->name;
+  p = cs->fields->chain;
+
+  for (; p, p; p = p->next)
+    if (check_type_struct(((struct cvar *) p->value)->type, name))
+      return 1;
+
+  return 0;
+}
+
+
+int
 get_struct_definition(struct parser *psr)
 {
   struct cstruct *cs;
@@ -692,6 +721,10 @@ get_struct_definition(struct parser *psr)
   nexttoken_notend(psr);
 
   get_struct_fields(psr, cs);
+
+  if (check_recursive_struct(cs))
+    exit_with("%s:%d:[PARSER]Recursive struct \"%s\"\n",
+        tk->fname, tk->line, name);
 
   tk = psr->tk;
   nexttoken_notend(psr);
