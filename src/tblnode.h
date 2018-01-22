@@ -9,7 +9,10 @@ struct tblnode *
 new_tblnode(char *key, void *value);
 
 int
-tblnode_append(struct tblnode *p, char *key, void *value);
+tblnode_add(struct tblnode *n, char *key, void *value);
+
+int
+tblnode_set(struct tblnode *n, char *key, void *value);
 
 struct tblnode *
 tblnode_get(struct tblnode *n, char *key);

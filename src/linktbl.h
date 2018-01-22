@@ -12,7 +12,10 @@ struct linktbl *
 new_linktbl();
 
 int
-linktbl_put(struct linktbl *l, char *key, void *value);
+linktbl_add(struct linktbl *l, char *key, void *value);
+
+int
+linktbl_set(struct linktbl *l, char *key, void *value);
 
 struct tblnode *
 linktbl_get(struct linktbl *l, char *key);

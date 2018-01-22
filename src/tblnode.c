@@ -22,7 +22,7 @@ new_tblnode(char *key, void *value)
 
 
 int
-tblnode_append(struct tblnode *n, char *key, void *value)
+tblnode_add(struct tblnode *n, char *key, void *value)
 {
   struct tblnode *t;
 
@@ -36,6 +36,26 @@ tblnode_append(struct tblnode *n, char *key, void *value)
     return 0;
 
   t->next = new_tblnode(key, value);
+
+  return 1;
+}
+
+
+int
+tblnode_set(struct tblnode *n, char *key, void *value)
+{
+  struct tblnode *t;
+
+  if (!n)
+    return 0;
+
+  for (; n && scmp(n->key, key); )
+    n = n->next;
+
+  if (!n)
+    return 0;
+
+  n->value = value;
 
   return 1;
 }

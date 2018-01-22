@@ -1114,7 +1114,7 @@ handle_define(struct lexer *lx, int line, char *s)
 
   free_lexer(slx);
 
-  i = hashtbl_put(lx->mtbl, name, (void *) tks);
+  i = hashtbl_add(lx->mtbl, name, (void *) tks);
   if (!i)
     exit_with("%s:%d[LEXER]macro %s is already defined\n",
         lx->fname, line, name);

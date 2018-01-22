@@ -12,7 +12,7 @@ struct hashtbl *
 new_hashtbl(int bucketsize);
 
 int
-hashtbl_put(struct hashtbl *h, char *key, void *value);
+hashtbl_add(struct hashtbl *h, char *key, void *value);
 
 struct tblnode *
 hashtbl_get(struct hashtbl *h, char *key);

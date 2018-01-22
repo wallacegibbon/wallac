@@ -34,18 +34,32 @@ linktbl_increase_size(struct linktbl *l)
 
 
 int
-linktbl_put(struct linktbl *l, char *key, void *value)
+linktbl_add(struct linktbl *l, char *key, void *value)
 {
   int r;
 
   r = 1;
   if (l->chain)
-    r = tblnode_append(l->chain, key, value);
+    r = tblnode_add(l->chain, key, value);
   else
     l->chain = new_tblnode(key, value);
 
   if (r > 0)
     linktbl_increase_size(l);
+
+  return r;
+}
+
+
+int
+linktbl_set(struct linktbl *l, char *key, void *value)
+{
+  int r;
+
+  if (!l->chain)
+    return 0;
+
+  r = tblnode_set(l->chain, key, value);
 
   return r;
 }

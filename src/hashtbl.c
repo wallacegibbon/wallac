@@ -64,7 +64,7 @@ hashtbl_getslot(struct hashtbl *h, char *key)
 
 
 int
-hashtbl_put(struct hashtbl *h, char *key, void *value)
+hashtbl_add(struct hashtbl *h, char *key, void *value)
 {
   struct tblnode **p;
   int r;
@@ -73,12 +73,29 @@ hashtbl_put(struct hashtbl *h, char *key, void *value)
 
   r = 1;
   if (*p)
-    r = tblnode_append(*p, key, value);
+    r = tblnode_add(*p, key, value);
   else
     *p = new_tblnode(key, value);
 
   if (r > 0)
     hashtbl_increase_size(h);
+
+  return r;
+}
+
+
+int
+hashtbl_set(struct hashtbl *h, char *key, void *value)
+{
+  struct tblnode **p;
+  int r;
+
+  p = hashtbl_getslot(h, key);
+
+  if (!*p)
+    return 0;
+
+  r = tblnode_set(*p, key, value);
 
   return r;
 }

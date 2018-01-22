@@ -339,8 +339,8 @@ fill_pdepth(struct parser *psr, struct ctype *ct)
 int
 get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
 {
-  struct token *tk;
   struct ctype *nct;
+  struct token *tk;
   struct cvar *cv;
   char *name;
   int i;
@@ -351,7 +351,7 @@ get_varlist(struct parser *psr, struct linktbl *vars, struct ctype *ct)
   name = (char *) tk->value;
   cv = new_cvar(name, ct);
 
-  i = linktbl_put(vars, name, (void *) cv);
+  i = linktbl_add(vars, name, (void *) cv);
   if (!i)
     exit_with("%s:%d:[PARSER]variable \"%s\" redefine\n",
         tk->fname, tk->line, name);
@@ -389,7 +389,7 @@ get_funcparam_normal(struct parser *psr, struct cfunc *fn)
   name = (char *) tk->value;
   cv = new_cvar(name, ct);
 
-  i = linktbl_put(fn->params, name, (void *) cv);
+  i = linktbl_add(fn->params, name, (void *) cv);
   if (!i)
     exit_with("%s:%d:[PARSER]parameter \"%s\" redefine\n",
         tk->fname, tk->line, name);
@@ -455,7 +455,6 @@ get_funcparams(struct parser *psr, struct cfunc *fn)
 int
 get_funcvars(struct parser *psr, struct cfunc *fn)
 {
-  struct token *tk;
   struct ctype *ct;
 
   ct = get_basic_type(psr);
@@ -517,46 +516,70 @@ free_params(struct linktbl *params)
 
 
 int
-join_function(struct parser *psr, struct cfunc *fn, int line)
+cmp_functions(struct cfunc *f1, struct cfunc *f2)
+{
+  int i;
+
+  if (!ctype_cmp(f1->ret, f2->ret))
+    return -1;
+
+  i = cmp_params(f1->params, f2->params);
+  if (i < 0)
+    return -2;
+
+  if (i > 0)
+    return i;
+
+  return 0;
+}
+
+
+int
+update_function(struct parser *psr, struct cfunc *fn, int line)
 {
   struct linktbl *funclist;
-  struct tblnode *n;
   struct cfunc *oldfn;
+  struct tblnode *n;
   char *name;
-  int i;
 
   funclist = psr->ast->funcs;
   name = fn->name;
 
   n = linktbl_get(funclist, name);
-  if (n)
-    oldfn = (struct cfunc *) n->value;
-  else
-    oldfn = NULL;
-
-  if (!oldfn)
-    return linktbl_put(funclist, name, (void *) fn);
+  oldfn = (struct cfunc *) n->value;
 
   if (!oldfn->is_declare)
     exit_with("%s:%d:[PARSER]Function \"%s\" redefine\n",
         psr->tk->fname, line, name);
 
-  oldfn->is_declare = 0;
-
-  if (!ctype_cmp(oldfn->ret, fn->ret))
-    exit_with("%s:%d:[PARSER]Return type of \"%s\" conflict\n",
+  if (cmp_functions(oldfn, fn))
+    exit_with("%s:%d:[PARSER]Function \"%s\" definition conflict\n",
         psr->tk->fname, line, name);
 
-  i = cmp_params(oldfn->params, fn->params);
-  if (i < 0)
-    exit_with("%s:%d:[PARSER]Parameter number of \"%s\" conflict\n",
-        psr->tk->fname, line, name);
+  linktbl_set(psr->ast->funcs, name, (void *) fn);
 
-  if (i > 0)
-    exit_with("%s:%d:[PARSER]Parameter %d of \"%s\" type conflict\n",
-        psr->tk->fname, line, i, name);
+  free_params(oldfn->params);
+  ctype_free(oldfn->ret);
+  free(oldfn);
 
-  //TODO:free fn?
+  return 1;
+}
+
+
+int
+join_function(struct parser *psr, struct cfunc *fn, int line)
+{
+  struct linktbl *funclist;
+  char *name;
+
+  funclist = psr->ast->funcs;
+  name = fn->name;
+
+  if (linktbl_keyexist(funclist, name))
+    update_function(psr, fn, line);
+  else
+    linktbl_add(funclist, name, (void *) fn);
+
   return 1;
 }
 
@@ -564,7 +587,6 @@ join_function(struct parser *psr, struct cfunc *fn, int line)
 int
 get_function(struct parser *psr, struct ctype *ret)
 {
-  struct tblnode *n;
   struct cfunc *fn;
   struct token *tk;
   char *name;
@@ -587,9 +609,6 @@ get_function(struct parser *psr, struct ctype *ret)
     nexttoken_notend(psr);
 
   join_function(psr, fn, line);
-
-  n = linktbl_get(psr->ast->funcs, name);
-  fn = (struct cfunc *) n->value;
 
   tk = psr->tk;
   nexttoken_notend(psr);
@@ -662,7 +681,7 @@ get_struct_definition(struct parser *psr)
   name = (char *) tk->value;
 
   cs = new_cstruct(name, NULL);
-  linktbl_put(psr->ast->sdefs, name, (void *) cs);
+  linktbl_add(psr->ast->sdefs, name, (void *) cs);
 
   nexttoken_notend(psr);
   nexttoken_notend(psr);

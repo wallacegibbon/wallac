@@ -30,5 +30,4 @@ x(int a, struct abc **d, char c)
   return 0;
 };
 
-
 long last;
