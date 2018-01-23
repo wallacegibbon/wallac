@@ -12,8 +12,6 @@ struct cstruct { char *name; struct linktbl *fields; };
 struct cfunc { char *name; struct ctype *ret;
   struct linktbl *params, *vars, *stmts; int var_arg, is_declare; };
 
-struct stmt { int type; void *value; };
-
 
 struct ctype *
 new_ctype(int type, int pdepth, char *struct_name, int is_extern);

@@ -8,7 +8,7 @@ extern unsigned short int ***i1, *i2, i3, **i4;
 extern struct abc ***s1, *s2, s3, **s4;
 
 int
-pf(char *fmt, ...);
+fpf(int fd, char *fmt, ...);
 
 ;
 ;

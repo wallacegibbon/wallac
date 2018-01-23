@@ -137,16 +137,16 @@ file_nextchar(struct lexer *lx)
   if (!ch)
     ch = EOF;
 
-  if (ch == '\n')
-    lx->line++;
-
-  if (lx->line >= INT_MAX)
-    exit_with("File %s too long(%d lines)\n",
-        lx->fname, lx->line);
-
   lx->pch = lx->ch;
   lx->ch = ch;
   lx->cursor++;
+
+  if (ch == '\n')
+    lx->line++;
+
+  if (lx->line == INT_MAX)
+    exit_with("File %s too long(more than %d lines)\n",
+        lx->fname, INT_MAX);
 
   return ch;
 }

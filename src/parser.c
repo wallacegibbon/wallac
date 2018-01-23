@@ -31,6 +31,7 @@ check_unsupported_keyword(int type)
     type == KW_TYPEDEF;
 }
 
+
 int
 is_typetoken(int type)
 {
@@ -47,6 +48,10 @@ filter_unsupported_tk(struct token *tk)
 {
   if (tk->type == TK_OPENBR || tk->type == TK_CLOSEBR)
     exit_with("%s:%d:[PARSER]Original C array is not supported by wcc\n",
+        tk->fname, tk->line);
+
+  if (tk->type == TK_QUESTION)
+    exit_with("%s:%d:[PARSER]Ternary operation(?:) is not supported\n",
         tk->fname, tk->line);
 
   if (check_unsupported_keyword(tk->type))
@@ -286,7 +291,7 @@ structlist_print(struct linktbl *sl)
 
 
 int
-funct_print(struct cfunc *cf)
+func_print(struct cfunc *cf)
 {
   pf("\nFUNCTION %s -> ", cf->name);
   ctype_print(cf->ret);
@@ -314,7 +319,7 @@ funclist_print(struct linktbl *fl)
 
   n = fl->chain;
   for (; n; n = n->next)
-    funct_print((struct cfunc *) n->value);
+    func_print((struct cfunc *) n->value);
 
   return 1;
 }
@@ -479,16 +484,92 @@ get_funcvars(struct parser *psr, struct cfunc *fn)
 }
 
 
+void *
+get_expression(struct parser *psr)
+{
+  return NULL;
+}
+
+
+int
+get_expr_stmt(struct parser *psr, struct cfunc *fn)
+{
+  return 1;
+}
+
+
+int
+get_if_stmt(struct parser *psr, struct cfunc *fn)
+{
+  return 1;
+}
+
+
+int
+get_for_stmt(struct parser *psr, struct cfunc *fn)
+{
+  return 1;
+}
+
+
+int
+get_ret_stmt(struct parser *psr, struct cfunc *fn)
+{
+  nexttoken_notend(psr);
+  get_expression(psr); //TODO
+
+  return 1;
+}
+
+
+int
+get_one_statement(struct parser *psr, struct cfunc *fn)
+{
+  struct token *tk;
+
+  tk = psr->tk;
+
+  if (tk->type == KW_FOR)
+    return get_for_stmt(psr, fn);
+
+  if (tk->type == KW_IF)
+    return get_if_stmt(psr, fn);
+
+  if (tk->type == KW_RETURN)
+    return get_ret_stmt(psr, fn);
+
+  return get_expr_stmt(psr, fn);
+}
+
+
+int
+get_statements(struct parser *psr, struct cfunc *fn)
+{
+  for (; psr->tk->type != TK_END; )
+    get_one_statement(psr, fn);
+
+  return 1;
+}
+
+
+int
+skip_until_end_token(struct parser *psr)
+{
+  for (; psr->tk->type != TK_END; )
+    nexttoken_notend(psr);
+  nexttoken(psr);
+}
+
+
 int
 get_funcbody(struct parser *psr, struct cfunc *fn)
 {
   if (is_typetoken(psr->tk->type))
     get_funcvars(psr, fn);
 
-  for (; psr->tk->type != TK_END; )
-    nexttoken_notend(psr);
+  skip_until_end_token(psr);
+  //get_statements(psr, fn);
 
-  nexttoken(psr);
   return 1;
 }
 
