@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "../../src/linktbl.h"
-#include "../../src/tblnode.h"
 
 
 
@@ -8,40 +7,37 @@ int
 main(int argc, char **argv)
 {
   struct linktbl *p;
-  struct tblnode *x;
+  int x;
   int i;
 
   p = new_linktbl(15);
 
-  linktbl_put(p, "tom", (void *) 1);
-  linktbl_put(p, "harry", (void *) 2);
-  linktbl_put(p, "ron", (void *) 3);
-  linktbl_put(p, "wally", (void *) 4);
-  linktbl_put(p, "kim", (void *) 5);
-  linktbl_put(p, "rufus", (void *) 6);
-  linktbl_put(p, "anna", (void *) 7);
-  linktbl_put(p, "alsa", (void *) 8);
-  linktbl_put(p, "hans", (void *) 9);
-  i = linktbl_put(p, "sven", (void *) 0);
+  linktbl_add(p, "tom", (void *) 1);
+  linktbl_add(p, "harry", (void *) 2);
+  linktbl_add(p, "ron", (void *) 3);
+  linktbl_add(p, "wally", (void *) 4);
+  linktbl_add(p, "kim", (void *) 5);
+  linktbl_add(p, "rufus", (void *) 6);
+  linktbl_add(p, "anna", (void *) 7);
+  linktbl_add(p, "alsa", (void *) 8);
+  linktbl_add(p, "hans", (void *) 9);
+  i = linktbl_add(p, "sven", (void *) 10);
   if (!i)
-    printf("Failed insert sven 0\n");
+    printf("Failed insert sven 10\n");
 
-  i = linktbl_put(p, "olaf", (void *) 1);
+  i = linktbl_add(p, "olaf", (void *) 11);
   if (!i)
-    printf("Failed insert olaf 1\n");
-  i = linktbl_put(p, "olaf", (void *) 2);
+    printf("Failed insert olaf 11\n");
+  i = linktbl_add(p, "olaf", (void *) 12);
   if (!i)
-    printf("Failed insert olaf 2\n");
+    printf("Failed insert olaf 12\n");
 
   linktbl_print(p);
 
   printf("\n\n");
 
-  x = linktbl_get(p, "olaf");
-  if (!x)
-    printf("failed get from linktable\n");
-  else
-    printf("%s: %d\n", x->key, (int) x->value);
+  x = (int) linktbl_get(p, "olaf");
+  printf("%s: %d\n", "olaf", x);
 
   return 0;
 }
