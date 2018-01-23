@@ -4,7 +4,6 @@
 #include "vars.h"
 #include "token.h"
 #include "lexer.h"
-#include "tblnode.h"
 #include "hashtbl.h"
 #include "misc.h"
 #include "libc.h"
@@ -763,7 +762,7 @@ get_integer(struct lexer *lx)
 int
 get_identifier(struct lexer *lx)
 {
-  struct tblnode *kv;
+  struct token *mtk;
   char *buffer;
   int line, cnt, kw;
 
@@ -787,9 +786,9 @@ get_identifier(struct lexer *lx)
   if (kw)
     return join_token(lx, line, kw, NULL);
 
-  kv = hashtbl_get(lx->mtbl, buffer);
-  if (kv)
-    return join_chain(lx, line, (struct token *) kv->value, 1);
+  mtk = hashtbl_get(lx->mtbl, buffer);
+  if (mtk)
+    return join_chain(lx, line, mtk, 1);
 
   join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
 

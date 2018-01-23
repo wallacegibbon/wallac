@@ -65,14 +65,14 @@ linktbl_set(struct linktbl *l, char *key, void *value)
 }
 
 
-struct tblnode *
+void *
 linktbl_get(struct linktbl *l, char *key)
 {
   return tblnode_get(l->chain, key);
 }
 
 
-struct tblnode *
+void *
 linktbl_getidx(struct linktbl *l, int idx)
 {
   struct tblnode *n;
@@ -85,7 +85,7 @@ linktbl_getidx(struct linktbl *l, int idx)
   for (cnt = 0; cnt < idx; cnt++)
     n = n->next;
 
-  return n;
+  return n->value;
 }
 
 

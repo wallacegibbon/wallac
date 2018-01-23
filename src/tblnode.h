@@ -14,7 +14,7 @@ tblnode_add(struct tblnode *n, char *key, void *value);
 int
 tblnode_set(struct tblnode *n, char *key, void *value);
 
-struct tblnode *
+void *
 tblnode_get(struct tblnode *n, char *key);
 
 int

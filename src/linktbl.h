@@ -17,10 +17,10 @@ linktbl_add(struct linktbl *l, char *key, void *value);
 int
 linktbl_set(struct linktbl *l, char *key, void *value);
 
-struct tblnode *
+void *
 linktbl_get(struct linktbl *l, char *key);
 
-struct tblnode *
+void *
 linktbl_getidx(struct linktbl *l, int idx);
 
 int

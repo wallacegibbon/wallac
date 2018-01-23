@@ -101,7 +101,7 @@ hashtbl_set(struct hashtbl *h, char *key, void *value)
 }
 
 
-struct tblnode *
+void *
 hashtbl_get(struct hashtbl *h, char *key)
 {
   struct tblnode *p;

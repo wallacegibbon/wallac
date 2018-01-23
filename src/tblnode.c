@@ -61,7 +61,7 @@ tblnode_set(struct tblnode *n, char *key, void *value)
 }
 
 
-struct tblnode *
+void *
 tblnode_get(struct tblnode *n, char *key)
 {
   if (!n)
@@ -70,7 +70,10 @@ tblnode_get(struct tblnode *n, char *key)
   for (; n && scmp(n->key, key); )
     n = n->next;
 
-  return n;
+  if (n)
+    return n->value;
+  else
+    return NULL;
 }
 
 

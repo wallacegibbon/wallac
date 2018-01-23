@@ -632,14 +632,12 @@ update_function(struct parser *psr, struct cfunc *fn, int line)
 {
   struct linktbl *funclist;
   struct cfunc *oldfn;
-  struct tblnode *n;
   char *name;
 
   funclist = psr->ast->funcs;
   name = fn->name;
 
-  n = linktbl_get(funclist, name);
-  oldfn = (struct cfunc *) n->value;
+  oldfn = linktbl_get(funclist, name);
 
   if (!oldfn->is_declare)
     exit_with("%s:%d:[PARSER]Function \"%s\" redefine\n",
@@ -778,7 +776,6 @@ int
 check_recursive_struct(struct cstruct *cs)
 {
   struct tblnode *p;
-  struct ctype *ct;
   char *name;
 
   name = cs->name;
