@@ -38,8 +38,14 @@
 #define B_LOGIC_OR 0x35
 #define B_COMMA 0x36
 
+#define GVAR_REF 0x51
+#define PARAM_REF 0x52
+#define LVAR_REF 0x53
+#define FIELD_REF 0x54
+#define INT_LITERAL 0x55
+#define STR_LITERAL 0x56
 
-struct expr { int type; void *op1, *op2; };
+struct expr { int type; struct expr *op1, *op2; };
 
 
 #endif
