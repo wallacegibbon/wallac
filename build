@@ -4,7 +4,7 @@
 OUTDIR=./out
 TARGET=wcc
 
-CCPARAMS="-Wno-parentheses -Wno-int-to-pointer-cast -S"
+CCPARAMS="-S"
 CC=cc
 #CC=wcc
 
