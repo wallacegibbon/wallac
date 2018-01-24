@@ -23,10 +23,16 @@ x(int a, struct abc **d, char c);
 int
 x(int a, struct abc **d, char c)
 {
-  int b, **c, *d;
+  int b, **e, *f;
   struct abc ***x;
 
   return 0;
 };
+
+int
+y(int m, char **n)
+{
+  return 1;
+}
 
 long last;

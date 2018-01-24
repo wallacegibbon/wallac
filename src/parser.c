@@ -472,13 +472,35 @@ get_funcparams(struct parser *psr, struct cfunc *fn)
 }
 
 
+char *
+check_name_conflict(struct linktbl *t1, struct linktbl *t2)
+{
+  struct tblnode *c;
+  int r;
+
+  for (c = t1->chain; c; c = c->next)
+    if (linktbl_keyexist(t2, c->key))
+      return c->key;
+
+  return NULL;
+}
+
+
 int
 get_funcvars(struct parser *psr, struct cfunc *fn)
 {
+  struct token *tk;
   struct ctype *ct;
+  char *n;
 
+  tk = psr->tk;
   ct = get_basic_type(psr);
   get_varlist(psr, fn->vars, ct);
+
+  n = check_name_conflict(fn->params, fn->vars);
+  if (n)
+    exit_with("%s:%d:[PARSER]Variable name (%s) conflict\n",
+        tk->fname, tk->line, n);
 
   if (is_typetoken(psr->tk->type))
     return get_funcvars(psr, fn);
