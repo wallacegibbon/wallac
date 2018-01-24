@@ -2,11 +2,14 @@
 #include "libc.h"
 #include "misc.h"
 #include "linktbl.h"
+#include "linklst.h"
 #include "token.h"
 #include "node.h"
 #include "ctypes.h"
 #include "limits.h"
 #include "parser.h"
+#include "cexprs.h"
+#include "cstmts.h"
 
 
 
@@ -484,16 +487,34 @@ get_funcvars(struct parser *psr, struct cfunc *fn)
 }
 
 
-void *
+struct expr *
 get_expression(struct parser *psr)
 {
-  return NULL;
+  struct expr *exp;
+
+  return exp;
 }
 
 
 int
 get_expr_stmt(struct parser *psr, struct cfunc *fn)
 {
+  struct stmt *stmt;
+  struct expr *exp;
+  struct token *tk;
+
+  exp = get_expression(psr);
+  stmt = new_stmt_expr(exp);
+
+  linklst_push(fn->stmts, (void *) stmt);
+
+  tk = psr->tk;
+  if (tk->type != TK_SEMICOLON)
+    exit_with("%s:%d:[PARSER]Expression statement missing \";\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+
   return 1;
 }
 
@@ -508,6 +529,7 @@ get_if_stmt(struct parser *psr, struct cfunc *fn)
 int
 get_for_stmt(struct parser *psr, struct cfunc *fn)
 {
+  //TODO
   return 1;
 }
 
@@ -515,8 +537,24 @@ get_for_stmt(struct parser *psr, struct cfunc *fn)
 int
 get_ret_stmt(struct parser *psr, struct cfunc *fn)
 {
+  struct stmt *stmt;
+  struct expr *exp;
+  struct token *tk;
+
   nexttoken_notend(psr);
-  get_expression(psr); //TODO
+  get_expression(psr);
+
+  exp = get_expression(psr);
+  stmt = new_stmt_ret(exp);
+
+  linklst_push(fn->stmts, (void *) stmt);
+
+  tk = psr->tk;
+  if (tk->type != TK_SEMICOLON)
+    exit_with("%s:%d:[PARSER]Return statement missing \";\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
 
   return 1;
 }

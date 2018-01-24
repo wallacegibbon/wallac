@@ -88,7 +88,7 @@ int
 tblnode_print(struct tblnode *n)
 {
   for (; n; n = n->next)
-    pf("<%s|%d>--", n->key, (int) n->value);
+    pf("<%s|%d>--", n->key, n->value);
 
   pf("\n");
 

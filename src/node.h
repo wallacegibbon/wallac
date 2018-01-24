@@ -3,14 +3,15 @@
 
 
 #include "linktbl.h"
+#include "linklst.h"
 
 
 struct ctype { int type, pdepth; char *struct_name; int is_extern; };
 struct cvar { char *name; struct ctype *type; };
 
 struct cstruct { char *name; struct linktbl *fields; };
-struct cfunc { char *name; struct ctype *ret;
-  struct linktbl *params, *vars, *stmts; int var_arg, is_declare; };
+struct cfunc { char *name; struct ctype *ret; int var_arg, is_declare;
+  struct linktbl *params, *vars; struct linklst *stmts; };
 
 
 struct ctype *
@@ -36,7 +37,7 @@ new_cstruct(char *name, struct linktbl *fields);
 
 struct cfunc *
 new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
-    struct linktbl *vars, struct linktbl *stmts, int var_arg);
+    struct linktbl *vars, struct linklst *stmts, int var_arg);
 
 
 #endif

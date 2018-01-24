@@ -107,7 +107,7 @@ new_cstruct(char *name, struct linktbl *fields)
 
 struct cfunc *
 new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
-    struct linktbl *vars, struct linktbl *stmts, int var_arg)
+    struct linktbl *vars, struct linklst *stmts, int var_arg)
 {
   struct cfunc *f;
   f = malloc(sizeof(struct cfunc));
@@ -121,7 +121,7 @@ new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
     vars = new_linktbl();
 
   if (!stmts)
-    stmts = new_linktbl();
+    stmts = new_linklst();
 
   f->name = name;
   f->ret = ret;

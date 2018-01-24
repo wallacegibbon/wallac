@@ -46,7 +46,7 @@ int
 hashtbl_increase_size(struct hashtbl *h)
 {
   if (h->size == INT_MAX)
-    return -1;
+    exit_with("hashtbl size too big\n");
 
   h->size += 1;
   return 1;

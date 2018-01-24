@@ -26,7 +26,7 @@ int
 linktbl_increase_size(struct linktbl *l)
 {
   if (l->size == INT_MAX)
-    return -1;
+    exit_with("linktbl size too big\n");
 
   l->size += 1;
   return 1;

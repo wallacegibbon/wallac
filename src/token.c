@@ -80,7 +80,7 @@ print_token(struct token *t)
   if (t->type != TK_CSTR && t->type != TK_IDENT)
     print_token_value_as_int(t->value);
   else
-    pf("<%s>\n", (char *) t->value);
+    pf("<%s>\n", t->value);
 
   return 1;
 }
