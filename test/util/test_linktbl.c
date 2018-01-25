@@ -39,5 +39,20 @@ main(int argc, char **argv)
   x = (int) linktbl_get(p, "olaf");
   pf("%s: %d\n", "olaf", x);
 
+  x = (int) linktbl_get(p, "unknown");
+  pf("%s: %d\n", "unknown", x);
+
+  x = (int) linktbl_getidx(p, 3);
+  pf("idx %d: %d\n", 3, x);
+
+  x = (int) linktbl_getidx(p, 100);
+  pf("idx %d: %d\n", 100, x);
+
+  x = (int) linktbl_idxof(p, "anna");
+  pf("idx of %s: %d\n", "anna", x);
+
+  x = (int) linktbl_idxof(p, "unknown");
+  pf("idx of %s: %d\n", "unknown", x);
+
   return 0;
 }

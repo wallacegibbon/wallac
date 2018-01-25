@@ -47,6 +47,9 @@
 
 struct expr { int type; struct expr *op1, *op2; };
 
+struct expr *
+new_expr(int type);
+
 
 #endif
 

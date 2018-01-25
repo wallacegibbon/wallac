@@ -51,7 +51,7 @@ fmt_digit(int num, int base)
 
 
 int
-vfpinteger(int fd, int num, int base, struct vfpf_buff *buff)
+vfpinteger_active(int fd, int num, int base, struct vfpf_buff *buff)
 {
   char *p, *b;
   int i;
@@ -64,6 +64,28 @@ vfpinteger(int fd, int num, int base, struct vfpf_buff *buff)
 
   for (; i; i--)
     vfpchar(fd, *(b + i - 1), buff);
+
+  return 1;
+}
+
+
+int
+vfpinteger_negative(int fd, int num, int base, struct vfpf_buff *buff)
+{
+  vfpchar(fd, '-', buff);
+  vfpinteger_active(fd, -num, base, buff);
+
+  return 1;
+}
+
+
+int
+vfpinteger(int fd, int num, int base, struct vfpf_buff *buff)
+{
+  if (num >= 0)
+    vfpinteger_active(fd, num, base, buff);
+  else
+    vfpinteger_negative(fd, num, base, buff);
 
   return 1;
 }

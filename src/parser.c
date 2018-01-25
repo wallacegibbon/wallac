@@ -16,6 +16,10 @@
 struct parser { struct token *tk; struct ast *ast; };
 
 
+struct stmt *
+get_one_statement(struct parser *psr, struct cfunc *fn);
+
+
 
 int
 check_unsupported_keyword(int type)
@@ -513,12 +517,16 @@ struct expr *
 get_expression(struct parser *psr)
 {
   struct expr *exp;
+  struct token *tk;
+
+  tk = psr->tk;
+  //if (tk->type == TK_OPENPA)
 
   return exp;
 }
 
 
-int
+struct stmt *
 get_expr_stmt(struct parser *psr, struct cfunc *fn)
 {
   struct stmt *stmt;
@@ -528,8 +536,6 @@ get_expr_stmt(struct parser *psr, struct cfunc *fn)
   exp = get_expression(psr);
   stmt = new_stmt_expr(exp);
 
-  linklst_push(fn->stmts, (void *) stmt);
-
   tk = psr->tk;
   if (tk->type != TK_SEMICOLON)
     exit_with("%s:%d:[PARSER]Expression statement missing \";\"\n",
@@ -537,11 +543,11 @@ get_expr_stmt(struct parser *psr, struct cfunc *fn)
 
   nexttoken_notend(psr);
 
-  return 1;
+  return stmt;
 }
 
 
-int
+struct stmt *
 get_ret_stmt(struct parser *psr, struct cfunc *fn)
 {
   struct stmt *stmt;
@@ -554,8 +560,6 @@ get_ret_stmt(struct parser *psr, struct cfunc *fn)
   exp = get_expression(psr);
   stmt = new_stmt_ret(exp);
 
-  linklst_push(fn->stmts, (void *) stmt);
-
   tk = psr->tk;
   if (tk->type != TK_SEMICOLON)
     exit_with("%s:%d:[PARSER]Return statement missing \";\"\n",
@@ -563,26 +567,108 @@ get_ret_stmt(struct parser *psr, struct cfunc *fn)
 
   nexttoken_notend(psr);
 
-  return 1;
+  return stmt;
 }
 
 
-int
+struct stmt *
+get_else_part(struct parser *psr, struct cfunc *fn)
+{
+  struct stmt *stmt;
+  struct token *tk;
+
+  nexttoken_notend(psr);
+  stmt = get_one_statement(psr, fn);
+
+  return stmt;
+}
+
+
+struct stmt *
 get_if_stmt(struct parser *psr, struct cfunc *fn)
 {
-  return 1;
+  struct stmt *stmt, *then_s, *else_s;
+  struct expr *cond;
+  struct token *tk;
+
+  nexttoken_notend(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_OPENPA)
+    exit_with("%s:%d:[PARSER]if statement missing \"(\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+  cond = get_expression(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_CLOSEPA)
+    exit_with("%s:%d:[PARSER]if statement missing \")\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+  then_s = get_one_statement(psr, fn);
+
+  if (tk->type == KW_ELSE)
+    else_s = get_else_part(psr, fn);
+  else
+    else_s = NULL;
+
+  stmt = new_stmt_if(cond, then_s, else_s);
+
+  return stmt;
 }
 
 
-int
+struct stmt *
 get_for_stmt(struct parser *psr, struct cfunc *fn)
 {
-  //TODO
-  return 1;
+  struct stmt *stmt, *body;
+  struct expr *e1, *e2, *e3;
+  struct token *tk;
+
+  nexttoken_notend(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_OPENPA)
+    exit_with("%s:%d:[PARSER]for statement missing \"(\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+  e1 = get_expression(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_SEMICOLON)
+    exit_with("%s:%d:[PARSER]for statement e1 missing \";\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+  e2 = get_expression(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_SEMICOLON)
+    exit_with("%s:%d:[PARSER]for statement e2 missing \";\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+  e3 = get_expression(psr);
+
+  tk = psr->tk;
+  if (tk->type != TK_CLOSEPA)
+    exit_with("%s:%d:[PARSER]for statement missing \")\"\n",
+        tk->fname, tk->line);
+
+  nexttoken_notend(psr);
+
+  body = get_one_statement(psr, fn);
+
+  stmt = new_stmt_for(e1, e2, e3, body);
+
+  return stmt;
 }
 
 
-int
+struct stmt *
 get_one_statement(struct parser *psr, struct cfunc *fn)
 {
   struct token *tk;
@@ -606,7 +692,7 @@ int
 get_statements(struct parser *psr, struct cfunc *fn)
 {
   for (; psr->tk->type != TK_END; )
-    get_one_statement(psr, fn);
+    linklst_push(fn->stmts, (void *) get_one_statement(psr, fn));
 
   return 1;
 }
@@ -617,7 +703,10 @@ skip_until_end_token(struct parser *psr)
 {
   for (; psr->tk->type != TK_END; )
     nexttoken_notend(psr);
+
   nexttoken(psr);
+
+  return 1;
 }
 
 
