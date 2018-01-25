@@ -16,6 +16,9 @@ linklst_push(struct linklst *lst, void *value);
 void *
 linklst_pop(struct linklst *lst);
 
+void *
+linklst_shift(struct linklst *l);
+
 int
 linklst_print(struct linklst *l);
 

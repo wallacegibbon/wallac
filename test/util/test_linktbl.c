@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "../../src/linktbl.h"
+#include "../../src/libc.h"
 
 
 
@@ -23,21 +23,21 @@ main(int argc, char **argv)
   linktbl_add(p, "hans", (void *) 9);
   i = linktbl_add(p, "sven", (void *) 10);
   if (!i)
-    printf("Failed insert sven 10\n");
+    pf("Failed insert sven 10\n");
 
   i = linktbl_add(p, "olaf", (void *) 11);
   if (!i)
-    printf("Failed insert olaf 11\n");
+    pf("Failed insert olaf 11\n");
   i = linktbl_add(p, "olaf", (void *) 12);
   if (!i)
-    printf("Failed insert olaf 12\n");
+    pf("Failed insert olaf 12\n");
 
   linktbl_print(p);
 
-  printf("\n\n");
+  pf("\n\n");
 
   x = (int) linktbl_get(p, "olaf");
-  printf("%s: %d\n", "olaf", x);
+  pf("%s: %d\n", "olaf", x);
 
   return 0;
 }

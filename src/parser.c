@@ -542,21 +542,6 @@ get_expr_stmt(struct parser *psr, struct cfunc *fn)
 
 
 int
-get_if_stmt(struct parser *psr, struct cfunc *fn)
-{
-  return 1;
-}
-
-
-int
-get_for_stmt(struct parser *psr, struct cfunc *fn)
-{
-  //TODO
-  return 1;
-}
-
-
-int
 get_ret_stmt(struct parser *psr, struct cfunc *fn)
 {
   struct stmt *stmt;
@@ -578,6 +563,21 @@ get_ret_stmt(struct parser *psr, struct cfunc *fn)
 
   nexttoken_notend(psr);
 
+  return 1;
+}
+
+
+int
+get_if_stmt(struct parser *psr, struct cfunc *fn)
+{
+  return 1;
+}
+
+
+int
+get_for_stmt(struct parser *psr, struct cfunc *fn)
+{
+  //TODO
   return 1;
 }
 

@@ -116,12 +116,39 @@ linklst_pop(struct linklst *l)
   void *r;
 
   n = l->cursor;
+  if (!n)
+    return NULL;
 
   l->cursor = l->cursor->prev;
   if (l->cursor)
     l->cursor->next = NULL;
   else
     l->chain = NULL;
+
+  linklst_decrease_size(l);
+
+  r = n->value;
+  lstnode_free(n);
+
+  return r;
+}
+
+
+void *
+linklst_shift(struct linklst *l)
+{
+  struct lstnode *n;
+  void *r;
+
+  n = l->chain;
+  if (!n)
+    return NULL;
+
+  l->chain = l->chain->next;
+  if (l->chain)
+    l->chain->prev = NULL;
+  else
+    l->cursor = NULL;
 
   linklst_decrease_size(l);
 
