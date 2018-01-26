@@ -3,7 +3,7 @@
 
 
 char *
-copy_of_buffer(char *buffer);
+copy_string(char *buffer);
 
 int
 is_valid_filename(char *filename);

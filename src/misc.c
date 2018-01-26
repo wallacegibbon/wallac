@@ -7,18 +7,18 @@
 
 
 char *
-copy_of_buffer(char *buffer)
+copy_string(char *buffer)
 {
   char *p;
   int i;
 
   i = slen(buffer);
   if (i == -1)
-    exit_with("copy_of_buffer, string too long\n");
+    exit_with("copy_string, string too long\n");
 
   p = malloc(i + 1);
   if (!p)
-    exit_with("copy_of_buffer, failed on malloc\n");
+    exit_with("copy_string, failed on malloc\n");
 
   scpy(p, buffer);
   return p;

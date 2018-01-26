@@ -769,10 +769,7 @@ cmp_functions(struct cfunc *f1, struct cfunc *f2)
   if (i < 0)
     return -2;
 
-  if (i > 0)
-    return i;
-
-  return 0;
+  return i;
 }
 
 

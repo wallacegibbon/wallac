@@ -790,7 +790,7 @@ get_identifier(struct lexer *lx)
   if (mtk)
     return join_chain(lx, line, mtk, 1);
 
-  join_token(lx, line, TK_IDENT, copy_of_buffer(buffer));
+  join_token(lx, line, TK_IDENT, copy_string(buffer));
 
   return 1;
 }
@@ -987,7 +987,7 @@ get_string(struct lexer *lx)
     exit_with("%s:%d:[LEXER]String too long\n",
         lx->fname, line);
 
-  join_token(lx, line, TK_CSTR, copy_of_buffer(lx->buff));
+  join_token(lx, line, TK_CSTR, copy_string(lx->buff));
 
   nextchar(lx);
 
