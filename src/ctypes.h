@@ -12,8 +12,6 @@
 #define CT_STRUCT 0x20
 #define CT_VOID 0x30
 
-char *
-ctype_tostr(int type);
+char *ctype_tostr(int type);
 
 #endif
-

@@ -1,10 +1,8 @@
 #ifndef __LIMIT_H__
 #define __LIMIT_H__
 
-
 #define MAX_STRUCT_NUMBER 0xff
 #define MAX_POINTER_DEPTH 0x7f
-
 
 #define VFPF_BUFF_SIZE 100
 #define FILE_BUFF_SIZE 500
@@ -39,6 +37,5 @@
 #define SHORT_BIT 16
 #define INT_BIT 32
 #define LONG_BIT 32
-
 
 #endif

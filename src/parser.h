@@ -3,10 +3,10 @@
 
 #include "token.h"
 
-struct ast { struct linktbl *sdefs, *gvars, *funcs; };
+struct ast {
+	struct linktbl *sdefs, *gvars, *funcs;
+};
 
-
-struct ast *
-parse(struct token *tks);
+struct ast *parse(struct token *tks);
 
 #endif
