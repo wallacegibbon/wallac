@@ -3,19 +3,16 @@
 #include "parser.h"
 #include "vars.h"
 
-
-int
-compile(char *filename)
+int compile(char *filename)
 {
-  struct token *tks;
+	struct token *tks;
 
-  tks = tokenize(filename);
+	tks = tokenize(filename);
 
-  if (verbose)
-    print_token_list(tks);
+	if (verbose)
+		print_token_list(tks);
 
-  parse(tks);
+	//parse(tks);
 
-  return 0;
+	return 0;
 }
-

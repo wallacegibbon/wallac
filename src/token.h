@@ -1,7 +1,6 @@
 #ifndef __TOKEN_H__
 #define __TOKEN_H__
 
-
 #define TK_ASTERISK 10101
 
 #define TK_DPLUS 10201
@@ -94,26 +93,22 @@
 #define KW_STATIC 11531
 #define KW_REGISTER 11532
 
+struct token {
+	struct token *next, *prev;
+	int type;
+	int line;
+	char *fname;
+	void *value;
+};
 
-struct token { struct token *next, *prev; int type;
-  int line; char *fname; void *value; };
+struct token *new_token(int type, void *value);
 
+struct token *copy_token_chain(struct token *orig);
 
-struct token *
-new_token(int type, void *value);
+int print_token_list(struct token *start);
 
-struct token *
-copy_token_chain(struct token *orig);
+char *token_type_str(int type);
 
-int
-print_token_list(struct token *start);
-
-char *
-token_type_str(int type);
-
-int
-try_get_keyword(char *identifier);
-
+int try_get_keyword(char *identifier);
 
 #endif
-

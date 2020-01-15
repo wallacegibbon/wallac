@@ -1,7 +1,6 @@
 #ifndef __CEXPRS_H__
 #define __CEXPRS_H__
 
-
 #define U_SELF_INC_A 0x01
 #define U_SELF_INC_B 0x02
 #define U_SELF_DEC_A 0x03
@@ -13,7 +12,6 @@
 #define U_NEGATIVE 0x09
 #define U_LOGIC_NOT 0x0a
 #define U_BIT_NOT 0x0b
-
 
 #define B_FCALL 0x21
 #define B_GET_FIELD 0x22
@@ -45,11 +43,11 @@
 #define INT_LITERAL 0x55
 #define STR_LITERAL 0x56
 
-struct expr { int type; struct expr *op1, *op2; };
+struct expr {
+	int type;
+	struct expr *op1, *op2;
+};
 
-struct expr *
-new_expr(int type);
-
+struct expr *new_expr(int type);
 
 #endif
-

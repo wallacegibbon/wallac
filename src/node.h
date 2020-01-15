@@ -1,43 +1,47 @@
 #ifndef __NODE_H__
 #define __NODE_H__
 
-
 #include "linktbl.h"
 #include "linklst.h"
 
+struct ctype {
+	int type, pdepth;
+	char *struct_name;
+	int is_extern;
+};
+struct cvar {
+	char *name;
+	struct ctype *type;
+};
 
-struct ctype { int type, pdepth; char *struct_name; int is_extern; };
-struct cvar { char *name; struct ctype *type; };
+struct cstruct {
+	char *name;
+	struct linktbl *fields;
+};
+struct cfunc {
+	char *name;
+	struct ctype *ret;
+	int var_arg, is_declare;
+	struct linktbl *params, *vars;
+	struct linklst *stmts;
+};
 
-struct cstruct { char *name; struct linktbl *fields; };
-struct cfunc { char *name; struct ctype *ret; int var_arg, is_declare;
-  struct linktbl *params, *vars; struct linklst *stmts; };
+struct ctype *new_ctype(int type, int pdepth, char *struct_name, int is_extern);
 
+struct ctype *ctype_copy(struct ctype *ct);
 
-struct ctype *
-new_ctype(int type, int pdepth, char *struct_name, int is_extern);
+int ctype_cmp(struct ctype *ct1, struct ctype *ct2);
 
-struct ctype *
-ctype_copy(struct ctype *ct);
+int ctype_free(struct ctype *ct);
 
-int
-ctype_cmp(struct ctype *ct1, struct ctype *ct2);
+struct cvar *new_cvar(char *name, struct ctype *type);
 
-int
-ctype_free(struct ctype *ct);
+int cvar_free(struct cvar *cv);
 
-struct cvar *
-new_cvar(char *name, struct ctype *type);
+struct cstruct *new_cstruct(char *name, struct linktbl *fields);
 
-int
-cvar_free(struct cvar *cv);
-
-struct cstruct *
-new_cstruct(char *name, struct linktbl *fields);
-
-struct cfunc *
-new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
-    struct linktbl *vars, struct linklst *stmts, int var_arg);
-
+struct cfunc *new_cfunc(char *name, struct ctype *ret, struct linktbl *params,
+			struct linktbl *vars, struct linklst *stmts,
+			int var_arg);
 
 #endif

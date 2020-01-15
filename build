@@ -18,14 +18,14 @@ cd $OUTDIR
 cp ../src/*.s .
 
 for i in ../src/*.c
-do echo Compiling $i...
+do echo "\tCC\t$i"...
 $CC $CCPARAMS $i
 
 if [ $? != 0 ]; then exit; fi
 done
 
 for i in ./*.s
-do echo Compiling $i...
+do echo "\tAS\t$i"...
 $AS -o `echo $i | sed 's/\.s/.o/'` $i
 
 if [ $? != 0 ]; then exit; fi
