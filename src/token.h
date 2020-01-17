@@ -1,97 +1,84 @@
 #ifndef __TOKEN_H__
 #define __TOKEN_H__
 
-#define TK_ASTERISK 10101
+#define TOKEN_IS_KW(tk) (((tk) & 0xf000) == 0x5000)
+#define TOKEN_IS_OPERATOR(tk) (((tk) & 0xf000) == 0)
 
-#define TK_DPLUS 10201
-#define TK_PLUS 10202
+enum TokenTypes {
+	TK_ASTERISK = 0x0001,
+	TK_DPLUS,
+	TK_PLUS,
+	TK_DMINUS,
+	TK_MINUS,
+	TK_POINTSTO,
+	TK_DIVIDE,
+	TK_MOD,
+	TK_ASSIGN,
+	TK_EQ,
+	TK_EXCLAMATION,
+	TK_NEQ,
+	TK_LT,
+	TK_LEQ,
+	TK_GT,
+	TK_GEQ,
+	TK_DOT,
+	TK_ELLIPSIS,
+	TK_TILDE,
+	TK_CARET,
+	TK_AND,
+	TK_OR,
+	TK_DAND,
+	TK_DOR,
+	TK_OPENPA,
+	TK_CLOSEPA,
+	TK_OPENBR,
+	TK_CLOSEBR,
+	TK_BEGIN,
+	TK_END,
+	TK_QUESTION,
+	TK_COLON,
+	TK_SEMICOLON,
+	TK_COMMA,
 
-#define TK_DMINUS 10301
-#define TK_MINUS 10302
-#define TK_POINTSTO 10303
+	TK_CINT = 0x2001,
+	TK_CCHAR = 0x3001,
 
-#define TK_DIVIDE 10401
-#define TK_MOD 10402
+	TK_CSTR = 0x4001,
+	TK_IDENT = 0x4002,
 
-#define TK_ASSIGN 10501
-#define TK_EQ 10502
-
-#define TK_EXCLAMATION 10601
-#define TK_NEQ 10602
-
-#define TK_LT 10701
-#define TK_LEQ 10702
-#define TK_GT 10703
-#define TK_GEQ 10704
-
-#define TK_DOT 10801
-#define TK_ELLIPSIS 10802
-
-#define TK_TILDE 10901
-
-#define TK_CARET 11001
-#define TK_AND 11002
-#define TK_OR 11003
-#define TK_DAND 11004
-#define TK_DOR 11005
-
-#define TK_OPENPA 11101
-#define TK_CLOSEPA 11102
-#define TK_OPENBR 11103
-#define TK_CLOSEBR 11104
-#define TK_BEGIN 11105
-#define TK_END 11106
-
-#define TK_QUESTION 11201
-#define TK_COLON 11202
-
-#define TK_SEMICOLON 11301
-#define TK_COMMA 11302
-
-#define TK_CINT 11401
-#define TK_CCHAR 11403
-#define TK_CSTR 11404
-#define TK_IDENT 11405
-
-#define KW_IF 11501
-#define KW_ELSE 11502
-#define KW_WHILE 11503
-
-#define KW_SWITCH 11504
-#define KW_CASE 11505
-#define KW_DEFAULT 11506
-#define KW_FOR 11507
-#define KW_DO 11508
-
-#define KW_RETURN 11509
-#define KW_GOTO 11510
-#define KW_CONTINUE 11511
-#define KW_BREAK 11512
-
-#define KW_VIOD 11513
-#define KW_CHAR 11514
-#define KW_INT 11515
-#define KW_FLOAT 11516
-#define KW_DOUBLE 11517
-
-#define KW_SHORT 11518
-#define KW_LONG 11519
-#define KW_SIGNED 11520
-#define KW_UNSIGNED 11521
-
-#define KW_STRUCT 11522
-#define KW_UNION 11523
-#define KW_ENUM 11524
-
-#define KW_TYPEDEF 11525
-#define KW_SIZEOF 11526
-
-#define KW_EXTERN 11527
-#define KW_VOLATILE 11528
-#define KW_CONST 11529
-#define KW_AUTO 11530
-#define KW_STATIC 11531
-#define KW_REGISTER 11532
+	KW_IF = 0x5001,
+	KW_ELSE,
+	KW_SWITCH,
+	KW_CASE,
+	KW_DEFAULT,
+	KW_RETURN,
+	KW_GOTO,
+	KW_FOR,
+	KW_WHILE,
+	KW_DO,
+	KW_CONTINUE,
+	KW_BREAK,
+	KW_VIOD,
+	KW_CHAR,
+	KW_INT,
+	KW_FLOAT,
+	KW_DOUBLE,
+	KW_SHORT,
+	KW_LONG,
+	KW_SIGNED,
+	KW_UNSIGNED,
+	KW_STRUCT,
+	KW_UNION,
+	KW_ENUM,
+	KW_TYPEDEF,
+	KW_SIZEOF,
+	KW_EXTERN,
+	KW_VOLATILE,
+	KW_CONST,
+	KW_AUTO,
+	KW_STATIC,
+	KW_REGISTER
+};
 
 struct token {
 	struct token *next, *prev;

@@ -4,6 +4,9 @@ struct abc         {
 	struct abc *next;
 };
 
+char *str = "a quick brown fox";
+char head = 'A';
+
 struct abc *hello(int a, char *b, struct abc *m);
 
 extern unsigned short int ***i1, *i2, i3, **i4;

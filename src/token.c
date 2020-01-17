@@ -5,7 +5,7 @@
 #include "token.h"
 #include "misc.h"
 
-char *token_names[38] = {
+char *operator_names[34] = {
 	"TK_ASTERISK", "TK_POINTSTO", "TK_DOT", "TK_SEMICOLON", "TK_COMMA",
 	"TK_DPLUS", "TK_PLUS", "TK_DMINUS", "TK_MINUS",
 	"TK_BEGIN", "TK_END",
@@ -15,10 +15,9 @@ char *token_names[38] = {
 	"TK_ELLIPSIS", "TK_TILDE", "TK_CARET",
 	"TK_QUESTION", "TK_COLON",
 	"TK_OPENPA", "TK_CLOSEPA", "TK_OPENBR", "TK_CLOSEBR",
-	"TK_CINT", "TK_CCHAR", "TK_CSTR", "TK_IDENT",
 };
 
-int token_ids[38] = {
+int operator_ids[34] = {
 	TK_ASTERISK, TK_POINTSTO, TK_DOT, TK_SEMICOLON, TK_COMMA,
 	TK_DPLUS, TK_PLUS, TK_DMINUS, TK_MINUS,
 	TK_BEGIN, TK_END,
@@ -28,7 +27,6 @@ int token_ids[38] = {
 	TK_ELLIPSIS, TK_TILDE, TK_CARET,
 	TK_QUESTION, TK_COLON,
 	TK_OPENPA, TK_CLOSEPA, TK_OPENBR, TK_CLOSEBR,
-	TK_CINT, TK_CCHAR, TK_CSTR, TK_IDENT,
 };
 
 char *keyword_names[32] = {
@@ -105,12 +103,21 @@ struct token *copy_token_chain(struct token *orig)
 void print_token(struct token *t)
 {
 	intptr_t v;
-	printf("(%s:%d)%s ", t->fname, t->line, token_type_str(t->type));
-	if (t->type != TK_CSTR && t->type != TK_IDENT) {
-		v = (intptr_t) t->value;
-		printf("0x%x, 0o%o, %d\n", v, v, v);
+
+	printf("(%s:%d)\t", t->fname, t->line);
+	if (TOKEN_IS_KW(t->type)) {
+		printf("KEYWORD %s\n", token_type_str(t->type));
+	} else if (TOKEN_IS_OPERATOR(t->type)) {
+		printf("OPERATOR %s\n", token_type_str(t->type));
+	} else if (t->type == TK_IDENT) {
+		printf("IDENTIFIER <%s>\n", t->value);
+	} else if (t->type == TK_CSTR) {
+		printf("STRING \"%s\"\n", t->value);
+	} else if (t->type == TK_CCHAR) {
+		printf("CHARACTER '%c'\n", (char) t->value);
 	} else {
-		printf("<%s>\n", t->value);
+		v = (intptr_t) t->value;
+		printf("NUMBER 0x%x, 0o%o, %d\n", v, v, v);
 	}
 }
 
@@ -126,15 +133,15 @@ void print_token_list(struct token *start)
 char *token_type_str(int type)
 {
 	int i;
-	for (i = 0; i < 38; i++) {
-		if (token_ids[i] == type)
-			return token_names[i];
+	for (i = 0; i < 34; i++) {
+		if (operator_ids[i] == type)
+			return operator_names[i];
 	}
 	for (i = 0; i < 32; i++) {
 		if (keyword_ids[i] == type)
 			return keyword_names[i];
 	}
-	return "TK_UNKNOWN";
+	return "TK_NONAME";
 }
 
 int try_get_keyword(char *s)

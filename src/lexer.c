@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include "checkch.h"
 #include "limits.h"
@@ -231,22 +232,20 @@ struct lexer *new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 	i = open(fname, O_RDONLY);
 	if (i < 0)
 		exit_with("Failed opening %s(%d)\n", fname, i);
-
 	if (i < 3)
 		exit_with("Invalid fd(%d) for %s\n", i, fname);
 
 	lx->fd = i;
-
+	// create file buffer to hold file contents
 	fbuff = malloc(FILE_BUFF_SIZE + 1);
 	if (!fbuff)
 		exit_with("Failed alloc buffer for %s\n", fname);
 
 	lx->input = fbuff;
-
+	// fill the file content buffer
 	lx_getmore_from_file(lx);
 
 	nextchar(lx);
-
 	return lx;
 }
 
@@ -258,32 +257,36 @@ struct lexer *new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 	lx->input = str;
 
 	nextchar(lx);
-
 	return lx;
 }
 
-int free_lexer_file(struct lexer *lx)
+void free_lexer_file(struct lexer *lx)
 {
-	close(lx->fd);
+	int i;
+	i = close(lx->fd);
+	if (i == -1)
+		exit_with("close lx->fd(%d) error: %d\n", lx->fd, errno);
 	free(lx->input);
 	free(lx);
-	return 1;
 }
 
-int free_lexer_str(struct lexer *lx)
+void free_lexer_str(struct lexer *lx)
 {
 	free(lx);
-	return 1;
 }
 
-int free_lexer(struct lexer *lx)
+void free_lexer(struct lexer *lx)
 {
-	if (lx->type == LEXER_TYPE_FILE)
-		return free_lexer_file(lx);
-	if (lx->type == LEXER_TYPE_STRING)
-		return free_lexer_str(lx);
-
-	exit_with("free_lexer, Invalid lexer type: %d\n", lx->type);
+	switch (lx->type) {
+	case LEXER_TYPE_FILE:
+		free_lexer_file(lx);
+		break;
+	case LEXER_TYPE_STRING:
+		free_lexer_str(lx);
+		break;
+	default:
+		exit_with("free_lexer, Invalid lexer type: %d\n", lx->type);
+	}
 }
 
 int join_token_nonempty(struct lexer *lx, struct token *t)
@@ -356,9 +359,7 @@ int join_chain(struct lexer *lx, int line, struct token *orig, int fixpos)
 		if (fixpos)
 			fix_position(lx, t, line);
 	}
-
 	lx->tk_c = p;
-
 	return 1;
 }
 
@@ -367,14 +368,12 @@ int get_ellipsis(struct lexer *lx, int line)
 	int ch;
 
 	ch = nextchar_noteof(lx);
-
 	if (ch != '.')
 		exit_with("%s:%d:[LEXER]Unsupported element \"..\"\n",
 			  lx->fname, line);
 
 	make_join_token(lx, line, TK_ELLIPSIS, NULL);
 	nextchar(lx);
-
 	return 1;
 }
 
