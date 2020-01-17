@@ -99,7 +99,7 @@ struct token *copy_token_chain(struct token *orig)
 	for (r = t; orig; orig = orig->next, r = r->next)
 		copy_token(r, orig);
 
-	// remove the temporary token
+	// ignore the temporary token
 	r = t->next;
 	r->prev = NULL;
 	return r;
