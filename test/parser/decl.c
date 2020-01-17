@@ -1,5 +1,5 @@
 
-struct abc {
+struct abc         {
 	int a, *b, ***c;
 	struct abc *next;
 };

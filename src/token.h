@@ -105,7 +105,7 @@ struct token *new_token(int type, void *value);
 
 struct token *copy_token_chain(struct token *orig);
 
-int print_token_list(struct token *start);
+void print_token_list(struct token *start);
 
 char *token_type_str(int type);
 

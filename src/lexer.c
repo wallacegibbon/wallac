@@ -406,7 +406,6 @@ int get_minus_dminus_pointsto(struct lexer *lx)
 
 	if (ch == '-')
 		return join_token_nchar(lx, line, TK_DMINUS);
-
 	if (ch == '>')
 		return join_token_nchar(lx, line, TK_POINTSTO);
 

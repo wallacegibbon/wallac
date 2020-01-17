@@ -57,7 +57,7 @@ struct token *new_token(int type, void *value)
 
 	t = malloc(sizeof(struct token));
 	if (!t)
-		exit_with("Failed alloc memory for token %d\n", type);
+		exit_with("Failed allocing memory for token %d\n", type);
 
 	t->prev = NULL;
 	t->next = NULL;
@@ -71,19 +71,16 @@ struct token *new_token(int type, void *value)
 	return t;
 }
 
-struct token *copy_token(struct token *chain, struct token *orig)
+void copy_token(struct token *chain, struct token *orig)
 {
 	struct token *t;
 
 	t = new_token(orig->type, orig->value);
-
 	t->fname = orig->fname;
 	t->line = orig->line;
 
 	t->prev = chain;
 	chain->next = t;
-
-	return chain->next;
 }
 
 struct token *copy_token_chain(struct token *orig)
@@ -93,44 +90,37 @@ struct token *copy_token_chain(struct token *orig)
 	if (!orig)
 		return NULL;
 
+	// the temporary token for the result to attach
 	t = new_token(0, NULL);
-	r = t;
-	for (; orig; orig = orig->next)
-		r = copy_token(r, orig);
+	for (r = t; orig; orig = orig->next, r = r->next)
+		copy_token(r, orig);
 
+	// remove the temporary token
 	r = t->next;
 	free(t);
 
 	return r;
 }
 
-void print_token_value_as_int(void *raw)
+void print_token(struct token *t)
 {
 	intptr_t v;
-	v = (intptr_t) raw;
-	printf("0x%x, 0o%o, %d\n", v, v, v);
-}
-
-int print_token(struct token *t)
-{
 	printf("(%s:%d)%s ", t->fname, t->line, token_type_str(t->type));
-	if (t->type != TK_CSTR && t->type != TK_IDENT)
-		print_token_value_as_int(t->value);
-	else
+	if (t->type != TK_CSTR && t->type != TK_IDENT) {
+		v = (intptr_t) t->value;
+		printf("0x%x, 0o%o, %d\n", v, v, v);
+	} else {
 		printf("<%s>\n", t->value);
-
-	return 1;
+	}
 }
 
-int print_token_list(struct token *start)
+void print_token_list(struct token *start)
 {
 	struct token *p;
 
 	for (p = start; p; p = p->next)
 		print_token(p);
-
 	printf("\n");
-	return 1;
 }
 
 char *token_type_str(int type)
