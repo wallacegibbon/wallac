@@ -289,22 +289,18 @@ void free_lexer(struct lexer *lx)
 	}
 }
 
-int join_token_nonempty(struct lexer *lx, struct token *t)
+void join_token_nonempty(struct lexer *lx, struct token *t)
 {
 	t->prev = lx->tk_c;
 	lx->tk_c->next = t;
 	lx->tk_c = t;
-
-	return 1;
 }
 
-int join_token_empty(struct lexer *lx, struct token *t)
+void join_token_empty(struct lexer *lx, struct token *t)
 {
 	t->prev = NULL;
 	lx->tk_c = t;
 	lx->tk_s = t;
-
-	return 1;
 }
 
 int make_join_token(struct lexer *lx, int line, int type, void *p)
@@ -603,11 +599,11 @@ int cnv_digit(int ch)
 {
 	if (ch >= 'a' && ch <= 'f')
 		return ch - 'a' + 10;
-
 	if (ch >= 'A' && ch <= 'F')
 		return ch - 'A' + 10;
-
-	return ch - '0';
+	if (ch >= '0' && ch <= '9')
+		return ch - '0';
+	exit_with("invalid digit char: %c\n", ch);
 }
 
 int check_overflow(char *numstr, int base)
@@ -617,16 +613,13 @@ int check_overflow(char *numstr, int base)
 
 	if (base == 16)
 		maxstr = MAX_HEX_STRING;
-
 	if (base == 10)
 		maxstr = MAX_DECIMAL_STRING;
-
 	if (base == 8)
 		maxstr = MAX_OCTAL_STRING;
 
 	n = strlen(numstr);
 	m = strlen(maxstr);
-
 	if (n > m || (n == m && strcmp(numstr, maxstr) > 0))
 		return 1;
 	else
@@ -639,9 +632,7 @@ int get_integer_num(struct lexer *lx, int line, int base)
 	long i;
 
 	collect_digit_chars(lx, line, base);
-
 	buffer = lx->buff;
-
 	if (check_overflow(buffer, base))
 		exit_with("%s:%d:[LEXER]Integer literal too big\n",
 			  lx->fname, line);
@@ -650,7 +641,6 @@ int get_integer_num(struct lexer *lx, int line, int base)
 		i = i * base + cnv_digit(*buffer);
 
 	make_join_token(lx, line, TK_CINT, (void *)i);
-
 	return 1;
 }
 
@@ -666,21 +656,20 @@ int get_integer(struct lexer *lx)
 
 	line = lx->line;
 	ch = lx->ch;
-
+	// missing leading 0, normal decimal
 	if (ch != '0')
 		return get_integer_num(lx, line, 10);
 
 	ch = nextchar_noteof(lx);
 
-	if (check_octal(ch))
-		return get_integer_num(lx, line, 8);
-
-	if (ch == 'x' || ch == 'X')
+	// have to be number like 0x1, 01, or 0.
+	if (ch == 'x' || ch == 'X') {
 		return get_integer_hex(lx, line);
-
-	make_join_token(lx, line, TK_CINT, (void *)0);
-
-	return 1;
+	} else if (check_octal(ch)) {
+		return get_integer_num(lx, line, 8);
+	} else {
+		return make_join_token(lx, line, TK_CINT, (void *)0);
+	}
 }
 
 int get_identifier(struct lexer *lx)
@@ -690,13 +679,12 @@ int get_identifier(struct lexer *lx)
 	int line, cnt, kw;
 
 	line = lx->line;
-
 	buffer = lx->buff;
 	*buffer++ = lx->ch;
 
+	// collect the identifier into the buffer
 	for (cnt = 1; cnt < BUFF_SIZE && check_ident(nextchar(lx)); cnt++)
 		*buffer++ = lx->ch;
-
 	*buffer = '\0';
 
 	if (cnt > MAX_IDENT_LENGTH)
@@ -709,6 +697,7 @@ int get_identifier(struct lexer *lx)
 	if (kw)
 		return make_join_token(lx, line, kw, NULL);
 
+	// TODO: the whole macro system should be rewritten
 	mtk = hashtbl_get(lx->mtbl, buffer);
 	if (mtk)
 		return join_chain(lx, line, mtk, 1);
@@ -814,7 +803,6 @@ int get_character(struct lexer *lx)
 
 	line = lx->line;
 	ch = nextchar_noteof(lx);
-
 	if (ch == '\'')
 		exit_with("%s:%d:[LEXER]Empty character literal\n",
 			  lx->fname, line);
@@ -832,11 +820,9 @@ int get_character(struct lexer *lx)
 		exit_with("%s:%d:[LEXER]Invalid character\n", lx->fname, line);
 
 	assert_ch(lx, lx->ch, '\'');
-
 	make_join_token(lx, line, TK_CCHAR, (void *)ch);
 
 	nextchar(lx);
-
 	return 1;
 }
 
@@ -848,10 +834,8 @@ int get_strchar_sub(struct lexer *lx)
 	if (ch == '\n')
 		exit_with("%s:%d:[LEXER]Missing terminating '\"'\n",
 			  lx->fname, lx->line - 1);
-
 	if (ch == '"')
 		return 0;
-
 	if (ch == '\\')
 		ch = get_escape_seq(lx);
 	else
@@ -869,7 +853,6 @@ int get_strchar(struct lexer *lx, char *c)
 		ch = get_strchar_sub(lx);
 
 	*c = ch;
-
 	if (ch == 0)
 		return 0;
 	else
@@ -1119,6 +1102,7 @@ int get_token(struct lexer *lx)
 {
 	for (; check_space(lx->ch);)
 		nextchar(lx);
+
 	switch (lx->ch) {
 	case EOF:
 		return 0;
@@ -1184,7 +1168,6 @@ int get_token(struct lexer *lx)
 
 	exit_with("%s:%d:[LEXER]Unknown char (0x%x)\n",
 		  lx->fname, lx->line, lx->ch);
-
 	return 1;
 }
 
