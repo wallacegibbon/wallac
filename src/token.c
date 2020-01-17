@@ -49,6 +49,18 @@ int keyword_ids[32] = {
 	KW_AUTO, KW_STATIC, KW_REGISTER
 };
 
+void init_empty_token(struct token *tk, int type, void *value)
+{
+	tk->prev = NULL;
+	tk->next = NULL;
+
+	tk->type = type;
+	tk->value = value;
+
+	tk->fname = NULL;
+	tk->line = 0;
+}
+
 struct token *new_token(int type, void *value)
 {
 	struct token *t;
@@ -57,15 +69,7 @@ struct token *new_token(int type, void *value)
 	if (!t)
 		exit_with("Failed allocing memory for token %d\n", type);
 
-	t->prev = NULL;
-	t->next = NULL;
-
-	t->type = type;
-	t->value = value;
-
-	t->fname = NULL;
-	t->line = 0;
-
+	init_empty_token(t, type, value);
 	return t;
 }
 
@@ -83,20 +87,21 @@ void copy_token(struct token *chain, struct token *orig)
 
 struct token *copy_token_chain(struct token *orig)
 {
+	// the temporary token for the result to attach
+	struct token temp_token;
 	struct token *r, *t;
 
 	if (!orig)
 		return NULL;
 
-	// the temporary token for the result to attach
-	t = new_token(0, NULL);
+	init_empty_token(&temp_token, 0, NULL);
+	t = &temp_token;
 	for (r = t; orig; orig = orig->next, r = r->next)
 		copy_token(r, orig);
 
 	// remove the temporary token
 	r = t->next;
-	free(t);
-
+	r->prev = NULL;
 	return r;
 }
 

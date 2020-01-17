@@ -172,12 +172,20 @@ int str_nextchar(struct lexer *lx)
 
 int nextchar(struct lexer *lx)
 {
-	if (lx->type == LEXER_TYPE_FILE)
-		return file_nextchar(lx);
-	if (lx->type == LEXER_TYPE_STRING)
-		return str_nextchar(lx);
+	int ch;
 
-	exit_with("nextchar, Invalid lexer type: %d\n", lx->type);
+	switch (lx->type) {
+	case LEXER_TYPE_FILE:
+		ch = file_nextchar(lx);
+		break;
+	case LEXER_TYPE_STRING:
+		ch = str_nextchar(lx);
+		break;
+	default:
+		exit_with("nextchar, Invalid lexer type: %d\n", lx->type);
+	}
+	//printf("\neating character: %c\n", ch);
+	return ch;
 }
 
 int nextchar_noteof(struct lexer *lx)
@@ -748,39 +756,22 @@ int get_octal_escape(struct lexer *lx)
 	return v;
 }
 
-int get_normal_escape(struct lexer *lx, int ch)
+char escape_src[9] = { 'a', 'b', 't', 'n', 'v', 'f', 'r', '\\', '\'' };
+int escape_dst[9] = { 7, 8, 9, 10, 11, 12, 13, '\\', '\'' };
+
+int get_normal_escape(struct lexer *lx)
 {
-	int line;
+	int i, ch = -1;
 
-	line = lx->line;
-	nextchar_noteof(lx);
-	switch (ch) {
-	case 'a':
-		return 7;
-	case 'b':
-		return 8;
-	case 't':
-		return 9;
-	case 'n':
-		return 10;
-	case 'v':
-		return 11;
-	case 'f':
-		return 12;
-	case 'r':
-		return 13;
-	case '\\':
-		return '\\';
-	case '\'':
-		return '\'';
-	case '"':
-		return '"';
-	case '\n':
-		return 0xff;
+	for (i = 0; i < 9; i++) {
+		if (escape_src[i] == lx->ch)
+			ch = escape_dst[i];
 	}
-	exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
-		  lx->fname, line, ch);
+	if (ch == -1)
+		exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
+			  lx->fname, lx->line, lx->ch);
 
+	nextchar_noteof(lx);
 	return ch;
 }
 
@@ -794,7 +785,7 @@ int get_escape_seq(struct lexer *lx)
 	if (ch == 'x')
 		return get_hex_escape(lx);
 
-	return get_normal_escape(lx, ch);
+	return get_normal_escape(lx);
 }
 
 int get_character(struct lexer *lx)
@@ -806,15 +797,14 @@ int get_character(struct lexer *lx)
 	if (ch == '\'')
 		exit_with("%s:%d:[LEXER]Empty character literal\n",
 			  lx->fname, line);
+	if (ch == '\n')
+		exit_with("%s:%d:[LEXER]Missing terminating \"'\"\n",
+			  lx->fname, line);
 
 	if (ch == '\\')
 		ch = get_escape_seq(lx);
 	else
 		nextchar_noteof(lx);
-
-	if (ch == '\n')
-		exit_with("%s:%d:[LEXER]Missing terminating \"'\"\n",
-			  lx->fname, line);
 
 	if (ch == 0xff)
 		exit_with("%s:%d:[LEXER]Invalid character\n", lx->fname, line);
