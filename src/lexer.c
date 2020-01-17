@@ -757,7 +757,7 @@ int get_octal_escape(struct lexer *lx)
 }
 
 char escape_src[9] = { 'a', 'b', 't', 'n', 'v', 'f', 'r', '\\', '\'' };
-int escape_dst[9] = { 7, 8, 9, 10, 11, 12, 13, '\\', '\'' };
+char escape_dst[9] = { 7, 8, 9, 10, 11, 12, 13, '\\', '\'' };
 
 int get_normal_escape(struct lexer *lx)
 {
