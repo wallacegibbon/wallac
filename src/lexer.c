@@ -10,15 +10,30 @@
 #include "misc.h"
 #include "libc.h"
 
+#define LEXER_TYPE_STRING 1
+#define LEXER_TYPE_FILE 2
+
 struct lexer {
+	// char, prev char, line number, character offset
 	int ch, pch, line, cursor;
+	// string or file
 	int type;
-	char *buff, *input;
+	// buffer to hold source content
+	char *buff;
+	// input buffer, only file lexer use this
+	char *input;
+	// file name
 	char *fname;
+	// file descriptor
 	int fd;
+	// end of line mark
 	int eof;
+	// pointer to the start of the tokens
+	struct token *tk_s;
+	// pointer to the current token
+	struct token *tk_c;
+	// hash table for preprocessor
 	struct hashtbl *mtbl;
-	struct token *tk_s, *tk_c;
 };
 
 struct token *tokenize_lx(struct lexer *lx);
@@ -154,9 +169,9 @@ int str_nextchar(struct lexer *lx)
 
 int nextchar(struct lexer *lx)
 {
-	if (lx->type == 1)
+	if (lx->type == LEXER_TYPE_FILE)
 		return file_nextchar(lx);
-	if (lx->type == 2)
+	if (lx->type == LEXER_TYPE_STRING)
 		return str_nextchar(lx);
 
 	exit_with("nextchar, Invalid lexer type: %d\n", lx->type);
@@ -209,7 +224,7 @@ struct lexer *new_lexer_file(char *fname, char *buff, struct hashtbl *mtbl)
 
 	lx = new_lexer_common(buff, mtbl);
 	lx->fname = fname;
-	lx->type = 1;
+	lx->type = LEXER_TYPE_FILE;
 
 	i = open(fname, O_RDONLY);
 	if (i < 0)
@@ -237,7 +252,7 @@ struct lexer *new_lexer_str(char *str, char *buff, struct hashtbl *mtbl)
 {
 	struct lexer *lx;
 	lx = new_lexer_common(buff, mtbl);
-	lx->type = 2;
+	lx->type = LEXER_TYPE_STRING;
 	lx->input = str;
 
 	nextchar(lx);
@@ -261,9 +276,9 @@ int free_lexer_str(struct lexer *lx)
 
 int free_lexer(struct lexer *lx)
 {
-	if (lx->type == 1)
+	if (lx->type == LEXER_TYPE_FILE)
 		return free_lexer_file(lx);
-	if (lx->type == 2)
+	if (lx->type == LEXER_TYPE_STRING)
 		return free_lexer_str(lx);
 
 	exit_with("free_lexer, Invalid lexer type: %d\n", lx->type);
@@ -287,12 +302,11 @@ int join_token_empty(struct lexer *lx, struct token *t)
 	return 1;
 }
 
-int join_token(struct lexer *lx, int line, int type, void *p)
+int make_join_token(struct lexer *lx, int line, int type, void *p)
 {
 	struct token *t;
 
 	t = new_token(type, p);
-
 	t->fname = lx->fname;
 	t->line = line;
 
@@ -306,7 +320,7 @@ int join_token(struct lexer *lx, int line, int type, void *p)
 
 int join_token_nchar(struct lexer *lx, int line, int type)
 {
-	join_token(lx, line, type, NULL);
+	make_join_token(lx, line, type, NULL);
 	nextchar(lx);
 
 	return 1;
@@ -356,7 +370,7 @@ int get_ellipsis(struct lexer *lx, int line)
 		exit_with("%s:%d:[LEXER]Unsupported element \"..\"\n",
 			  lx->fname, line);
 
-	join_token(lx, line, TK_ELLIPSIS, NULL);
+	make_join_token(lx, line, TK_ELLIPSIS, NULL);
 	nextchar(lx);
 
 	return 1;
@@ -376,7 +390,7 @@ int get_dot_ellipsis(struct lexer *lx)
 		exit_with("%s:%d:[LEXER]Float literal is not supported\n",
 			  lx->fname, line);
 
-	join_token(lx, line, TK_DOT, NULL);
+	make_join_token(lx, line, TK_DOT, NULL);
 
 	return 1;
 }
@@ -394,7 +408,7 @@ int get_minus_dminus_pointsto(struct lexer *lx)
 	if (ch == '>')
 		return join_token_nchar(lx, line, TK_POINTSTO);
 
-	join_token(lx, line, TK_MINUS, NULL);
+	make_join_token(lx, line, TK_MINUS, NULL);
 
 	return 1;
 }
@@ -409,7 +423,7 @@ int get_plus_dplus(struct lexer *lx)
 	if (ch == '+')
 		return join_token_nchar(lx, line, TK_DPLUS);
 
-	join_token(lx, line, TK_PLUS, NULL);
+	make_join_token(lx, line, TK_PLUS, NULL);
 
 	return 1;
 }
@@ -424,7 +438,7 @@ int get_and_dand(struct lexer *lx)
 	if (ch == '&')
 		return join_token_nchar(lx, line, TK_DAND);
 
-	join_token(lx, line, TK_AND, NULL);
+	make_join_token(lx, line, TK_AND, NULL);
 
 	return 1;
 }
@@ -439,7 +453,7 @@ int get_or_dor(struct lexer *lx)
 	if (ch == '|')
 		return join_token_nchar(lx, line, TK_DOR);
 
-	join_token(lx, line, TK_DOR, NULL);
+	make_join_token(lx, line, TK_DOR, NULL);
 
 	return 1;
 }
@@ -454,7 +468,7 @@ int get_assign_eq(struct lexer *lx)
 	if (ch == '=')
 		return join_token_nchar(lx, line, TK_EQ);
 
-	join_token(lx, line, TK_ASSIGN, NULL);
+	make_join_token(lx, line, TK_ASSIGN, NULL);
 
 	return 1;
 }
@@ -469,7 +483,7 @@ int get_gt_geq(struct lexer *lx)
 	if (ch == '=')
 		return join_token_nchar(lx, line, TK_GEQ);
 
-	join_token(lx, line, TK_GT, NULL);
+	make_join_token(lx, line, TK_GT, NULL);
 
 	return 1;
 }
@@ -484,7 +498,7 @@ int get_lt_leq(struct lexer *lx)
 	if (ch == '=')
 		return join_token_nchar(lx, line, TK_LEQ);
 
-	join_token(lx, line, TK_LT, NULL);
+	make_join_token(lx, line, TK_LT, NULL);
 
 	return 1;
 }
@@ -499,7 +513,7 @@ int get_exclamation_neq(struct lexer *lx)
 	if (ch == '=')
 		return join_token_nchar(lx, line, TK_NEQ);
 
-	join_token(lx, line, TK_EXCLAMATION, NULL);
+	make_join_token(lx, line, TK_EXCLAMATION, NULL);
 
 	return 1;
 }
@@ -551,7 +565,7 @@ int get_divide_or_jump_comments(struct lexer *lx)
 	if (ch == '/')
 		return skip_line(lx);
 
-	join_token(lx, line, TK_DIVIDE, NULL);
+	make_join_token(lx, line, TK_DIVIDE, NULL);
 
 	return 1;
 }
@@ -635,7 +649,7 @@ int get_integer_num(struct lexer *lx, int line, int base)
 	for (i = 0; *buffer; buffer++)
 		i = i * base + cnv_digit(*buffer);
 
-	join_token(lx, line, TK_CINT, (void *)i);
+	make_join_token(lx, line, TK_CINT, (void *)i);
 
 	return 1;
 }
@@ -664,7 +678,7 @@ int get_integer(struct lexer *lx)
 	if (ch == 'x' || ch == 'X')
 		return get_integer_hex(lx, line);
 
-	join_token(lx, line, TK_CINT, (void *)0);
+	make_join_token(lx, line, TK_CINT, (void *)0);
 
 	return 1;
 }
@@ -693,13 +707,13 @@ int get_identifier(struct lexer *lx)
 
 	kw = try_get_keyword(buffer);
 	if (kw)
-		return join_token(lx, line, kw, NULL);
+		return make_join_token(lx, line, kw, NULL);
 
 	mtk = hashtbl_get(lx->mtbl, buffer);
 	if (mtk)
 		return join_chain(lx, line, mtk, 1);
 
-	join_token(lx, line, TK_IDENT, copy_string(buffer));
+	make_join_token(lx, line, TK_IDENT, copy_string(buffer));
 
 	return 1;
 }
@@ -817,7 +831,7 @@ int get_character(struct lexer *lx)
 
 	assert_ch(lx, lx->ch, '\'');
 
-	join_token(lx, line, TK_CCHAR, (void *)ch);
+	make_join_token(lx, line, TK_CCHAR, (void *)ch);
 
 	nextchar(lx);
 
@@ -878,7 +892,7 @@ int get_string(struct lexer *lx)
 	if (cnt == MAX_CSTR_LENGTH)
 		exit_with("%s:%d:[LEXER]String too long\n", lx->fname, line);
 
-	join_token(lx, line, TK_CSTR, copy_string(lx->buff));
+	make_join_token(lx, line, TK_CSTR, copy_string(lx->buff));
 
 	nextchar(lx);
 
