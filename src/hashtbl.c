@@ -1,6 +1,6 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "misc.h"
-#include "libc.h"
 #include "limits.h"
 #include "hashtbl.h"
 
@@ -105,7 +105,7 @@ int hashtbl_keyexist(struct hashtbl *h, char *key)
 
 int hashtbl_print_slot(int idx, struct tblnode *chain)
 {
-	pf("%d)\t", idx);
+	printf("%d)\t", idx);
 	tblnode_print(chain);
 }
 

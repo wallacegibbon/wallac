@@ -1,7 +1,8 @@
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "tblnode.h"
 #include "misc.h"
-#include "libc.h"
 
 struct tblnode *new_tblnode(char *key, void *value)
 {
@@ -25,7 +26,7 @@ int tblnode_add(struct tblnode *n, char *key, void *value)
 	if (!n)
 		return 0;
 
-	for (; n && scmp(n->key, key); n = n->next)
+	for (; n && strcmp(n->key, key); n = n->next)
 		t = n;
 
 	if (n)
@@ -43,7 +44,7 @@ int tblnode_set(struct tblnode *n, char *key, void *value)
 	if (!n)
 		return 0;
 
-	for (; n && scmp(n->key, key);)
+	for (; n && strcmp(n->key, key);)
 		n = n->next;
 
 	if (!n)
@@ -59,7 +60,7 @@ void *tblnode_get(struct tblnode *n, char *key)
 	if (!n)
 		return NULL;
 
-	for (; n && scmp(n->key, key);)
+	for (; n && strcmp(n->key, key);)
 		n = n->next;
 
 	if (n)
@@ -76,9 +77,9 @@ int tblnode_keyexist(struct tblnode *n, char *key)
 int tblnode_print(struct tblnode *n)
 {
 	for (; n; n = n->next)
-		pf("<%s|%d>--", n->key, n->value);
+		printf("<%s|%d>--", n->key, n->value);
 
-	pf("\n");
+	printf("\n");
 
 	return 1;
 }

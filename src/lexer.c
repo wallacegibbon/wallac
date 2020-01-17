@@ -1,4 +1,7 @@
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "checkch.h"
@@ -8,7 +11,6 @@
 #include "lexer.h"
 #include "hashtbl.h"
 #include "misc.h"
-#include "libc.h"
 
 #define LEXER_TYPE_STRING 1
 #define LEXER_TYPE_FILE 2
@@ -109,7 +111,7 @@ int lx_getmore_from_file(struct lexer *lx)
 		exit_with("Failed reading %s(%d)\n", lx->fname, i);
 
 	if (debug)
-		pf("Read %d bytes from %s\n", i, lx->fname);
+		printf("Read %d bytes from %s\n", i, lx->fname);
 
 	if (i < FILE_BUFF_SIZE)
 		lx->eof = 1;
@@ -624,10 +626,10 @@ int check_overflow(char *numstr, int base)
 	if (base == 8)
 		maxstr = MAX_OCTAL_STRING;
 
-	n = slen(numstr);
-	m = slen(maxstr);
+	n = strlen(numstr);
+	m = strlen(maxstr);
 
-	if (n > m || (n == m && scmp(numstr, maxstr) > 0))
+	if (n > m || (n == m && strcmp(numstr, maxstr) > 0))
 		return 1;
 	else
 		return 0;
@@ -765,28 +767,30 @@ int get_normal_escape(struct lexer *lx, int ch)
 
 	line = lx->line;
 	nextchar_noteof(lx);
-	if (ch == 'a')
+	switch (ch) {
+	case 'a':
 		return 7;
-	if (ch == 'b')
+	case 'b':
 		return 8;
-	if (ch == 't')
+	case 't':
 		return 9;
-	if (ch == 'n')
+	case 'n':
 		return 10;
-	if (ch == 'v')
+	case 'v':
 		return 11;
-	if (ch == 'f')
+	case 'f':
 		return 12;
-	if (ch == 'r')
+	case 'r':
 		return 13;
-	if (ch == '\\')
+	case '\\':
 		return '\\';
-	if (ch == '\'')
+	case '\'':
 		return '\'';
-	if (ch == '"')
+	case '"':
 		return '"';
-	if (ch == '\n')
+	case '\n':
 		return 0xff;
+	}
 	exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
 		  lx->fname, line, ch);
 
@@ -944,7 +948,7 @@ int handle_header(struct lexer *lx, int line, char *s)
 	pname = mkpath_from(lx->fname, incname);
 
 	if (debug)
-		pf("<%s> is including <%s>...\n", lx->fname, pname);
+		printf("<%s> is including <%s>...\n", lx->fname, pname);
 
 	ilx = new_lexer_file(pname, lx->buff, lx->mtbl);
 	tks = tokenize_lx(ilx);
@@ -982,8 +986,8 @@ char *shift_macroname(struct lexer *lx, int line, char *s, int offset)
 		exit_with("%s:%d:[LEXER]Failed alloc memory for macro name\n",
 			  lx->fname, line);
 
-	scpyn(r, b, i);
-	scpy(s, a);
+	strncpy(r, b, i);
+	strcpy(s, a);
 
 	return r;
 }
@@ -1032,7 +1036,7 @@ int skip_until_endif(struct lexer *lx)
 
 	*buffer = '\0';
 
-	if (scmp("endif", lx->buff))
+	if (strcmp("endif", lx->buff))
 		return skip_until_endif(lx);
 	else
 		return skip_line(lx);
@@ -1095,16 +1099,16 @@ int preprocess(struct lexer *lx)
 	line = lx->line;
 	buffer = preprocess_content(lx);
 
-	if (!scmpn(buffer, "include", 7))
+	if (!strncmp(buffer, "include", 7))
 		return handle_header(lx, line, buffer);
 
-	if (!scmpn(buffer, "define", 6))
+	if (!strncmp(buffer, "define", 6))
 		return handle_define(lx, line, buffer);
 
-	if (!scmpn(buffer, "ifndef", 6))
+	if (!strncmp(buffer, "ifndef", 6))
 		return handle_ifndef(lx, line, buffer);
 
-	if (!scmpn(buffer, "endif", 5))
+	if (!strncmp(buffer, "endif", 5))
 		return 1;
 
 	exit_with("%s:%d:[LEXER]Unknown preprocess directive %s\n",

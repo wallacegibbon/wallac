@@ -1,8 +1,8 @@
 #include <stdlib.h>
+#include <string.h>
 #include "misc.h"
 #include "limits.h"
 #include "linktbl.h"
-#include "libc.h"
 
 struct linktbl *new_linktbl()
 {
@@ -82,7 +82,7 @@ int linktbl_idxof(struct linktbl *l, char *key)
 
 	n = l->chain;
 	idx = 0;
-	for (; n && scmp(n->key, key); n = n->next)
+	for (; n && strcmp(n->key, key); n = n->next)
 		idx++;
 
 	if (n)

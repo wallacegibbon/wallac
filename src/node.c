@@ -1,8 +1,8 @@
 #include <stdlib.h>
+#include <string.h>
 #include "misc.h"
 #include "node.h"
 #include "ctypes.h"
-#include "libc.h"
 
 struct ctype *new_ctype(int type, int pdepth, char *struct_name, int is_extern)
 {
@@ -36,7 +36,7 @@ int compare_struct_name(char *n1, char *n2)
 	if (!n1 && n2)
 		return -1;
 
-	return scmp(n1, n2);
+	return strcmp(n1, n2);
 }
 
 int ctype_cmp(struct ctype *ct1, struct ctype *ct2)

@@ -1,5 +1,6 @@
 #include <stdlib.h>
-#include "libc.h"
+#include <string.h>
+#include <stdio.h>
 #include "misc.h"
 #include "linktbl.h"
 #include "linklst.h"
@@ -198,7 +199,7 @@ struct ctype *get_basic_type(struct parser *psr)
 int p_space(int num)
 {
 	for (; num > 0; num--)
-		pf(" ");
+		printf(" ");
 }
 
 int ctype_print(struct ctype *ct)
@@ -207,25 +208,25 @@ int ctype_print(struct ctype *ct)
 	int i;
 
 	if (ct->is_extern)
-		pf("extern ");
+		printf("extern ");
 
 	tstr = ctype_tostr(ct->type);
 
 	if (ct->type == CT_STRUCT)
-		pf("struct %s ", ct->struct_name);
+		printf("struct %s ", ct->struct_name);
 	else
-		pf("%s ", tstr);
+		printf("%s ", tstr);
 
 	for (i = 0; i < ct->pdepth; i++)
-		pf("*");
+		printf("*");
 }
 
 int cvar_print(struct cvar *cv, int offset)
 {
 	p_space(offset);
-	pf("%s\t-> ", cv->name);
+	printf("%s\t-> ", cv->name);
 	ctype_print(cv->type);
-	pf("\n");
+	printf("\n");
 
 	return 1;
 }
@@ -243,7 +244,7 @@ int varlist_print(struct linktbl *vl, int offset)
 
 int struct_print(struct cstruct *cs)
 {
-	pf("\nSTRUCT %s:\n", cs->name);
+	printf("\nSTRUCT %s:\n", cs->name);
 	return varlist_print(cs->fields, 2);
 }
 
@@ -260,22 +261,22 @@ int structlist_print(struct linktbl *sl)
 
 int func_print(struct cfunc *cf)
 {
-	pf("\nFUNCTION %s -> ", cf->name);
+	printf("\nFUNCTION %s -> ", cf->name);
 	ctype_print(cf->ret);
 
-	pf("\nPARAMETERS:\n");
+	printf("\nPARAMETERS:\n");
 	if (cf->params)
 		varlist_print(cf->params, 2);
 
 	if (cf->var_arg)
-		pf("  ...\n");
+		printf("  ...\n");
 
-	pf("ARGUMENTS:\n");
+	printf("ARGUMENTS:\n");
 	if (cf->vars)
 		varlist_print(cf->vars, 2);
 
-	pf("STATEMENTS:\n");
-	pf("\n");
+	printf("STATEMENTS:\n");
+	printf("\n");
 }
 
 int funclist_print(struct linktbl *fl)
@@ -816,7 +817,7 @@ int get_struct_fields(struct parser *psr, struct cstruct *cs)
 
 int check_type_struct(struct ctype *ct, char *sname)
 {
-	if (ct->type == CT_STRUCT && !scmp(ct->struct_name, sname) &&
+	if (ct->type == CT_STRUCT && !strcmp(ct->struct_name, sname) &&
 	    ct->pdepth == 0)
 		return 1;
 	else
@@ -956,7 +957,7 @@ struct ast *parse(struct token *tks)
 	parse_recur(psr);
 	r = psr->ast;
 
-	pf("Global variables:\n");
+	printf("Global variables:\n");
 	varlist_print(r->gvars, 2);
 	structlist_print(r->sdefs);
 	funclist_print(r->funcs);

@@ -1,9 +1,10 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "compile.h"
 #include "limits.h"
 #include "misc.h"
 #include "cmdargs.h"
-#include "libc.h"
 
 char *pathname_src, *pathname_out;
 int verbose;
@@ -33,7 +34,7 @@ int prepare_env(int argc, char **argv)
 	if (*pathname_out == '\0')
 		init_pathname_out(pathname_src, pathname_out);
 
-	if (!scmp(pathname_src, pathname_out))
+	if (!strcmp(pathname_src, pathname_out))
 		exit_with("input and output file can't be the same\n");
 
 	return 1;
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
 	prepare_env(argc, argv);
 
 	if (debug)
-		pf("Compiling %s -> %s\n", pathname_src, pathname_out);
+		printf("Compiling %s -> %s\n", pathname_src, pathname_out);
 
 	compile(pathname_src);
 

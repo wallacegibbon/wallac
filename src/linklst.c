@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
 #include "linklst.h"
 #include "limits.h"
 #include "misc.h"
-#include "libc.h"
 
 struct lstnode *new_lstnode(void *value)
 {
@@ -143,9 +144,9 @@ int linklst_print(struct linklst *l)
 	struct lstnode *n;
 
 	for (n = l->chain; n; n = n->next)
-		pf("<%d>--", (int)n->value);
+		printf("<%d>--", (intptr_t)n->value);
 
-	pf("\n");
+	printf("\n");
 
 	return 1;
 }
