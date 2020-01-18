@@ -311,7 +311,7 @@ void join_token_empty(struct lexer *lx, struct token *t)
 	lx->tk_s = t;
 }
 
-int make_join_token(struct lexer *lx, int line, int type, void *p)
+void make_join_token(struct lexer *lx, int line, int type, void *p)
 {
 	struct token *t;
 
@@ -323,8 +323,6 @@ int make_join_token(struct lexer *lx, int line, int type, void *p)
 		join_token_nonempty(lx, t);
 	else
 		join_token_empty(lx, t);
-
-	return 1;
 }
 
 int join_token_nchar(struct lexer *lx, int line, int type)
@@ -652,12 +650,6 @@ int get_integer_num(struct lexer *lx, int line, int base)
 	return 1;
 }
 
-int get_integer_hex(struct lexer *lx, int line)
-{
-	nextchar_noteof(lx);
-	return get_integer_num(lx, line, 16);
-}
-
 int get_integer(struct lexer *lx)
 {
 	int line, ch;
@@ -672,11 +664,13 @@ int get_integer(struct lexer *lx)
 
 	// have to be number like 0x1, 01, or 0.
 	if (ch == 'x' || ch == 'X') {
-		return get_integer_hex(lx, line);
+		nextchar_noteof(lx);
+		return get_integer_num(lx, line, 16);
 	} else if (check_octal(ch)) {
 		return get_integer_num(lx, line, 8);
 	} else {
-		return make_join_token(lx, line, TK_CINT, (void *)0);
+		make_join_token(lx, line, TK_CINT, (void *)0);
+		return 1;
 	}
 }
 
@@ -702,8 +696,10 @@ int get_identifier(struct lexer *lx)
 	buffer = lx->buff;
 
 	kw = try_get_keyword(buffer);
-	if (kw)
-		return make_join_token(lx, line, kw, NULL);
+	if (kw) {
+		make_join_token(lx, line, kw, NULL);
+		return 1;
+	}
 
 	// TODO: the whole macro system should be rewritten
 	mtk = hashtbl_get(lx->mtbl, buffer);
@@ -711,7 +707,6 @@ int get_identifier(struct lexer *lx)
 		return join_chain(lx, line, mtk, 1);
 
 	make_join_token(lx, line, TK_IDENT, copy_string(buffer));
-
 	return 1;
 }
 
@@ -811,7 +806,6 @@ int get_character(struct lexer *lx)
 
 	assert_ch(lx, lx->ch, '\'');
 	make_join_token(lx, line, TK_CCHAR, (void *)ch);
-
 	nextchar(lx);
 	return 1;
 }
