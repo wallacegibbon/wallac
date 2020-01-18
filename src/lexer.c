@@ -617,12 +617,19 @@ int check_overflow(char *numstr, int base)
 	char *maxstr;
 	int n, m;
 
-	if (base == 16)
+	switch (base) {
+	case 16:
 		maxstr = MAX_HEX_STRING;
-	if (base == 10)
+		break;
+	case 10:
 		maxstr = MAX_DECIMAL_STRING;
-	if (base == 8)
+		break;
+	case 8:
 		maxstr = MAX_OCTAL_STRING;
+		break;
+	default:
+		exit_with("unknown base %d\n", base);
+	}
 
 	n = strlen(numstr);
 	m = strlen(maxstr);
@@ -632,7 +639,7 @@ int check_overflow(char *numstr, int base)
 		return 0;
 }
 
-int get_integer_num(struct lexer *lx, int line, int base)
+void get_integer_num(struct lexer *lx, int line, int base)
 {
 	char *buffer;
 	long i;
@@ -647,7 +654,6 @@ int get_integer_num(struct lexer *lx, int line, int base)
 		i = i * base + cnv_digit(*buffer);
 
 	make_join_token(lx, line, TK_CINT, (void *)i);
-	return 1;
 }
 
 int get_integer(struct lexer *lx)
@@ -657,21 +663,22 @@ int get_integer(struct lexer *lx)
 	line = lx->line;
 	ch = lx->ch;
 	// missing leading 0, normal decimal
-	if (ch != '0')
-		return get_integer_num(lx, line, 10);
+	if (ch != '0') {
+		get_integer_num(lx, line, 10);
+		return 1;
+	}
 
 	ch = nextchar_noteof(lx);
-
 	// have to be number like 0x1, 01, or 0.
 	if (ch == 'x' || ch == 'X') {
 		nextchar_noteof(lx);
-		return get_integer_num(lx, line, 16);
+		get_integer_num(lx, line, 16);
 	} else if (check_octal(ch)) {
-		return get_integer_num(lx, line, 8);
+		get_integer_num(lx, line, 8);
 	} else {
 		make_join_token(lx, line, TK_CINT, (void *)0);
-		return 1;
 	}
+	return 1;
 }
 
 int get_identifier(struct lexer *lx)
@@ -772,15 +779,18 @@ int get_normal_escape(struct lexer *lx)
 
 int get_escape_seq(struct lexer *lx)
 {
-	int ch;
+	int ch, ret;
+
 	ch = nextchar_noteof(lx);
+	if (check_octal(ch)) {
+		ret = get_octal_escape(lx);
+	} else if (ch == 'x') {
+		ret = get_hex_escape(lx);
+	} else {
+		ret = get_normal_escape(lx);
+	}
 
-	if (check_octal(ch))
-		return get_octal_escape(lx);
-	if (ch == 'x')
-		return get_hex_escape(lx);
-
-	return get_normal_escape(lx);
+	return ret;
 }
 
 int get_character(struct lexer *lx)

@@ -4,8 +4,7 @@ struct abc         {
 	struct abc *next;
 };
 
-char *str = "a quick brown fox";
-char head = 'A';
+char *str = "\x62a quick brown fox", c1 = 'A', c2 = '\t';
 
 struct abc *hello(int a, char *b, struct abc *m);
 
