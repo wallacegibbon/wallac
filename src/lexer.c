@@ -98,7 +98,8 @@ int assert_ident(struct lexer *lx, char ch)
 int assert_not_eof(struct lexer *lx, char ch)
 {
 	if (ch == EOF)
-		exit_with("%f:%d:[LEXER]Unexpected EOF\n", lx->fname, lx->line);
+		exit_with("%f:%d:[LEXER]Unexpected EOF\n",
+			  lx->fname, lx->line);
 
 	return ch;
 }
