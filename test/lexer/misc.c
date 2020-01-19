@@ -9,6 +9,7 @@ new\tline";
 	//""
 	//''
 	p->age++ && --p->age || **p->x % 2 == 1;
+	c1 >>= 2;
   /***************
    * this is a long comment
    * line 2

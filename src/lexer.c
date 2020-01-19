@@ -471,7 +471,7 @@ int get_assign_eq(struct lexer *lx)
 	return 1;
 }
 
-int get_gt_geq(struct lexer *lx)
+int get_gt_geq_shr(struct lexer *lx)
 {
 	int line, ch;
 
@@ -480,13 +480,15 @@ int get_gt_geq(struct lexer *lx)
 
 	if (ch == '=')
 		return join_new_token_forward(lx, line, TK_GEQ);
+	if (ch == '>')
+		return join_new_token_forward(lx, line, TK_SHR);
 
 	join_new_token(lx, line, TK_GT, NULL);
 
 	return 1;
 }
 
-int get_lt_leq(struct lexer *lx)
+int get_lt_leq_shl(struct lexer *lx)
 {
 	int line, ch;
 
@@ -495,6 +497,8 @@ int get_lt_leq(struct lexer *lx)
 
 	if (ch == '=')
 		return join_new_token_forward(lx, line, TK_LEQ);
+	if (ch == '<')
+		return join_new_token_forward(lx, line, TK_SHL);
 
 	join_new_token(lx, line, TK_LT, NULL);
 
@@ -753,20 +757,23 @@ int get_octal_escape(struct lexer *lx)
 	return v;
 }
 
-char escape_src[9] = { 'a', 'b', 't', 'n', 'v', 'f', 'r', '\\', '\'' };
-char escape_dst[9] = { 7, 8, 9, 10, 11, 12, 13, '\\', '\'' };
+// ascii code 1 will not be valid character in a file, use it as a sign of
+// '\n' after '\'
+#define ESCAPE_NEWLINE 1
+char escape_src[8] = { 'a', 'b', 't', 'n', 'v', 'f', 'r', '\n' };
+char escape_dst[8] = { 7, 8, 9, 10, 11, 12, 13, ESCAPE_NEWLINE };
 
 int get_normal_escape(struct lexer *lx)
 {
 	int i, ch = -1;
 
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < 8; i++) {
 		if (escape_src[i] == lx->ch)
 			ch = escape_dst[i];
 	}
+	// characters are what they were
 	if (ch == -1)
-		exit_with("%s:%d:[LEXER]Unknown escape sequence: \\%c\n",
-			  lx->fname, lx->line, lx->ch);
+		ch = lx->ch;
 
 	nextchar_noteof(lx);
 	return ch;
@@ -806,8 +813,9 @@ int get_character(struct lexer *lx)
 	else
 		nextchar_noteof(lx);
 
-	if (ch == 0xff)
-		exit_with("%s:%d:[LEXER]Invalid character\n", lx->fname, line);
+	if (ch == ESCAPE_NEWLINE)
+		exit_with("%s:%d:[LEXER]escape new line is now allowed\n",
+			  lx->fname, line);
 
 	assert_ch(lx, lx->ch, '\'');
 	join_new_token(lx, line, TK_CCHAR, (void *)ch);
@@ -833,13 +841,14 @@ int get_strchar_sub(struct lexer *lx)
 	return ch;
 }
 
+// returns 0 when string is finished
 int get_strchar(struct lexer *lx, char *c)
 {
 	char ch;
 
-	ch = get_strchar_sub(lx);
-	for (; ch == 0xff;)
+	do {
 		ch = get_strchar_sub(lx);
+	} while (ch == ESCAPE_NEWLINE);
 
 	*c = ch;
 	if (ch == 0)
@@ -855,21 +864,17 @@ int get_string(struct lexer *lx)
 
 	line = lx->line;
 	buffer = lx->buff;
-
 	ch = nextchar_noteof(lx);
 
 	for (cnt = 0; cnt < BUFF_SIZE && get_strchar(lx, &ch); cnt++)
 		*buffer++ = ch;
-
 	*buffer = '\0';
 
 	if (cnt == MAX_CSTR_LENGTH)
 		exit_with("%s:%d:[LEXER]String too long\n", lx->fname, line);
 
 	join_new_token(lx, line, TK_CSTR, copy_string(lx->buff));
-
 	nextchar(lx);
-
 	return 1;
 }
 
@@ -1140,9 +1145,9 @@ int get_token(struct lexer *lx)
 	case '=':
 		return get_assign_eq(lx);
 	case '>':
-		return get_gt_geq(lx);
+		return get_gt_geq_shr(lx);
 	case '<':
-		return get_lt_leq(lx);
+		return get_lt_leq_shl(lx);
 	case '\'':
 		return get_character(lx);
 	case '"':

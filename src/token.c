@@ -5,24 +5,26 @@
 #include "token.h"
 #include "misc.h"
 
-char *operator_names[34] = {
+char *operator_names[36] = {
 	"TK_ASTERISK", "TK_POINTSTO", "TK_DOT", "TK_SEMICOLON", "TK_COMMA",
 	"TK_DPLUS", "TK_PLUS", "TK_DMINUS", "TK_MINUS",
 	"TK_BEGIN", "TK_END",
 	"TK_DIVIDE", "TK_MOD", "TK_ASSIGN",
 	"TK_EQ", "TK_NEQ", "TK_LT", "TK_LEQ", "TK_GT", "TK_GEQ",
+	"TK_SHR", "TK_SHL",
 	"TK_AND", "TK_OR", "TK_DAND", "TK_DOR", "TK_EXCLAMATION",
 	"TK_ELLIPSIS", "TK_TILDE", "TK_CARET",
 	"TK_QUESTION", "TK_COLON",
 	"TK_OPENPA", "TK_CLOSEPA", "TK_OPENBR", "TK_CLOSEBR",
 };
 
-int operator_ids[34] = {
+int operator_ids[36] = {
 	TK_ASTERISK, TK_POINTSTO, TK_DOT, TK_SEMICOLON, TK_COMMA,
 	TK_DPLUS, TK_PLUS, TK_DMINUS, TK_MINUS,
 	TK_BEGIN, TK_END,
 	TK_DIVIDE, TK_MOD, TK_ASSIGN,
 	TK_EQ, TK_NEQ, TK_LT, TK_LEQ, TK_GT, TK_GEQ,
+	TK_SHR, TK_SHL,
 	TK_AND, TK_OR, TK_DAND, TK_DOR, TK_EXCLAMATION,
 	TK_ELLIPSIS, TK_TILDE, TK_CARET,
 	TK_QUESTION, TK_COLON,
@@ -138,7 +140,7 @@ void print_token_list(struct token *start)
 char *token_type_str(int type)
 {
 	int i;
-	for (i = 0; i < 34; i++) {
+	for (i = 0; i < 36; i++) {
 		if (operator_ids[i] == type)
 			return operator_names[i];
 	}

@@ -6,3 +6,5 @@
 "abcd\11a6"
 "abcd\7ab6"
 //"1234567890"
+"this is\ta\
+string"
