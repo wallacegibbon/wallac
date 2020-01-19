@@ -297,37 +297,36 @@ void free_lexer(struct lexer *lx)
 	}
 }
 
-void join_token_nonempty(struct lexer *lx, struct token *t)
+void join_token(struct lexer *lx, struct token *t)
 {
-	t->prev = lx->tk_c;
-	lx->tk_c->next = t;
-	lx->tk_c = t;
+	if (lx->tk_c) {
+		t->prev = lx->tk_c;
+		lx->tk_c->next = t;
+		lx->tk_c = t;
+	} else {
+		t->prev = NULL;
+		lx->tk_c = t;
+		lx->tk_s = t;
+	}
 }
 
-void join_token_empty(struct lexer *lx, struct token *t)
-{
-	t->prev = NULL;
-	lx->tk_c = t;
-	lx->tk_s = t;
-}
-
-void make_join_token(struct lexer *lx, int line, int type, void *p)
+void join_new_token(struct lexer *lx, int line, int type, void *p)
 {
 	struct token *t;
 
 	t = new_token(type, p);
+	if (!t)
+		exit_with("failed creating token, memory not enough\n");
+
 	t->fname = lx->fname;
 	t->line = line;
 
-	if (lx->tk_c)
-		join_token_nonempty(lx, t);
-	else
-		join_token_empty(lx, t);
+	join_token(lx, t);
 }
 
-int join_token_nchar(struct lexer *lx, int line, int type)
+int join_new_token_forward(struct lexer *lx, int line, int type)
 {
-	make_join_token(lx, line, type, NULL);
+	join_new_token(lx, line, type, NULL);
 	nextchar(lx);
 
 	return 1;
@@ -352,10 +351,7 @@ int join_chain(struct lexer *lx, int line, struct token *orig, int fixpos)
 	if (!t)
 		return 1;
 
-	if (lx->tk_c)
-		join_token_nonempty(lx, t);
-	else
-		join_token_empty(lx, t);
+	join_token(lx, t);
 
 	for (; t; p = t, t = t->next) {
 		if (fixpos)
@@ -374,7 +370,7 @@ int get_ellipsis(struct lexer *lx, int line)
 		exit_with("%s:%d:[LEXER]Unsupported element \"..\"\n",
 			  lx->fname, line);
 
-	make_join_token(lx, line, TK_ELLIPSIS, NULL);
+	join_new_token(lx, line, TK_ELLIPSIS, NULL);
 	nextchar(lx);
 	return 1;
 }
@@ -393,7 +389,7 @@ int get_dot_ellipsis(struct lexer *lx)
 		exit_with("%s:%d:[LEXER]Float literal is not supported\n",
 			  lx->fname, line);
 
-	make_join_token(lx, line, TK_DOT, NULL);
+	join_new_token(lx, line, TK_DOT, NULL);
 
 	return 1;
 }
@@ -406,11 +402,11 @@ int get_minus_dminus_pointsto(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '-')
-		return join_token_nchar(lx, line, TK_DMINUS);
+		return join_new_token_forward(lx, line, TK_DMINUS);
 	if (ch == '>')
-		return join_token_nchar(lx, line, TK_POINTSTO);
+		return join_new_token_forward(lx, line, TK_POINTSTO);
 
-	make_join_token(lx, line, TK_MINUS, NULL);
+	join_new_token(lx, line, TK_MINUS, NULL);
 
 	return 1;
 }
@@ -423,9 +419,9 @@ int get_plus_dplus(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '+')
-		return join_token_nchar(lx, line, TK_DPLUS);
+		return join_new_token_forward(lx, line, TK_DPLUS);
 
-	make_join_token(lx, line, TK_PLUS, NULL);
+	join_new_token(lx, line, TK_PLUS, NULL);
 
 	return 1;
 }
@@ -438,9 +434,9 @@ int get_and_dand(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '&')
-		return join_token_nchar(lx, line, TK_DAND);
+		return join_new_token_forward(lx, line, TK_DAND);
 
-	make_join_token(lx, line, TK_AND, NULL);
+	join_new_token(lx, line, TK_AND, NULL);
 
 	return 1;
 }
@@ -453,9 +449,9 @@ int get_or_dor(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '|')
-		return join_token_nchar(lx, line, TK_DOR);
+		return join_new_token_forward(lx, line, TK_DOR);
 
-	make_join_token(lx, line, TK_DOR, NULL);
+	join_new_token(lx, line, TK_DOR, NULL);
 
 	return 1;
 }
@@ -468,9 +464,9 @@ int get_assign_eq(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '=')
-		return join_token_nchar(lx, line, TK_EQ);
+		return join_new_token_forward(lx, line, TK_EQ);
 
-	make_join_token(lx, line, TK_ASSIGN, NULL);
+	join_new_token(lx, line, TK_ASSIGN, NULL);
 
 	return 1;
 }
@@ -483,9 +479,9 @@ int get_gt_geq(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '=')
-		return join_token_nchar(lx, line, TK_GEQ);
+		return join_new_token_forward(lx, line, TK_GEQ);
 
-	make_join_token(lx, line, TK_GT, NULL);
+	join_new_token(lx, line, TK_GT, NULL);
 
 	return 1;
 }
@@ -498,9 +494,9 @@ int get_lt_leq(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '=')
-		return join_token_nchar(lx, line, TK_LEQ);
+		return join_new_token_forward(lx, line, TK_LEQ);
 
-	make_join_token(lx, line, TK_LT, NULL);
+	join_new_token(lx, line, TK_LT, NULL);
 
 	return 1;
 }
@@ -513,9 +509,9 @@ int get_exclamation_neq(struct lexer *lx)
 	ch = nextchar_noteof(lx);
 
 	if (ch == '=')
-		return join_token_nchar(lx, line, TK_NEQ);
+		return join_new_token_forward(lx, line, TK_NEQ);
 
-	make_join_token(lx, line, TK_EXCLAMATION, NULL);
+	join_new_token(lx, line, TK_EXCLAMATION, NULL);
 
 	return 1;
 }
@@ -567,7 +563,7 @@ int get_divide_or_jump_comments(struct lexer *lx)
 	if (ch == '/')
 		return skip_line(lx);
 
-	make_join_token(lx, line, TK_DIVIDE, NULL);
+	join_new_token(lx, line, TK_DIVIDE, NULL);
 
 	return 1;
 }
@@ -653,7 +649,7 @@ void get_integer_num(struct lexer *lx, int line, int base)
 	for (i = 0; *buffer; buffer++)
 		i = i * base + cnv_digit(*buffer);
 
-	make_join_token(lx, line, TK_CINT, (void *)i);
+	join_new_token(lx, line, TK_CINT, (void *)i);
 }
 
 int get_integer(struct lexer *lx)
@@ -676,7 +672,7 @@ int get_integer(struct lexer *lx)
 	} else if (check_octal(ch)) {
 		get_integer_num(lx, line, 8);
 	} else {
-		make_join_token(lx, line, TK_CINT, (void *)0);
+		join_new_token(lx, line, TK_CINT, (void *)0);
 	}
 	return 1;
 }
@@ -704,16 +700,15 @@ int get_identifier(struct lexer *lx)
 
 	kw = try_get_keyword(buffer);
 	if (kw) {
-		make_join_token(lx, line, kw, NULL);
+		join_new_token(lx, line, kw, NULL);
 		return 1;
 	}
-
 	// TODO: the whole macro system should be rewritten
 	mtk = hashtbl_get(lx->mtbl, buffer);
 	if (mtk)
 		return join_chain(lx, line, mtk, 1);
 
-	make_join_token(lx, line, TK_IDENT, copy_string(buffer));
+	join_new_token(lx, line, TK_IDENT, copy_string(buffer));
 	return 1;
 }
 
@@ -815,7 +810,7 @@ int get_character(struct lexer *lx)
 		exit_with("%s:%d:[LEXER]Invalid character\n", lx->fname, line);
 
 	assert_ch(lx, lx->ch, '\'');
-	make_join_token(lx, line, TK_CCHAR, (void *)ch);
+	join_new_token(lx, line, TK_CCHAR, (void *)ch);
 	nextchar(lx);
 	return 1;
 }
@@ -871,7 +866,7 @@ int get_string(struct lexer *lx)
 	if (cnt == MAX_CSTR_LENGTH)
 		exit_with("%s:%d:[LEXER]String too long\n", lx->fname, line);
 
-	make_join_token(lx, line, TK_CSTR, copy_string(lx->buff));
+	join_new_token(lx, line, TK_CSTR, copy_string(lx->buff));
 
 	nextchar(lx);
 
@@ -1101,33 +1096,33 @@ int get_token(struct lexer *lx)
 	case EOF:
 		return 0;
 	case ';':
-		return join_token_nchar(lx, lx->line, TK_SEMICOLON);
+		return join_new_token_forward(lx, lx->line, TK_SEMICOLON);
 	case ':':
-		return join_token_nchar(lx, lx->line, TK_COLON);
+		return join_new_token_forward(lx, lx->line, TK_COLON);
 	case ',':
-		return join_token_nchar(lx, lx->line, TK_COMMA);
+		return join_new_token_forward(lx, lx->line, TK_COMMA);
 	case '?':
-		return join_token_nchar(lx, lx->line, TK_QUESTION);
+		return join_new_token_forward(lx, lx->line, TK_QUESTION);
 	case '^':
-		return join_token_nchar(lx, lx->line, TK_CARET);
+		return join_new_token_forward(lx, lx->line, TK_CARET);
 	case '~':
-		return join_token_nchar(lx, lx->line, TK_TILDE);
+		return join_new_token_forward(lx, lx->line, TK_TILDE);
 	case '*':
-		return join_token_nchar(lx, lx->line, TK_ASTERISK);
+		return join_new_token_forward(lx, lx->line, TK_ASTERISK);
 	case '%':
-		return join_token_nchar(lx, lx->line, TK_MOD);
+		return join_new_token_forward(lx, lx->line, TK_MOD);
 	case '{':
-		return join_token_nchar(lx, lx->line, TK_BEGIN);
+		return join_new_token_forward(lx, lx->line, TK_BEGIN);
 	case '}':
-		return join_token_nchar(lx, lx->line, TK_END);
+		return join_new_token_forward(lx, lx->line, TK_END);
 	case '[':
-		return join_token_nchar(lx, lx->line, TK_OPENBR);
+		return join_new_token_forward(lx, lx->line, TK_OPENBR);
 	case ']':
-		return join_token_nchar(lx, lx->line, TK_CLOSEBR);
+		return join_new_token_forward(lx, lx->line, TK_CLOSEBR);
 	case '(':
-		return join_token_nchar(lx, lx->line, TK_OPENPA);
+		return join_new_token_forward(lx, lx->line, TK_OPENPA);
 	case ')':
-		return join_token_nchar(lx, lx->line, TK_CLOSEPA);
+		return join_new_token_forward(lx, lx->line, TK_CLOSEPA);
 	case '/':
 		return get_divide_or_jump_comments(lx);
 	case '!':

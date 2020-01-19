@@ -67,7 +67,7 @@ struct token *new_token(int type, void *value)
 
 	t = malloc(sizeof(struct token));
 	if (!t)
-		exit_with("Failed allocing memory for token %d\n", type);
+		return NULL;
 
 	init_empty_token(t, type, value);
 	return t;
